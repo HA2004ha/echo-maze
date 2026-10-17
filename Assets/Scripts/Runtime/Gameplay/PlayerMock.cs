@@ -31,7 +31,7 @@ namespace EchoMaze.Gameplay
             body = GetComponent<Rigidbody2D>();
             if (director == null)
             {
-                director = FindFirstObjectByType<EchoDirector>();
+                director = FindAnyObjectByType<EchoDirector>();
             }
         }
 

@@ -27,8 +27,9 @@ namespace EchoMaze.Data
 
         [Header("Reach")]
         [Tooltip("Wave radius at loudness 0, in world units.")]
-        [Min(0.5f)] public float minRadius = 2.5f;
-        [Min(1f)] public float maxRadius = 9f;
+        [Min(0.5f)] public float minRadius = 2f;
+        [Tooltip("Wave radius at a shout. Keep it near the size of the room: a ring bigger than everything it can measure reads as a circle arriving from nowhere.")]
+        [Min(1f)] public float maxRadius = 6.5f;
         [Tooltip("Below 1 so a whisper still shows something useful.")]
         [Range(0.1f, 3f)] public float radiusLoudnessExponent = 0.75f;
 
@@ -37,10 +38,12 @@ namespace EchoMaze.Data
         [Min(1f)] public float waveSpeed = 7f;
         [Tooltip("Arc dies when its base radius falls to this.")]
         [Range(0.05f, 2f)] public float rKill = 0.35f;
+        [Tooltip("Seconds the outward cue at the emitter is drawn. It is a plain cone outline with no geometry in it, so it reveals nothing; it only shows that the sound left the player in the aimed direction. 0 disables it.")]
+        [Range(0f, 0.5f)] public float emissionPulseSeconds = 0.16f;
 
         [Header("Shape")]
-        [Tooltip("A_0 in the GDD formula: how strongly hit distance deforms the arc.")]
-        [Range(0f, 2f)] public float gain0 = 0.28f;
+        [Tooltip("A_0 in the GDD formula: how strongly hit distance deforms the arc. At the GDD's 0.28 a pillar only dents the ring by 0.12 world units, which is ten pixels and reads as a circle, so week 1 measures it at 1: the arc radius then mirrors the room's own distances.")]
+        [Range(0f, 2f)] public float gain0 = 1f;
         [Tooltip("Keeps the returning-wave sign testable at runtime. +1 means nearer surfaces sit closer to the player.")]
         public float gainSign = 1f;
         [Tooltip("Per-arc deformation decay in a train. 1 in week 1 because a ping emits a single arc.")]
@@ -50,8 +53,8 @@ namespace EchoMaze.Data
             new AnimationCurve(new Keyframe(0f, 1f), new Keyframe(0.65f, 0.75f), new Keyframe(1f, 0f));
 
         [Header("Draw")]
-        [Tooltip("Ribbon width in world units.")]
-        [Range(0.002f, 0.3f)] public float baseThickness = 0.022f;
+        [Tooltip("Ribbon width in world units. One world unit is about ninety pixels in the sandbox camera, so anything under 0.04 disappears.")]
+        [Range(0.002f, 0.3f)] public float baseThickness = 0.05f;
         [Tooltip("Base line colour, before alpha and HDR.")]
         public Color arcColor = new Color(0.498f, 0.914f, 0.941f, 1f);
 

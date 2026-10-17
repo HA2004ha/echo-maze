@@ -173,14 +173,14 @@ namespace EchoMaze.EditorTools
             VolumeProfile volume = EnsureVolumeProfile();
             Material arcMaterial = EnsureMaterial();
 
-            foreach (Light2D stray in Object.FindObjectsByType<Light2D>(FindObjectsSortMode.None))
+            foreach (Light2D stray in Object.FindObjectsByType<Light2D>(FindObjectsInactive.Exclude))
             {
                 // The game is unlit; a Global Light 2D only adds a lighting pass and a chance of the
                 // wave being multiplied by an ambient colour instead of glowing.
                 Object.DestroyImmediate(stray.gameObject);
             }
 
-            Camera camera = Object.FindFirstObjectByType<Camera>();
+            Camera camera = Object.FindAnyObjectByType<Camera>();
             if (camera == null)
             {
                 var cameraObject = new GameObject("Main Camera");
@@ -277,7 +277,7 @@ namespace EchoMaze.EditorTools
 
         static void EnsureVolume(VolumeProfile profile)
         {
-            Volume volume = Object.FindFirstObjectByType<Volume>();
+            Volume volume = Object.FindAnyObjectByType<Volume>();
             if (volume == null)
             {
                 volume = new GameObject("Echo Volume").AddComponent<Volume>();
@@ -290,7 +290,7 @@ namespace EchoMaze.EditorTools
 
         static EchoRenderer EnsureEchoField(Material material)
         {
-            var field = Object.FindFirstObjectByType<EchoRenderer>();
+            var field = Object.FindAnyObjectByType<EchoRenderer>();
             if (field == null)
             {
                 field = new GameObject("EchoField").AddComponent<EchoRenderer>();
@@ -461,7 +461,7 @@ namespace EchoMaze.EditorTools
 
         static void EnsureDirector(EchoTuningProfile tuning, EchoRenderer field)
         {
-            var director = Object.FindFirstObjectByType<EchoDirector>();
+            var director = Object.FindAnyObjectByType<EchoDirector>();
             if (director == null)
             {
                 director = new GameObject("Echo System").AddComponent<EchoDirector>();

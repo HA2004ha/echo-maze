@@ -15,12 +15,13 @@ MonoBehaviour:
   coneHalfAngleDeg: 32
   minRays: 80
   maxRays: 200
-  minRadius: 2.5
-  maxRadius: 9
+  minRadius: 2
+  maxRadius: 6.5
   radiusLoudnessExponent: 0.75
   waveSpeed: 7
   rKill: 0.35
-  gain0: 0.28
+  emissionPulseSeconds: 0.16
+  gain0: 1
   gainSign: 1
   innerDecay: 1
   alphaCurve:
@@ -56,7 +57,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  baseThickness: 0.022
+  baseThickness: 0.05
   arcColor: {r: 0.498, g: 0.914, b: 0.941, a: 1}
   loudnessThreshold: 0.18
   minPingInterval: 0.35

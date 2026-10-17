@@ -64,7 +64,7 @@ namespace EchoMaze.Core
 
             if (fieldRenderer == null)
             {
-                fieldRenderer = FindFirstObjectByType<EchoRenderer>();
+                fieldRenderer = FindAnyObjectByType<EchoRenderer>();
             }
         }
 
@@ -184,6 +184,14 @@ namespace EchoMaze.Core
                 float alpha = ArcMath.Alpha(age, ping.LifeSeconds(profile.waveSpeed, profile.rKill),
                                            profile.alphaCurve);
                 renderer?.AddArc(ping, 0, baseRadius, alpha, profile);
+
+                if (ArcMath.HasEmissionPulse(age, profile))
+                {
+                    renderer?.AddConeOutline(ping.origin, ping.aimAngleRad, ping.coneHalfRad,
+                                             ArcMath.EmissionRadius(age, profile.waveSpeed, baseRadius),
+                                             ArcMath.EmissionAlpha(age, profile), profile);
+                }
+
                 LivePingCount++;
             }
 

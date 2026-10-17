@@ -34,6 +34,29 @@ namespace EchoMaze.Core
         public static bool IsAlive(float baseRadius, float rKill) => baseRadius > rKill;
 
         /// <summary>
+        /// Radius of the outward cue emitted with a ping. It grows at the same rate the returning
+        /// carrier shrinks and is clamped below that carrier, so the two rings never cross and the
+        /// eye always reads one wave leaving and one coming back.
+        /// </summary>
+        public static float EmissionRadius(float age, float waveSpeed, float carrierRadius) =>
+            Mathf.Min(waveSpeed * age, Mathf.Max(0f, carrierRadius));
+
+        public static bool HasEmissionPulse(float age, EchoTuningProfile profile) =>
+            profile.emissionPulseSeconds > 0f && age <= profile.emissionPulseSeconds;
+
+        /// <summary>Fades the emission cue out over its own window, independent of the arc curve.</summary>
+        public static float EmissionAlpha(float age, EchoTuningProfile profile)
+        {
+            if (profile.emissionPulseSeconds <= 0f)
+            {
+                return 0f;
+            }
+
+            float t = Mathf.Clamp01(age / profile.emissionPulseSeconds);
+            return (1f - t) * (1f - t);
+        }
+
+        /// <summary>
         /// Deformation gain of arc k in a train. With gainSign +1 and d &gt;= dMin, the nearest
         /// surface sits on the shrinking carrier circle and everything farther sits outside it,
         /// which is what reads as a wave coming back at you.

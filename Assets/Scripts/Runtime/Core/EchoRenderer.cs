@@ -17,18 +17,18 @@ namespace EchoMaze.Core
     {
         public const int MaxQuads = 2400;
         const int VertsPerQuad = 4;
+        const int EmissionSegments = 40;
 
         Mesh mesh;
         Vector3[] verts;
         Color[] colors;
         Vector2[] uvs;
+        Vector2[] emissionPath;
 
         MeshFilter meshFilter;
         int cursor;
         int lastVertCount;
-
-        /// <summary>Allocated once; BeginFrame uploads a prefix of it instead of building a new array per frame.</summary>
-        Color[] clearedColors;
+        int vertCount;
 
         public int LastQuadCount { get; private set; }
         public int OverflowCount { get; private set; }
@@ -38,10 +38,11 @@ namespace EchoMaze.Core
             meshFilter = GetComponent<MeshFilter>();
             var meshRenderer = GetComponent<MeshRenderer>();
 
-            int vertCount = MaxQuads * VertsPerQuad;
+            vertCount = MaxQuads * VertsPerQuad;
             verts = new Vector3[vertCount];
             colors = new Color[vertCount];
             uvs = new Vector2[vertCount];
+            emissionPath = new Vector2[EmissionSegments + 1];
 
             var indices = new int[MaxQuads * 6];
             for (int q = 0; q < MaxQuads; q++)
@@ -63,7 +64,6 @@ namespace EchoMaze.Core
 
             mesh = new Mesh { name = "EchoField" };
             mesh.MarkDynamic();
-            clearedColors = new Color[vertCount];
             mesh.SetVertices(verts, 0, vertCount, MeshUpdateFlags.DontRecalculateBounds);
             mesh.SetColors(colors, 0, vertCount, MeshUpdateFlags.DontRecalculateBounds);
             mesh.SetUVs(0, uvs, 0, vertCount, MeshUpdateFlags.DontRecalculateBounds);
@@ -83,15 +83,15 @@ namespace EchoMaze.Core
             cursor = 0;
             OverflowCount = 0;
 
+            // The index buffer always references all MaxQuads quads, so the mesh vertex count never
+            // changes. Shrinking the uploads to the used prefix instead makes Unity reject every
+            // frame with "vertices is too small / colors out of bounds", so unused quads are cleared
+            // in place: collapsed onto the origin they cover no pixel, and a zero colour additive-blends
+            // to nothing.
             for (int i = 0; i < lastVertCount; i++)
             {
                 verts[i] = Vector3.zero;
-            }
-
-            if (lastVertCount > 0)
-            {
-                mesh.SetColors(clearedColors, 0, lastVertCount, MeshUpdateFlags.DontRecalculateBounds);
-                mesh.SetVertices(verts, 0, lastVertCount, MeshUpdateFlags.DontRecalculateBounds);
+                colors[i] = Color.clear;
             }
         }
 
@@ -136,14 +136,34 @@ namespace EchoMaze.Core
             }
         }
 
+        public void AddConeOutline(Vector2 origin, float aimRad, float coneHalfRad, float radius,
+                                   float alpha, EchoTuningProfile profile)
+        {
+            if (alpha <= 0f || radius <= 0f)
+            {
+                return;
+            }
+
+            float half = profile.baseThickness * 0.5f;
+            float span = 2f * coneHalfRad;
+            for (int i = 0; i <= EmissionSegments; i++)
+            {
+                emissionPath[i] = ArcMath.Polar(origin, aimRad - coneHalfRad + span * (i / (float)EmissionSegments), radius);
+            }
+
+            for (int i = 1; i <= EmissionSegments; i++)
+            {
+                AddSegment(emissionPath[i - 1], emissionPath[i], half, profile.arcColor, alpha);
+            }
+        }
+
         public void EndFrame()
         {
             int count = cursor * VertsPerQuad;
-            if (count > 0)
+            if (count > 0 || lastVertCount > 0)
             {
-                mesh.SetVertices(verts, 0, count, MeshUpdateFlags.DontRecalculateBounds);
-                mesh.SetColors(colors, 0, count, MeshUpdateFlags.DontRecalculateBounds);
-                mesh.SetUVs(0, uvs, 0, count, MeshUpdateFlags.DontRecalculateBounds);
+                mesh.SetVertices(verts, 0, vertCount, MeshUpdateFlags.DontRecalculateBounds);
+                mesh.SetColors(colors, 0, vertCount, MeshUpdateFlags.DontRecalculateBounds);
             }
 
             lastVertCount = count;

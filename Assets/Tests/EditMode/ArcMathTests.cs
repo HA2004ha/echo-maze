@@ -167,6 +167,43 @@ namespace EchoMaze.Tests
         }
 
         [Test]
+        public void EmissionPulse_NeverOvertakesTheReturningCarrier()
+        {
+            profile.emissionPulseSeconds = 0.16f;
+
+            // Checked at both ends of the reach range: a whisper's carrier is small, so its outward
+            // cue has to be clamped by the carrier instead of running through it.
+            foreach (float loudness in new[] { 0f, 0.7f, 1f })
+            {
+                float radius0 = ArcMath.PingRadius(loudness, profile);
+                float life = (radius0 - profile.rKill) / profile.waveSpeed;
+
+                for (int step = 0; step <= 20; step++)
+                {
+                    float age = life * step / 20f;
+                    float carrier = ArcMath.BaseRadius(radius0, profile.waveSpeed, age);
+                    float pulse = ArcMath.EmissionRadius(age, profile.waveSpeed, carrier);
+
+                    Assert.LessOrEqual(pulse, carrier,
+                        "the outward cue must stay inside the returning arc (loudness " + loudness + ", age " + age + ")");
+
+                    if (ArcMath.HasEmissionPulse(age, profile) && age > 0f)
+                    {
+                        Assert.Greater(pulse, 0f, "a live cue must be visible");
+                        Assert.Greater(ArcMath.EmissionAlpha(age, profile), 0f);
+                    }
+                }
+            }
+
+            Assert.IsFalse(ArcMath.HasEmissionPulse(profile.emissionPulseSeconds * 2f, profile));
+            Assert.AreEqual(0f, ArcMath.EmissionAlpha(profile.emissionPulseSeconds, profile), 1e-5f);
+
+            profile.emissionPulseSeconds = 0f;
+            Assert.IsFalse(ArcMath.HasEmissionPulse(0.01f, profile), "zero seconds disables the cue entirely");
+            Assert.AreEqual(0f, ArcMath.EmissionAlpha(0.01f, profile), 1e-6f);
+        }
+
+        [Test]
         public void PingRecordReuseResetsTrackedExtremes()
         {
             PingRecord ping = MakePing(profile, 2f, 8f);
