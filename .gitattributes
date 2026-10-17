@@ -15,18 +15,22 @@
 # [attr]unity-yaml        merge=unityyamlmerge text linguist-language=yaml linguist-generated
 
 # Unity source files
-*.cginc                 text
-*.compute               text linguist-language=hlsl
-*.cs                    text diff=csharp
-*.hlsl                  text linguist-language=hlsl
-*.raytrace              text linguist-language=hlsl
-*.shader                text
+# eol=lf is forced on every authored text family so a Windows teammate with
+# core.autocrlf=true cannot turn a whole-file diff into a line-ending churn.
+*.cginc                 text eol=lf
+*.compute               text eol=lf linguist-language=hlsl
+*.cs                    text eol=lf diff=csharp
+*.hlsl                  text eol=lf linguist-language=hlsl
+*.raytrace              text eol=lf linguist-language=hlsl
+*.shader                text eol=lf
+*.md                    text eol=lf
+*.json                  text eol=lf
 
 # Unity JSON files
 *.asmdef                unity-json
 *.asmref                unity-json
 *.index                 unity-json
-*.inputactions          unity-json
+*.inputactions          unity-json text eol=lf
 *.shadergraph           unity-json
 *.shadersubgraph        unity-json
 
@@ -71,6 +75,10 @@ Assets/Plugins/**           linguist-generated
 Packages/packages-lock.json linguist-generated
 
 # Unity LFS
+# NEVER add *.asset / *.unity / *.prefab / *.meta here. They are YAML text that
+# Unity parses on import; an LFS pointer committed as one of them is imported as
+# a broken asset on any machine without git-lfs, and Unity Smart Merge cannot
+# merge pointers. The `lfs` macro below is for binaries only.
 *.cubemap               lfs
 *.unitypackage          lfs
 
