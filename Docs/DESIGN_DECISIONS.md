@@ -19,7 +19,7 @@
 
 **تصمیم:** یک `MeshFilter/MeshRenderer` با آرایه‌های پیش‌تخصیص‌شده و یک shader به نام `EchoArc`؛ LineRenderer و Sprite Shape و VFX بررسی و رد شدند.
 **دلیل:** به‌ازای هر نمونه به ضخامت و رنگ مستقل نیاز است (دندانه خارپشت، نقطه روشن گوشه)، و قطار کمان‌ها یعنی صدها بخش در فریم — با یک draw call. Sprite Shape برای اشکال spline پرشونده ساخته شده و VFX Graph نصب نیست.
-**هزینه:** `Mesh.SetIndexCount` در Unity 6000.6 وجود ندارد، پس index buffer ثابت می‌ماند و کوات‌های بی‌استفاده باید روی یک نقطه degenerate با رنگ صفر جمع شوند؛ ساخت رأس‌ها را خودمان نگه می‌داریم.
+**هزینه:** `Mesh.SetIndexCount` در Unity 6000.6 وجود ندارد، پس index buffer ثابت می‌ماند و کوات‌های بی‌استفاده باید روی یک نقطه degenerate با رنگ صفر جمع شوند؛ ساخت رأس‌ها را خودمان نگه می‌داریم. **تله:** چون index buffer همیشه به همه `MaxQuads*4` رأس اشاره می‌کند، تعداد رأس مش هرگز نباید کم شود. آپلود فقط پیشوندِ استفاده‌شده (`SetVertices(verts, 0, count)`) آرایه را کوچک می‌کند و ادیتور هر فریم با `Mesh.vertices is too small` / `Mesh.colors is out of bounds` می‌بارد — این باگ در Play اول پروژه دیده شد.
 
 ## ۲۰۲۶-۱۰-۱۷ — مبدأ پینگ در جهان قفل می‌شود، نه روی بازیکن
 
@@ -83,8 +83,24 @@
 | `Mesh.SetIndexCount(n)` | وجود ندارد → index buffer یک‌بار با ظرفیت ثابت نوشته می‌شود و کوات‌های بی‌استفاده روی یک نقطه degenerate با رنگ صفر جمع می‌شوند | `Core/EchoRenderer.cs` |
 | `Camera.renderPostProcessing` | روی دوربین URP است: `camera.GetUniversalAdditionalCameraData().renderPostProcessing` | `Scripts/Editor/SandboxSceneSetup.cs` |
 | `Light2D` در `Unity.RenderPipelines.Universal.Runtime` | در اسمبلی جدا است: `Unity.RenderPipelines.Universal.2D.Runtime` (باید به `references` اضافه شود، وگرنه CS0246) | `Assets/Scripts/Editor/EchoMaze.Editor.asmdef` |
+| `Object.GetInstanceID()` | منقضی → `GetEntityId()` | `Scripts/Editor/SandboxSceneSetup.cs` |
+| `FindFirstObjectByType<T>()` و `FindObjectsByType<T>(FindObjectsInactive, FindObjectsSortMode)` | هر دو منقضی (CS0618) → `FindAnyObjectByType<T>()` و `FindObjectsByType<T>(FindObjectsInactive.Exclude)` بدون آرگومان ترتیب | `Core/EchoDirector.cs`، `Gameplay/PlayerMock.cs`، `Scripts/Editor/SandboxSceneSetup.cs` |
 
 **هزینه:** این کد روی نسخه‌های قدیمی‌تر Unity کامپایل نمی‌شود؛ به همین دلیل `ProjectVersion.txt` و README در `Docs/TEAM_SETUP.md` نسخه را قفل می‌کنند.
+
+## ۲۰۲۶-۱۰-۱۷ — `gain0` از ۰٫۲۸ِ GDD به ۱ (انحراف مستند از طراحی)
+
+**تصمیم:** پیش‌فرض `A_0` در `EchoTuningProfile` و `EchoTuning.asset` روی `1` نشسته، با اینکه GDD عدد `0.28` را نوشته است. `maxRadius` هم از `9` به `6.5` و `baseThickness` از `0.022` به `0.05` آمد.
+**دلیل:** Playtest اول کاربر گفت «فقط موج به سمت بازیکن می‌آید، چیزی از شیء برنمی‌گردد». اندازه‌گیری با تست ادیتور: با اعداد GDD فرورفتگی ستون روی کمان `0.119` واحد جهان بود؛ با دوربین سندباکس (۱۲ واحد جهان روی ۱۰۸۰ پیکسل ⇒ ~۹۰ پیکسل بر واحد) یعنی `10` پیکسل روی نواری `2` پیکسل. کمان در عمل دایره بوده و شکل هیچ‌وقت برنمی‌گشته. با `gain0 = 1` همان فرورفتگی `38` پیکسل می‌شود.
+**هزینه:** انحراف از یک عددِ نوشته‌شده در GDD؛ اگر طراح عدد اول را می‌خواهد، باید با همان معیار پیکسل بحث شود نه با فرمول. اعداد هنوز در ScriptableObjectاند و برگشتنشان یک‌خط تغییر است.
+**قفل رگرسیون:** `Assets/Tests/EditMode/ArcReadabilityTests.cs` — چهار ادعا مستقیماً به پیکسل ترجمه شده و در CI دویده می‌شود (`Docs/TEAM_SETUP.md` بخش ۴-الف).
+
+## ۲۰۲۶-۱۰-۱۷ — حلقه رفتِ موج فقط حسِ علت است، نه اطلاعات
+
+**تصمیم:** `emissionPulseSeconds` (پیش‌فرض `0.16`) یک خط صاف در مخروط پینگ را از مبدأ به بیرون باز می‌کند و هم‌زمان با جمع‌شدن کمان برگشتی محو می‌شود. شکل ندارد: شعاع ثابت در همه نمونه‌ها، بدون `d(θ)`.
+**دلیل:** شکایت دوم پلی‌تست هفته ۱ «صدا فقط می‌آید، چیزی از بازیکن بیرون نمی‌رود» بود. مدل ریاضی GDD موج برگشتی را با حلقه‌ی در حال جمع نشان می‌دهد و هیچ‌وقت جنبه گسیل را؛ بدون یک ارجاع بصری به مبدأ، بازیکن منبع را در بازیکن نمی‌بیند.
+**هزینه:** ۴۰ کوات اضافه در ۰٫۱۶ ثانیه اول هر پینگ (بودجه `MaxQuads = 2400` با ۲۰۰ پرتو جا دارد). ریسک شلوغی بصری با بازه کوتاه و fade مربعی مهار شده؛ با `0` در همان ScriptableObject حذف می‌شود.
+**قانون:** شعاع حلقه هیچ‌وقت از حلقه برگشتی عبور نمی‌کند (`ArcMath.EmissionRadius` clamp می‌کند)، وگرنه دو موج در هم می‌برند و جهت را نمی‌شود فهمید. قفل: `EmissionPulse_NeverOvertakesTheReturningCarrier`.
 
 ## در دست تصمیم‌گیری
 

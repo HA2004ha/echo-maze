@@ -72,8 +72,10 @@
 
 ### روز ۵ — تست و بستن هفته
 
-- [x] `Tests/EditMode/ArcMathTests.cs`: `Formula_MatchesGdd`، `MonotonicInDistance`، `CollapsesToOrigin_AsAgeGrows`، `AllMisses_ProduceNoSamples_AndNoNaN`، `GainSign_FlipsDeformation` (+ شش تست دیگر: قطار داخلی، آلفا، زاویه نمونه‌ها، ظرفیت پرتو، بازشوری `PingRecord`)
-- [x] اجرای تست‌ها از خط فرمان با `-runTests -testPlatform EditMode` → ۱۱ از ۱۱ سبز (`Logs/editmode.xml`)
+- [x] `Tests/EditMode/ArcMathTests.cs`: `Formula_MatchesGdd`، `MonotonicInDistance`، `CollapsesToOrigin_AsAgeGrows`، `AllMisses_ProduceNoSamples_AndNoNaN`، `GainSign_FlipsDeformation` (+ هفت تست دیگر: قطار داخلی، آلفا، زاویه نمونه‌ها، ظرفیت پرتو، بازشوری `PingRecord`، `EmissionPulse_NeverOvertakesTheReturningCarrier`)
+- [x] اجرای تست‌ها از خط فرمان با `-runTests -testPlatform EditMode` → ۱۶ از ۱۶ سبز (`Logs/editmode.xml`)
+- [x] `Tests/EditMode/ArcReadabilityTests.cs`: چهار ادعای خوانایی به پیکسل (گودبودن ستون، دو شعاع متفاوت برای ستون و دیوارپشتش، مرکز ستون درونی‌ترین نقطه، ضخامت نوار) — چون ادعای «هیچ‌چیز دیده نمی‌شود» با عدد باید جواب دهد، نه با نظر
+- [x] بازبالانس هفته ۱ (`gain0 = 1`، `baseThickness = 0.05`، `maxRadius = 6.5`) و حلقه رفتِ موج (`emissionPulseSeconds`)؛ دلیل و اندازه‌گیری در `Docs/TUNING.md` و `Docs/DESIGN_DECISIONS.md`
 - [x] `Docs/TUNING.md` با جدول پارامترها
 - [x] آیین commit ([GIT.md](GIT.md))
 
