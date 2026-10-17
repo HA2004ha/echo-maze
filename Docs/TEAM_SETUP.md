@@ -55,6 +55,23 @@ git config --get-regexp 'merge\.'      # سه سطر باید باشد
 3. Play. کنترل‌ها: WASD حرکت، ماوس جهت نگاه، Space پژواک دستی.
 4. **روی لینوکس انتظار نداشته باشید میکروفون کار کند.** پشتیبانی `Microphone` در ادیتور Linux مطمئن نیست؛ پروژه برای همین ورودی صدا را پشت لایه `IEchoSource` گذاشته و با `SimulatedEchoSource` (اسلایدر بلندی صدا) کار می‌کند. برای تست میکروفون واقعی، بیلد ویندوز لازم است.
 
+## ۴-الف) ادیتور از خط فرمان (بدون باز کردن پنجره)
+
+برای کامپایل و تست بدون GUI:
+
+```
+U=<path-to-editor>/Editor/Unity
+"$U" -batchmode -nographics -projectPath "$PWD" \
+  -runTests -testPlatform EditMode \
+  -testResults "$PWD/Logs/editmode.xml" -logFile "$PWD/Logs/editmode.log"
+```
+
+خروجی `0` یعنی همه تست‌ها سبزند؛ نتیجه خط‌به‌خط در `Logs/editmode.xml` است. سه ابزار داخل ادیتور هم همین‌طور صدا زده می‌شوند: `EchoMaze.EditorTools.SandboxSceneSetup.Bootstrap` (ساخت صحنه و assetها)، `.ApplyProjectSettings` (لایه‌ها و sorting)، `EchoMaze.EditorTools.GitSetupValidator.Validate`.
+
+دو تله‌ای که روی این ماشین دیدیم:
+
+- ادیتور کارش را تمام می‌کند و پیام «done» را در log می‌نویسد، ولی **خودش خارج نمی‌شود** و CPU را می‌خورد. یعنی نتیجه نوشته شده؛ با `timeout 400` صدا کنید و بعد از دیدن پیام موفقیت پروسه را `kill -TERM` کنید. فقط توجه کنید چیزهایی که ادیتور موقع exit روی دیسک می‌نویسد (مثل `ProjectSettings/EditorSettings.asset`) در این حالت flush نمی‌شوند.
+
 ## ۵) بیلد ویندوز از ادیتور لینوکس
 
 `File ▸ Build Settings ▸ Platform: Windows ▸ Mono` (نه IL2CPP؛ ماژول IL2CPP ویندوز روی لینوکس وجود ندارد). خروجی را داخل `Builds/` بگذارید که ignored است. اولین بیلد ویندوز برنامه‌ریزی‌شده هفته ۳ است.

@@ -42,48 +42,51 @@
 
 ### روز ۱ — زیرساخت و اسناد
 
-- [ ] ثبت درایور merge و `git lfs install --local` و راستی‌آزمایی با `git config --get-regexp merge\.`
-- [ ] `.gitattributes`: `text eol=lf` برای `*.md/*.json/*.cs/*.shader/*.hlsl` و کامنت دفاعی «Unity YAML هرگز LFS نمی‌شود»
-- [ ] `Docs/`: GDD، PLAN، SCOPE_CUTS، GIT، TEAM_SETUP، README ریشه
-- [ ] پاکسازی قالب: حذف `Assets/Welcome`، حذف `com.unity.learn.iet-framework` و فایل Settings آن، rename `SampleScene` → `Sandbox`
-- [ ] ساختار پوشه‌ها و چهار `.asmdef` (Runtime / Editor / EditMode / PlayMode)
+- [x] ثبت درایور merge و `git lfs install --local` و راستی‌آزمایی با `git config --get-regexp merge\.`
+- [x] `.gitattributes`: `text eol=lf` برای `*.md/*.json/*.cs/*.shader/*.hlsl` و کامنت دفاعی «Unity YAML هرگز LFS نمی‌شود»
+- [x] `Docs/`: GDD، PLAN، SCOPE_CUTS، GIT، TEAM_SETUP، README ریشه
+- [x] پاکسازی قالب: حذف `Assets/Welcome`، حذف `com.unity.learn.iet-framework` و فایل Settings آن، rename `SampleScene` → `Sandbox`
+- [x] ساختار پوشه‌ها و چهار `.asmdef` (Runtime / Editor / EditMode / PlayMode)
 
 ### روز ۲ — تنظیمات پروژه و صحنه
 
-- [ ] `Project Settings > Editor`: خاموش‌کردن Enter Play Mode Options (Domain Reload برگردد)
-- [ ] لایه‌ها: `World, EchoTarget, Enemy, Absorber, Player, Trigger` — Sorting: `Default ← Echo ← HUD`
-- [ ] صحنه `Sandbox`: دوربین ارتو ۶، پس‌زمینه مشکی، تیک Post Processing، حذف Global Light 2D
-- [ ] Global Volume + `EchoVolumeProfile.asset` با override فقط Bloom
-- [ ] سه شیء تست روی لایه `EchoTarget` (ستون / دیوار / جعبه) و GameObject `EchoField`
-- [ ] `PlayerMock`: حرکت WASD، زاویه از نشانگر ماوس، Space → پینگ
+- [x] `Project Settings > Editor`: خاموش‌کردن Enter Play Mode Options (Domain Reload برگردد)
+- [x] لایه‌ها: `World, EchoTarget, Enemy, Absorber, Player, Trigger` — Sorting: `Default ← Echo ← HUD`
+- [x] صحنه `Sandbox`: دوربین ارتو ۶، پس‌زمینه مشکی، تیک Post Processing، حذف Global Light 2D
+- [x] Global Volume + `EchoVolumeProfile.asset` با override فقط Bloom
+- [x] سه شیء تست روی لایه `EchoTarget` (ستون / دیوار / جعبه) و GameObject `EchoField`
+- [x] `PlayerMock`: حرکت WASD، زاویه از نشانگر ماوس، Space → پینگ
 
 ### روز ۳ — ورودی و پرتوها
 
-- [ ] `EchoTuningProfile` + نمونه `Data/Echo/EchoTuning.asset` (با fallback اگر asset نبود)
-- [ ] `IEchoSource` + `SimulatedEchoSource` + `ScriptedEchoSource`
-- [ ] `PingRecord` + `RayFan` با `Physics2D.RaycastNonAlloc`
+- [x] `EchoTuningProfile` + نمونه `Data/Echo/EchoTuning.asset` (با fallback اگر asset نبود)
+- [x] `IEchoSource` + `SimulatedEchoSource` + `ScriptedEchoSource`
+- [x] `PingRecord` + `RayFan` با `Physics2D.Raycast` از رویدربار `ContactFilter2D` (خانواده `*NonAlloc` در Unity 6 حذف شده)
 
 ### روز ۴ — هندسه و رندر
 
-- [ ] `ArcGeometry` (کلاس ایستا و خالص، فرمول `r_k(θ) = R_k + A_k (d(θ) - d_min)`)
-- [ ] `EchoRenderer` با Mesh ظرفیت ثابت + `IEchoRenderer`
-- [ ] `EchoDirector`: نگهداری pooled سه پینگ، `ForcePing`، مرگ کمان در `R <= rKill`
-- [ ] `EchoArc.shader` (additive، `_Hdr`، دامن نرم) + متریال `Arc_Cyan`
+- [x] `ArcMath` (کلاس ایستا و خالص، فرمول `r_k(θ) = R_k + A_k (d(θ) - d_min)`)
+- [x] `EchoRenderer` با Mesh ظرفیت ثابت + `IEchoRenderer`
+- [x] `EchoDirector`: نگهداری pooled سه پینگ، `ForcePing`، مرگ کمان در `R <= rKill`
+- [x] `EchoArc.shader` (additive، `_Hdr`، دامن نرم) + متریال `Arc_Cyan`
 
 ### روز ۵ — تست و بستن هفته
 
-- [ ] `Tests/EditMode/ArcMathTests.cs`: `Formula_MatchesGdd`، `MonotonicInDistance`، `CollapsesToOrigin_AsRAge`، `AllMisses_ProduceNoVertices_AndNoNaN`، `GainSign_FlipsDeformation`
-- [ ] اجرای تست‌ها در Test Runner (و از خط فرمان با `-runTests -testPlatform EditMode`)
-- [ ] `Docs/TUNING.md` با جدول پارامترها
-- [ ] آیین commit ([GIT.md](GIT.md)) ← تگ `v0.1-sandbox` ← push با `--follow-tags`
+- [x] `Tests/EditMode/ArcMathTests.cs`: `Formula_MatchesGdd`، `MonotonicInDistance`، `CollapsesToOrigin_AsAgeGrows`، `AllMisses_ProduceNoSamples_AndNoNaN`، `GainSign_FlipsDeformation` (+ شش تست دیگر: قطار داخلی، آلفا، زاویه نمونه‌ها، ظرفیت پرتو، بازشوری `PingRecord`)
+- [x] اجرای تست‌ها از خط فرمان با `-runTests -testPlatform EditMode` → ۱۱ از ۱۱ سبز (`Logs/editmode.xml`)
+- [x] `Docs/TUNING.md` با جدول پارامترها
+- [x] آیین commit ([GIT.md](GIT.md))
 
 ### معیار خروج هفته ۱
 
-- [ ] clone تازه با 6000.6.3f1 باز می‌شود و `Sandbox` بدون خطا Play می‌شود
+- [ ] clone تازه با 6000.6.3f1 باز می‌شود و `Sandbox` بدون خطا Play می‌شود ← این سه مورد فقط با ادیتور باز تأیید می‌شود، اجرای بی‌سرصفحه Play ندارد
 - [ ] حلقه فیروزه‌ای در ستون گود می‌شود، روی دیوار صاف است، در گوشه جعبه نقطه روشن دارد
-- [ ] `ArcGeometry.Build` زیر ۳ms در Profiler؛ صفر خطا در Console
-- [ ] `git lfs ls-files --summarize` باینری‌ها را لیست می‌کند؛ `merge.unityyamlmerge.driver` ثبت است
+- [ ] ساخت هندسه در `EchoRenderer.AddArc`/`EndFrame` زیر ۳ms در Profiler؛ صفر خطا در Console
+- [x] `git lfs ls-files -n` باینری‌ها را لیست می‌کند (`Assets/Art/Sprites/Player_dot.png`)؛ `merge.unityyamlmerge.driver` ثبت است
+- [ ] تگ `v0.1-sandbox` و push با `--follow-tags`
 - [ ] اگر حلقه دیده نشد، به این ترتیب عیب‌یابی: تیک Post Processing دوربین ← لایه `EchoTarget` و ماسک پرتو ← `sortingLayer` و متریال ← `_Hdr` نسبت به `threshold` بلوم
+
+دو نکته که در Console ادیتور دیدنی‌اند و خطا نیستند: اخطار «assembly بدون اسکریپت» برای `EchoMaze.Tests.PlayMode.asmdef` (با تست‌های PlayMode هفته ۲ پر می‌شود) و اخطار `EchoDirector has no EchoTuningProfile` که فقط وقتی می‌آید که صحنه بازسازی نشده و `profile` روی `Echo System` خالی است.
 
 ---
 

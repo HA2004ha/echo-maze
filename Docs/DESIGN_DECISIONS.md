@@ -73,6 +73,19 @@
 **تصمیم:** مخروط ۶۴ درجه (`coneHalfAngleDeg = 32`) به‌عنوان پیش‌فرض؛ نوار نفس از دامنه خارج.
 **دلیل:** سوال باز خود GDD بود؛ عدد در ScriptableObject است و با تست بالانس می‌شود. نوار نفس با ضربان `loudness` در حالت Shift هم‌پوشانی داشت و وقت نبرد.
 
+## ۲۰۲۶-۱۰-۱۷ — جایگزین‌های اجباری API در Unity 6000.6
+
+**تصمیم:** هسته پژواک روی چهار نقطه، دقیقاً همان‌جایی که API این نسخه چیز دیگری خواسته، نوشته شد؛ به‌جای کدنویسی حول فرض‌های 2022.3.
+
+| آنچه انتظار می‌رفت | آنچه 6000.6 دارد | کجا |
+|---|---|---|
+| `Physics2D.RaycastNonAlloc(...)` | حذف شده (SceneQuery) → `Physics2D.Raycast(origin, dir, ContactFilter2D, RaycastHit2D[], maxDist)` که همان بافر را پر می‌کند | `Core/RayFan.cs`، فیلتر با `useTriggers = false` و `layerMask` |
+| `Mesh.SetIndexCount(n)` | وجود ندارد → index buffer یک‌بار با ظرفیت ثابت نوشته می‌شود و کوات‌های بی‌استفاده روی یک نقطه degenerate با رنگ صفر جمع می‌شوند | `Core/EchoRenderer.cs` |
+| `Camera.renderPostProcessing` | روی دوربین URP است: `camera.GetUniversalAdditionalCameraData().renderPostProcessing` | `Scripts/Editor/SandboxSceneSetup.cs` |
+| `Light2D` در `Unity.RenderPipelines.Universal.Runtime` | در اسمبلی جدا است: `Unity.RenderPipelines.Universal.2D.Runtime` (باید به `references` اضافه شود، وگرنه CS0246) | `Assets/Scripts/Editor/EchoMaze.Editor.asmdef` |
+
+**هزینه:** این کد روی نسخه‌های قدیمی‌تر Unity کامپایل نمی‌شود؛ به همین دلیل `ProjectVersion.txt` و README در `Docs/TEAM_SETUP.md` نسخه را قفل می‌کنند.
+
 ## در دست تصمیم‌گیری
 
 - علامت `gainSign` در فرمول: پیش‌فرض `+1`؛ با یک اسلایدر در ادیتور روی سه شیء تست و در `Docs/PLAYTEST_REPORT.md` ثبت می‌شود (هفته ۲).

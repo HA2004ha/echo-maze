@@ -22,7 +22,7 @@
 ```
 git status --short                    # ۱. چه چیزی واقعا تغییر کرده؟
 git add <path> <path>                 # ۲. فایل به فایل، نه git add -A
-git lfs ls-files --summarize          # ۳. هر png/ttf/otf/wav/ogg جدید باید اینجا باشد
+git lfs ls-files -n                   # ۳. هر png/ttf/otf/wav/ogg جدید باید اینجا باشد
 git commit -m "..."                   # ۴
 git push origin main --follow-tags    # ۵ (فقط روی شاخه‌های خودتان بدون --follow-tags)
 ```
