@@ -45,6 +45,9 @@
 # Visual Studio cache directory
 .vs/
 
+# Qoder CLI local config and session data
+.qoder/
+
 # Gradle cache directory
 .gradle/
 
