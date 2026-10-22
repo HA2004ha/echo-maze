@@ -27,6 +27,8 @@ License activation: `Help ▸ Licensing`, once, in the graphical editor. We do n
 - [ ] `Assets/Scenes/Sandbox.unity` ▸ Play ▸ the mechanic works
 - [ ] No "missing script" and no package override in Package Manager
 
+Before opening Unity, the clone can be checked from the shell: `cat ProjectSettings/ProjectVersion.txt` (must be 6000.6.3f1), `git lfs ls-files` (the `*` means the object really downloaded), `ls -l Tools/unity-yaml-merge.sh` (must stay executable), and comparing every `guid:` referenced in `Assets/Scenes` against the `guid:` lines of all `.meta` files plus `Library/PackageCache` — a reference that resolves in neither is a missing script. `merge.unityyamlmerge.driver` is expected to be **missing** here: it is local config, so [TEAM_SETUP.md](TEAM_SETUP.md) §3 runs first on every machine.
+
 ## In-game checklist (from week 3)
 
 - [ ] Microphone calibration: the live waveform moves, the TEST button fires a real ping, settings survive a restart

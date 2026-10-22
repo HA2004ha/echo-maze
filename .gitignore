@@ -48,6 +48,9 @@
 # Qoder CLI local config and session data
 .qoder/
 
+# Editor screenshots taken while tuning (QA evidence, re-takeable, never imported by Unity)
+/Captures/
+
 # Gradle cache directory
 .gradle/
 

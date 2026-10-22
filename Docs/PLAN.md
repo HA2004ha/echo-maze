@@ -81,11 +81,12 @@ The only goal: one cyan ring that collapses around pillar/wall/box using the GDD
 
 ### Week 1 exit criterion
 
-- [ ] A fresh clone opens with 6000.6.3f1 and `Sandbox` Plays without errors ← these three items can only be confirmed with the editor open; headless runs have no Play
-- [ ] The cyan ring dents at the pillar, is flat on the wall, has a bright point at the box corner
-- [ ] Mesh construction in `EchoRenderer.AddArc`/`EndFrame` under 3ms in the Profiler; zero errors in the Console
+- [ ] A fresh clone opens with 6000.6.3f1 and `Sandbox` Plays without errors ← the clone half is measured: a `git clone` over SSH gives 144 files, `ProjectSettings/ProjectVersion.txt` is 6000.6.3f1, the LFS sprite smudges into a real 16×16 PNG, `Tools/unity-yaml-merge.sh` keeps mode 755, and every `m_Script` and material GUID in `Sandbox.unity` resolves (three of them into the URP package cache, none missing). The merge driver is **absent** in the clone on purpose ← it lives in local config, so `Docs/TEAM_SETUP.md` §3 is the first step on any new machine. Still open: opening the clone in the editor and pressing Play.
+- [ ] The cyan ring dents at the pillar, is flat on the wall, has a bright point at the box corner ← two claims have a capture now. Pillar: the pillar direction is the innermost point of the arc and its tips fall back on the wall behind. Wall: 141 of 201 rays hit and the profile spans only 0.40 m, which reads as one flat sheet. Corner: **not met yet** ← all three sandbox surfaces carry `reflectivity = 1`, so brightness is uniform and the corner box reads as an *angle* in the ribbon instead of a bright point. Per-surface brightness is the week 2 material lookup. Waiting on the designer's eyes.
+  - Recipe for the three shots (the captures themselves stay out of git, see `.gitignore`): enter Play Mode, `Time.timeScale = 1`, clear `alive` on every record in the pool, `SetPose(playerPosition, aim)` + `ForcePing(1f)` with aim 0° for the pillar, 90° for the wall and 148° for the box, then set that record's `emitTime = Time.time - 0.5f` (carrier at 3.0 m) and `Time.timeScale = 0.0015f` and screenshot immediately. Outside Play Mode this produces nothing: `Awake` never ran and there is no pool.
+- [x] Mesh construction in `EchoRenderer.AddArc`/`EndFrame` under 3ms in the Profiler; zero errors in the Console ← 300 repetitions on a live ping with 141 of 201 rays hitting: `AddArc` alone 0.012 ms, `BeginFrame` + `AddArc` + `EndFrame` 0.054 ms for 140 quads, 0.117 ms for three arcs (420 quads, `OverflowCount` 0). The live loop with three real pings drew 227 quads with zero overflow, and the whole main thread frame was 1.37 ms. The Console held zero entries of any type through startup, twelve pings and the pool-overflow path. ← the first attempt at this measured 0.001 ms with `LastQuadCount` 0: it ran in **edit mode**, where `Awake` never filled the pool and `AddArc` builds nothing. Any measurement of this system must assert a quad count above zero before it believes a millisecond.
 - [x] `git lfs ls-files -n` lists the binaries (`Assets/Art/Sprites/Player_dot.png`); `merge.unityyamlmerge.driver` is registered
-- [ ] Tag `v0.1-sandbox` and push with `--follow-tags`
+- [x] Tag `v0.1-sandbox` and push with `--follow-tags` ← `e6b55ab`, on `origin` (`git ls-remote --tags` lists `refs/tags/v0.1-sandbox`)
 - [ ] If the ring was not visible, debug in this order: the camera's Post Processing tick ← the `EchoTarget` layer and the ray mask ← `sortingLayer` and the material ← `_Hdr` against the Bloom `threshold`
 
 Two things visible in the editor Console that are not errors: the "assembly has no scripts" warning for `EchoMaze.Tests.PlayMode.asmdef` (filled by the PlayMode tests in week 2) and the `EchoDirector has no EchoTuningProfile` warning, which only appears when the scene was not rebuilt and the `profile` field on `Echo System` is empty.
@@ -96,6 +97,11 @@ Two things visible in the editor Console that are not errors: the "assembly has 
 
 Work: the arc train (`arcInterval` / `arcsPerPing` / `A_k` with `innerDecay` / `fadeCurve`), a stable per-ping fracture mask + seeded gaps, three material ScriptableObjects, validating the "corner point", `EchoDebugWindow` (Force Ping, drawing raw rays in the Scene view, `d[i]` and `amp[i]` plots, arc freeze, timer and allocation), EditMode tests for the math and the breakup, a gallery of objects in `Sandbox`, `Docs/TUNING.md`.
 Criterion: the readability go/no-go. If it fails, everything stops and the time goes to readability.
+
+Two defects found while closing week 1, both on the path the debug window takes:
+
+- `EchoDirector.AcquireRecord` throws `ArgumentOutOfRangeException` when the pool is empty, which is every `ForcePing` outside Play Mode and every profile with `maxLivePings = 0`. Editor tooling calls `ForcePing`, so this needs a guard before `EchoDebugWindow` lands.
+- `Player.director` is `{fileID: 0}` in `Sandbox.unity`:729, so the player reaches the director only through the `FindAnyObjectByType` fallback. Wire the reference or delete the field.
 
 # Week 3 — audio loop, calibration, menus, level 1
 
