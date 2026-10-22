@@ -1,19 +1,19 @@
-# ماتریس تست میکروفون
+# Microphone test matrix
 
-هر سطر یک ترکیب دستگاه/محیط است. **تاریخ** و **نتیجه** را بعد از هر تست بنویسید؛ اگر سطر خالی بماند، یعنی تست نشده. هدف: هیچ‌وقت بازی با میکروفون کالیبره‌نشده قضاوت نشود.
+Each row is a device/environment combination. Fill in **date** and **result** after every test; an empty row means untested. The goal: the game is never judged with an uncalibrated microphone.
 
-| # | ترکیب | چی را چک کنیم | تاریخ | نتیجه |
+| # | Combination | What to check | Date | Result |
 |---|---|---|---|---|
-| ۱ | ادیتور Unity روی لینوکس (`6000.6.3f1`) | طول `Microphone.devices`؛ اگر صفر است، بج «mic not detected — using simulated input» در صفحه کالیبره دیده شود و `SimulatedEchoSource` پینگ بسازد | | |
-| ۲ | بیلد لینوکس | همان ۱ روی player (رفتار ممکن است با ادیتور فرق کند) | | |
-| ۳ | بیلد ویندوز ▸ میکروفون پیش‌فرض لپ‌تاپ، اتاق ساکت | پینگ با حرف‌زدن عادی؛ `RawRms` روی HUD کالیبره حرکت می‌کند؛ بدون false trigger در سکوت ۱۰ ثانیه | | |
-| ۴ | بیلد ویندوز ▸ هدست/میک خارجی | همان ۳ + انتخاب دستگاه از dropdown و ماندن تنظیم بعد از restart | | |
-| ۵ | بیلد ویندوز ▸ اتاق شلوغ / فن/loud fan | نرخ تحریک جعلی در ۶۰ ثانیه سکوت نسبی؛ بعد از کالیبره باید صفر یا نزدیک صفر شود | | |
-| ۶ | بیلد ویندوز ▸ پچپچ | آستانه پایین‌تر: پچپچ پینگ کم‌برد بسازد (نه پینگ کامل) | | |
-| ۷ | بیلد ویندوز ▸ فریاد | برد سقف `maxRadius` و نه بیشتر؛ `minPingInterval` جلوی spam را بگیرد | | |
-| ۸ | فیدبک اسپیکر (بلندگوی خود لپ‌تاپ، بدون هدفون) | آیا افکت پژواک/موسیقی دوباره پینگ جعلی می‌سازد؟ اگر بله: کم‌کردن Volume SFX، فاصله دو پینگ، و راهنمای هدفون در Options | | |
-| ۹ | تأخیر (Latency) | از لحظه حرف‌زدن تا ظاهرشدن کمان خروجی چقدر طول می‌کشد؟ هدف: زیر ~۱۵۰ms. `Microphone.GetPosition` و اندازه بافر را ثبت کنید | | |
-| ۱۰ | Pause / Resume | بعد از Pause (`AudioListener.pause` + بستن میکروفون) و Resume، `IsRecording` دوباره true و `GetPosition` درست است | | |
-| ۱۱ | Quit از بازی | **چراغ میکروفون خاموش شود** (`Microphone.End` در `OnDisable` و `OnApplicationQuit`) | | |
-| ۱۲ | `GetDeviceCaps` ناقص (sample rate صفر) | fallback به 44100 بدون exception | | |
-| ۱۳ | Space (پژواک دستی) بدون هیچ میکروفونی | کامل کار کند: cooldown بلندتر، برد کوتاه‌تر — این مسیر همیشه باید playable باشد | | |
+| 1 | Unity editor on Linux (`6000.6.3f1`) | Length of `Microphone.devices`; if zero, the badge "mic not detected — using simulated input" must appear on the calibration page and `EchoDirector.sourceMode` must be switched to `Simulated` to produce pings (the shipped scene default is `ManualOnly`: Space only, no source at all) | | |
+| 2 | Linux build | Same as 1 on the player (behaviour may differ from the editor) | | |
+| 3 | Windows build ▸ laptop default microphone, quiet room | Ping from normal speech; `RawRms` moves on the calibration HUD; no false trigger over 10 seconds of silence | | |
+| 4 | Windows build ▸ headset/external mic | Same as 3 + device selection from the dropdown and settings surviving a restart | | |
+| 5 | Windows build ▸ noisy room / loud fan | False-trigger rate over 60 seconds of relative silence; after calibration it should reach zero or near zero | | |
+| 6 | Windows build ▸ whisper | Lower threshold: a whisper produces a short-range ping (not a full one) | | |
+| 7 | Windows build ▸ shout | Reach caps at `maxRadius` and no further; `minPingInterval` prevents spam | | |
+| 8 | Speaker feedback (the laptop's own speakers, no headphones) | Do the echo effect/music trigger a false ping again? If so: reduce SFX Volume, increase the interval between pings, and the headphone guidance in Options | | |
+| 9 | Latency | How long from speaking until the outgoing arc appears? Target: under ~150ms. Record `Microphone.GetPosition` and the buffer size | | |
+| 10 | Pause / Resume | After pause (`AudioListener.pause` + closing the microphone) and resume, `IsRecording` is true again and `GetPosition` is correct | | |
+| 11 | Quitting the game | **The microphone light must go off** (`Microphone.End` in `OnDisable` and `OnApplicationQuit`) | | |
+| 12 | Incomplete `GetDeviceCaps` (sample rate zero) | Fallback to 44100 without an exception | | |
+| 13 | Space (manual echo) with no microphone at all | Must work completely: longer cooldown, shorter reach — this path always has to stay playable | | |

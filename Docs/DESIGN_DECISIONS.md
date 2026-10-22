@@ -1,108 +1,114 @@
-# تصمیم‌های فنی و طراحی (با تاریخ و دلیل)
+# Technical and design decisions (dated, with reasons)
 
-هر انتخابی که یک مسیر را می‌بندد و دیگری را باز می‌گذارد اینجا ثبت می‌شود، تا شش ماه بعد کسی نپرسد «چرا اینجوری نوشته شد». فرمت: تاریخ — تصمیم — دلیل — هزینه‌ای که قبول کردیم.
+Every choice that closes one path and leaves another open is recorded here, so that in six months nobody has to ask "why is this written this way". Format: date — decision — reason — the cost we accepted.
 
-## ۲۰۲۶-۱۰-۱۷ — ورودی صدا پشت یک اینترفیس `IEchoSource`
+## 2026-10-17 — Sound input behind an `IEchoSource` interface
 
-**تصمیم:** سه پیاده‌سازی برای منبع صدا: `MicrophoneEchoSource`، `SimulatedEchoSource`، `ScriptedEchoSource`. کل بازی فقط با `Loudness` و `RawRms` سروکار دارد.
-**دلیل:** پشتیبانی میکروفون ادیتور Unity روی لینوکس قابل اتکا نیست و توسعه‌دهنده اصلی روی لینوکس کار می‌کند؛ ضمناً تست‌های ریاضی به ورودی قطعی نیاز دارند.
-**هزینه:** یک لایه اضافه که باید همیشه sync بماند؛ مسیر میکروفون واقعی تا هفته ۳ روی ویندوز دویده نمی‌شود.
+**Decision:** three implementations for the sound source: `MicrophoneEchoSource`, `SimulatedEchoSource`, `ScriptedEchoSource`. The rest of the game only ever deals with `Loudness` and `RawRms`.
+**Reason:** Unity editor microphone support on Linux cannot be relied on and the lead programmer works on Linux; also the math tests need deterministic input.
+**Cost:** one extra layer that must always stay in sync; the real microphone path does not run until week 3, on Windows.
 
-## ۲۰۲۶-۱۰-۱۷ — ماسک شکستگی کمان یک‌بار به‌ازای هر پینگ
+## 2026-10-17 — The arc fracture mask is computed once per ping
 
-**تصمیم:** `brokenAt[]` در لحظه پینگ با `seed` پینگ محاسبه می‌شود و همه کمان‌های آن پینگ از همان ماسک می‌خوانند؛ با گذشت زمان فقط `R_k` و `A_k` عوض می‌شوند.
-**دلیل:** اگر هر کمان gapهای تازه می‌گرفت، قطار کمان‌ها به نویز بصری تبدیل می‌شد و هیچ‌کس شکل شیء را نمی‌فهمید. با ماسک ثابت، الگوی قطعات یکپارچه به سمت بازیکن حرکت می‌کند و چشم چند کمان را یک شیء می‌بیند.
-**هزینه:** شکل شکست برای کل یک پینگ همگن است (تنوع کمتر بین کمان‌های یک پینگ).
-**قفل رگرسیون:** `BreakupTests` (هفته ۲) یکسانی ماسک بین کمان‌های یک پینگ را تست می‌کند.
+**Decision:** `brokenAt[]` is computed at ping time from the ping's `seed` and every arc of that ping reads the same mask; over time only `R_k` and `A_k` change.
+**Reason:** if each arc took fresh gaps, the arc train would become visual noise and nobody could understand the object's shape. With a fixed mask the pattern of segments moves toward the player as one coherent thing, and the eye sees several arcs as one object.
+**Cost:** the breakup pattern is homogeneous across a whole ping (less variety between arcs of the same ping).
+**Regression lock:** `BreakupTests` (week 2) asserts the mask is identical across the arcs of one ping.
 
-## ۲۰۲۶-۱۰-۱۷ — رندر با Mesh با ظرفیت ثابت + شیدر دست‌نویس
+## 2026-10-17 — Rendering with a fixed-capacity Mesh + a hand-written shader
 
-**تصمیم:** یک `MeshFilter/MeshRenderer` با آرایه‌های پیش‌تخصیص‌شده و یک shader به نام `EchoArc`؛ LineRenderer و Sprite Shape و VFX بررسی و رد شدند.
-**دلیل:** به‌ازای هر نمونه به ضخامت و رنگ مستقل نیاز است (دندانه خارپشت، نقطه روشن گوشه)، و قطار کمان‌ها یعنی صدها بخش در فریم — با یک draw call. Sprite Shape برای اشکال spline پرشونده ساخته شده و VFX Graph نصب نیست.
-**هزینه:** `Mesh.SetIndexCount` در Unity 6000.6 وجود ندارد، پس index buffer ثابت می‌ماند و کوات‌های بی‌استفاده باید روی یک نقطه degenerate با رنگ صفر جمع شوند؛ ساخت رأس‌ها را خودمان نگه می‌داریم. **تله:** چون index buffer همیشه به همه `MaxQuads*4` رأس اشاره می‌کند، تعداد رأس مش هرگز نباید کم شود. آپلود فقط پیشوندِ استفاده‌شده (`SetVertices(verts, 0, count)`) آرایه را کوچک می‌کند و ادیتور هر فریم با `Mesh.vertices is too small` / `Mesh.colors is out of bounds` می‌بارد — این باگ در Play اول پروژه دیده شد.
+**Decision:** one `MeshFilter/MeshRenderer` with pre-allocated arrays and one shader named `EchoArc`; LineRenderer, Sprite Shape and VFX were all considered and rejected.
+**Reason:** per-sample thickness and colour are required (Spike teeth, the corner hot-spot), and an arc train means hundreds of segments per frame — with one draw call. Sprite Shape is built for closed spline shapes, and VFX Graph is not installed.
+**Cost:** `Mesh.SetIndexCount` does not exist in Unity 6000.6, so the index buffer stays fixed and unused quads have to be collapsed onto a single degenerate point with zero colour; we keep vertex construction ourselves. **Trap:** because the index buffer always points at all `MaxQuads*4` vertices, the mesh's vertex count must never be reduced. Uploading only the used prefix (`SetVertices(verts, 0, count)`) shrinks the array and the editor floods every frame with `Mesh.vertices is too small` / `Mesh.colors is out of bounds` — this bug was seen in the project's first Play.
 
-## ۲۰۲۶-۱۰-۱۷ — مبدأ پینگ در جهان قفل می‌شود، نه روی بازیکن
+## 2026-10-17 — The ping origin is locked in world space, not on the player
 
-**تصمیم:** `PingRecord.origin` یک `Vector2` جهان‌محور در لحظه پینگ است؛ سیستم پژواک به وجود GameObject بازیکن وابسته نیست.
-**دلیل:** (۱) کمان‌ها موقع حرکت بازیکن نمی‌مالند چون فاصله‌ها از همان مبدأ سنجیده شده؛ (۲) تیله صوتی می‌تواند از جای دیگر اتاق پینگ بزند و همان قطار کمان‌ها را بسازد؛ (۳) `Sandbox` بدون بازیکن هم کار می‌کند.
-**قید بالانس:** `waveSpeed >= 1.6 * maxPlayerSpeed`، وگرنه کمان بازگشتی هرگز از بازیکن سبقت نمی‌گیرد و خوانایی می‌میرد.
+**Decision:** `PingRecord.origin` is a world-space `Vector2` captured at ping time; the echo system does not depend on the player GameObject existing.
+**Reason:** (1) arcs do not smear while the player moves, because distances were measured from that frozen origin; (2) the decoy marble can ping from the far side of the room and build the same arc train; (3) `Sandbox` works with no player at all.
+**Balancing constraint:** `waveSpeed >= 1.6 * maxPlayerSpeed`, otherwise a returning arc can never pass the player and readability dies.
 
-## ۲۰۲۶-۱۰-۱۷ — امضای موجی بر حسب u نسبت به محور دشمن، نه زاویه مطلق
+## 2026-10-17 — Wave signatures in u along the enemy's axis, not absolute angles
 
-**تصمیم:** پروفایل هر دشمن روی بازه `u ∈ [-1, 1]`ِ بازوی زاویه‌ای‌اش تعریف می‌شود و دوره‌های تکرار (مثلاً دندانه‌ها) بر حسب کسری از `u`اند، نه درجه.
-**دلیل:** با ۸۰ پرتو در مخروط ۶۴ درجه، یک دشمن با بازو ۲۰ درجه حدود ۲۵ نمونه می‌گیرد؛ تعریف «۶ دندانه در ۳۶۰ درجه» alias شده و به نویز تبدیل می‌شود. با کسر از `u`، دندانه همیشه حداقل ۳ نمونه دارد و silhouette با چرخش بدن دشمن می‌چرخد.
-**هزینه:** اگر تعداد پرتو در سطح کیفیت پایین خیلی کم شود، امضا مخفف می‌شود — پس `SignatureTests` روی `minRays` نوشته می‌شود.
+**Decision:** each enemy's profile is defined over `u ∈ [-1, 1]` of its angular span, and repeat periods (e.g. the teeth) are fractions of `u`, not degrees.
+**Reason:** with 80 rays in a 64-degree cone, an enemy with a 20-degree span gets about 25 samples; defining "6 teeth over 360 degrees" aliases into noise. As a fraction of `u` a tooth always has at least 3 samples, and the silhouette rotates with the enemy's body.
+**Cost:** if ray count is cut very far on a low quality tier the signature is abbreviated — which is why `SignatureTests` is written against `minRays`.
 
-## ۲۰۲۶-۱۰-۱۷ — مرحله با صحنه دستی + prefab، بدون Tilemap و بدون فرمت متنی
+## 2026-10-17 — Levels as hand-authored scenes + prefabs, no Tilemap and no text format
 
-**تصمیم:** هر مرحله یک `.unity` با geometry چیده‌شده در ادیتور + یک `LevelDefinition` ScriptableObject برای متادیتای پیشرفت.
-**دلیل:** تنظیم بازی یعنی خواندن کمان‌ها از روی چشم؛ Scene view با Snap و Undo و Play-in-editor این کار را رایگان می‌کند. Tilemap با `CompositeCollider2D` نگاشت «یک collider = یک جنس» را نابود می‌کند و فرمت متنی برای ۴ اتاق دست‌تنظیم بیش از حد است.
-**هزینه:** فایل‌های `.unity` بزرگ و merge-پذیرند → پس درایور Smart Merge ثبت می‌شود، هر شاخه یک صحنه، و ویرایش `ProjectSettings` دسته‌ای.
+**Decision:** each level is a `.unity` scene with geometry laid out in the editor, plus one `LevelDefinition` ScriptableObject for progression metadata.
+**Reason:** tuning this game means reading arcs with your eyes; the Scene view with Snap, Undo and Play-in-editor makes that free. A Tilemap with `CompositeCollider2D` destroys the "one collider = one material" mapping, and a text format is overkill for four hand-tuned rooms.
+**Cost:** the `.unity` files are large and merge-prone → so the Smart Merge driver gets registered, one scene per branch, and batched `ProjectSettings` edits.
 
-## ۲۰۲۶-۱۰-۱۷ — یک collider = یک جنس = یک GameObject
+## 2026-10-17 — One collider = one material = one GameObject
 
-**تصمیم:** `EchoSurface` روی همان GameObjectی است که collider را دارد؛ چندجنس بودن یک collider مجاز نیست.
-**دلیل:** هم فنی (یک.hits فقط یک collider برمی‌گرداند) هم طراحی: تفکیک جنس روی سطح، همان چیزی است که کمان را قابل خواندن می‌کند.
+**Decision:** `EchoSurface` sits on the same GameObject that owns the collider; a multi-material collider is not allowed.
+**Reason:** both technical (a hit returns only one collider) and design: separating material at the surface is exactly what makes the arc readable.
 
-## ۲۰۲۶-۱۰-۱۷ — Enter Play Mode Options خاموش می‌ماند (تا هفته ۵)
+## 2026-10-17 — Enter Play Mode Options stays off (until week 5)
 
-**تصمیم:** Domain Reload بین دو Play روشن می‌ماند.
-**دلیل:** با `m_EnterPlayModeOptions: 1` (حالت فعلی قالب) staticها (`SurfaceRegistry`، `NoiseBoard`، singletonها) بین Playها زنده می‌مانند و باگ‌های شبح‌وار می‌سازند؛ در پروژه‌ای که پر از state استاتیک خواهد بود، این در هفته‌های اول سم است.
-**هزینه:** هر Play چند صندیه بیشتر. در هفته ۵، وقتی روی هر holder استاتیک `ResetStaticState()` نوشته شد، دوباره روشن می‌شود.
+**Decision:** Domain Reload between Play sessions stays enabled.
+**Reason:** with `m_EnterPlayModeOptions: 1` (the template's current state) statics (`SurfaceRegistry`, `NoiseBoard`, singletons) survive between Play sessions and create ghost-like bugs; in a project that will be full of static state this is poison in the early weeks.
+**Cost:** a few extra seconds per Play. In week 5, once every static holder has a `ResetStaticState()`, it is switched back on.
 
-## ۲۰۲۶-۱۰-۱۷ — `PlayerMock` در هفته ۱ مستقیم از `Keyboard.current` می‌خواند
+## 2026-10-17 — `PlayerMock` reads `Keyboard.current` directly in week 1
 
-**تصمیم:** در هفته ۱ یک اسکریپت موقت ورودی، بدون دست‌زدن به `.inputactions`؛ در هفته ۳ جایش را `GameInput` روی نقشه‌های `InputSystem_Actions.inputactions` می‌گیرد.
-**دلیل:** ویرایش asset ورودی در ادیتور و merge آن در گیت، کاری ادیتور-محور و پر-تعارض است؛ در هفته‌ای که باید ریاضی کمان ثابت شود، ارزش هزینه ندارد.
-**هزینه:** یک فایل موقت که باید حذف شود (یادآوری در `Docs/PLAN.md` هفته ۳).
+**Decision:** in week 1 a temporary input script, without touching `.inputactions`; in week 3 `GameInput` on the `InputSystem_Actions.inputactions` map replaces it.
+**Reason:** editing the input asset is an editor-centric, conflict-heavy job in git; in a week where the arc math has to be proven it is not worth the cost.
+**Cost:** one temporary file that has to be deleted (reminded in `Docs/PLAN.md`, week 3).
 
-## ۲۰۲۶-۱۰-۱۷ — هدف‌گیری با موقعیت مطلق نشانگر
+## 2026-10-17 — Aiming with the absolute pointer position
 
-**تصمیم:** زاویه نگاه از جهتِ بردِ نشانگر به بازیکن می‌آید (مطابق GDD)، نه از delta ماوس.
-**دلیل:** ساده‌تر است و به حساسیت نیاز ندارد؛ در صفحه سیاه نشانگر سیستم‌عامل خودش یک نقطه مرجع بصری است.
-**هزینه:** نزدیک لبه‌های صفحه، چرخش سریع محدود می‌شود؛ اگر آزاردهنده بود، حالت delta با اسلایدر حساسیت در Options اضافه می‌شود (هفته ۳).
+**Decision:** the aim angle comes from the vector from the player to the pointer (per the GDD), not from mouse delta.
+**Reason:** simpler and needs no sensitivity; on a black screen the OS cursor is itself a visual reference point.
+**Cost:** near the screen edges fast turning is limited; if that becomes annoying, a delta mode with a sensitivity slider is added to Options (week 3).
 
-## ۲۰۲۶-۱۰-۱۷ — مستندات بیرون از `Assets/`، در پوشه `Docs/` ریشه
+## 2026-10-17 — Documentation outside `Assets/`, in the root `Docs/` folder
 
-**تصمیم:** اسناد markdown در `Docs/` و نه `Assets/Docs/`.
-**دلیل:** داخل `Assets/` بودنشان باعث می‌شود ادیتور برای هر `.md` یک `.meta` و TextAsset بسازد و در بیلد هم وارد AssetBundle شوند؛ هیچ‌کدام مطلوب نیست.
-**هزینه:** مسیرشان خارج از assets است، پس در Play با آن‌ها کار نمی‌کنیم (متن بازی از `LocTable` می‌آید).
+**Decision:** markdown docs live in `Docs/`, not `Assets/Docs/`.
+**Reason:** inside `Assets/` the editor creates a `.meta` and a TextAsset for every `.md`, and they also end up in the AssetBundle of the build; neither is desirable.
+**Cost:** they sit outside the assets, so at Play time we do not read from them (in-game text comes from `LocTable`).
 
-## ۲۰۲۶-۱۰-۱۷ — زاویه مخروط و «نوار نفس»
+## 2026-10-17 — Cone angle and the BREATH bar
 
-**تصمیم:** مخروط ۶۴ درجه (`coneHalfAngleDeg = 32`) به‌عنوان پیش‌فرض؛ نوار نفس از دامنه خارج.
-**دلیل:** سوال باز خود GDD بود؛ عدد در ScriptableObject است و با تست بالانس می‌شود. نوار نفس با ضربان `loudness` در حالت Shift هم‌پوشانی داشت و وقت نبرد.
+**Decision:** a 64-degree cone (`coneHalfAngleDeg = 32`) as the default; the BREATH bar is out of scope.
+**Reason:** the cone angle was an open question in the GDD itself; the number is in a ScriptableObject and is settled by balance testing. The breath bar overlapped with the `loudness` pulse in Shift mode and was not worth the fight.
 
-## ۲۰۲۶-۱۰-۱۷ — جایگزین‌های اجباری API در Unity 6000.6
+## 2026-10-17 — Mandatory API substitutions in Unity 6000.6
 
-**تصمیم:** هسته پژواک روی چهار نقطه، دقیقاً همان‌جایی که API این نسخه چیز دیگری خواسته، نوشته شد؛ به‌جای کدنویسی حول فرض‌های 2022.3.
+**Decision:** the echo core was written at exactly the four points where this version's API asks for something different, instead of coding around 2022.3 assumptions.
 
-| آنچه انتظار می‌رفت | آنچه 6000.6 دارد | کجا |
+| What was expected | What 6000.6 actually has | Where |
 |---|---|---|
-| `Physics2D.RaycastNonAlloc(...)` | حذف شده (SceneQuery) → `Physics2D.Raycast(origin, dir, ContactFilter2D, RaycastHit2D[], maxDist)` که همان بافر را پر می‌کند | `Core/RayFan.cs`، فیلتر با `useTriggers = false` و `layerMask` |
-| `Mesh.SetIndexCount(n)` | وجود ندارد → index buffer یک‌بار با ظرفیت ثابت نوشته می‌شود و کوات‌های بی‌استفاده روی یک نقطه degenerate با رنگ صفر جمع می‌شوند | `Core/EchoRenderer.cs` |
-| `Camera.renderPostProcessing` | روی دوربین URP است: `camera.GetUniversalAdditionalCameraData().renderPostProcessing` | `Scripts/Editor/SandboxSceneSetup.cs` |
-| `Light2D` در `Unity.RenderPipelines.Universal.Runtime` | در اسمبلی جدا است: `Unity.RenderPipelines.Universal.2D.Runtime` (باید به `references` اضافه شود، وگرنه CS0246) | `Assets/Scripts/Editor/EchoMaze.Editor.asmdef` |
-| `Object.GetInstanceID()` | منقضی → `GetEntityId()` | `Scripts/Editor/SandboxSceneSetup.cs` |
-| `FindFirstObjectByType<T>()` و `FindObjectsByType<T>(FindObjectsInactive, FindObjectsSortMode)` | هر دو منقضی (CS0618) → `FindAnyObjectByType<T>()` و `FindObjectsByType<T>(FindObjectsInactive.Exclude)` بدون آرگومان ترتیب | `Core/EchoDirector.cs`، `Gameplay/PlayerMock.cs`، `Scripts/Editor/SandboxSceneSetup.cs` |
+| `Physics2D.RaycastNonAlloc(...)` | Removed (SceneQuery) → `Physics2D.Raycast(origin, dir, ContactFilter2D, RaycastHit2D[], maxDist)`, which fills the caller's buffer | `Core/RayFan.cs`, filtered with `useTriggers = false` and `layerMask` |
+| `Mesh.SetIndexCount(n)` | Does not exist → the index buffer is written once at fixed capacity and unused quads collapse to one degenerate point with zero colour | `Core/EchoRenderer.cs` |
+| `Camera.renderPostProcessing` | Lives on the URP camera: `camera.GetUniversalAdditionalCameraData().renderPostProcessing` | `Scripts/Editor/SandboxSceneSetup.cs` |
+| `Light2D` in `Unity.RenderPipelines.Universal.Runtime` | Lives in a separate assembly: `Unity.RenderPipelines.Universal.2D.Runtime` (must be added to `references`, otherwise CS0246) | `Assets/Scripts/Editor/EchoMaze.Editor.asmdef` |
+| `Object.GetInstanceID()` | Obsolete → `GetEntityId()` | `Scripts/Editor/SandboxSceneSetup.cs` |
+| `FindFirstObjectByType<T>()` and `FindObjectsByType<T>(FindObjectsInactive, FindObjectsSortMode)` | Both obsolete (CS0618) → `FindAnyObjectByType<T>()` and `FindObjectsByType<T>(FindObjectsInactive.Exclude)` without the sort-mode argument | `Core/EchoDirector.cs`, `Gameplay/PlayerMock.cs`, `Scripts/Editor/SandboxSceneSetup.cs` |
 
-**هزینه:** این کد روی نسخه‌های قدیمی‌تر Unity کامپایل نمی‌شود؛ به همین دلیل `ProjectVersion.txt` و README در `Docs/TEAM_SETUP.md` نسخه را قفل می‌کنند.
+**Cost:** this code does not compile on older Unity versions; that is exactly why `ProjectVersion.txt` and the README pin the version in `Docs/TEAM_SETUP.md`.
 
-## ۲۰۲۶-۱۰-۱۷ — `gain0` از ۰٫۲۸ِ GDD به ۱ (انحراف مستند از طراحی)
+## 2026-10-17 — `gain0` from the GDD's 0.28 to 1 (a documented deviation from the design)
 
-**تصمیم:** پیش‌فرض `A_0` در `EchoTuningProfile` و `EchoTuning.asset` روی `1` نشسته، با اینکه GDD عدد `0.28` را نوشته است. `maxRadius` هم از `9` به `6.5` و `baseThickness` از `0.022` به `0.05` آمد.
-**دلیل:** Playtest اول کاربر گفت «فقط موج به سمت بازیکن می‌آید، چیزی از شیء برنمی‌گردد». اندازه‌گیری با تست ادیتور: با اعداد GDD فرورفتگی ستون روی کمان `0.119` واحد جهان بود؛ با دوربین سندباکس (۱۲ واحد جهان روی ۱۰۸۰ پیکسل ⇒ ~۹۰ پیکسل بر واحد) یعنی `10` پیکسل روی نواری `2` پیکسل. کمان در عمل دایره بوده و شکل هیچ‌وقت برنمی‌گشته. با `gain0 = 1` همان فرورفتگی `38` پیکسل می‌شود.
-**هزینه:** انحراف از یک عددِ نوشته‌شده در GDD؛ اگر طراح عدد اول را می‌خواهد، باید با همان معیار پیکسل بحث شود نه با فرمول. اعداد هنوز در ScriptableObjectاند و برگشتنشان یک‌خط تغییر است.
-**قفل رگرسیون:** `Assets/Tests/EditMode/ArcReadabilityTests.cs` — چهار ادعا مستقیماً به پیکسل ترجمه شده و در CI دویده می‌شود (`Docs/TEAM_SETUP.md` بخش ۴-الف).
+**Decision:** the default `A_0` in `EchoTuningProfile` and `EchoTuning.asset` sits at `1`, even though the GDD wrote `0.28`. `maxRadius` also moved from `9` to `6.5` and `baseThickness` from `0.022` to `0.05`.
+**Reason:** the first playtest said "the wave only comes toward me, nothing comes back from the objects". Measured with an editor test instead of guessed: with the GDD numbers the pillar's dent on the arc was `0.119` world units; with the sandbox camera (12 world units over 1080 pixels ⇒ ~90 pixels per unit) that is `10` pixels on a `2`-pixel ribbon. The arc was effectively a circle and the shape never actually came back. With `gain0 = 1` that same dent becomes `38` pixels.
+**Cost:** deviation from a number written in the GDD; if the designer wants the original number back, it has to be argued in the same pixel metric, not in the formula. The numbers are still in the ScriptableObject, so reverting them is a one-line change.
+**Regression lock:** `Assets/Tests/EditMode/ArcReadabilityTests.cs` — four claims translated directly into pixels, run in CI (see `Docs/TEAM_SETUP.md` section 4a).
 
-## ۲۰۲۶-۱۰-۱۷ — حلقه رفتِ موج فقط حسِ علت است، نه اطلاعات
+## 2026-10-17 — The outbound ring is causality only, never information
 
-**تصمیم:** `emissionPulseSeconds` (پیش‌فرض `0.16`) یک خط صاف در مخروط پینگ را از مبدأ به بیرون باز می‌کند و هم‌زمان با جمع‌شدن کمان برگشتی محو می‌شود. شکل ندارد: شعاع ثابت در همه نمونه‌ها، بدون `d(θ)`.
-**دلیل:** شکایت دوم پلی‌تست هفته ۱ «صدا فقط می‌آید، چیزی از بازیکن بیرون نمی‌رود» بود. مدل ریاضی GDD موج برگشتی را با حلقه‌ی در حال جمع نشان می‌دهد و هیچ‌وقت جنبه گسیل را؛ بدون یک ارجاع بصری به مبدأ، بازیکن منبع را در بازیکن نمی‌بیند.
-**هزینه:** ۴۰ کوات اضافه در ۰٫۱۶ ثانیه اول هر پینگ (بودجه `MaxQuads = 2400` با ۲۰۰ پرتو جا دارد). ریسک شلوغی بصری با بازه کوتاه و fade مربعی مهار شده؛ با `0` در همان ScriptableObject حذف می‌شود.
-**قانون:** شعاع حلقه هیچ‌وقت از حلقه برگشتی عبور نمی‌کند (`ArcMath.EmissionRadius` clamp می‌کند)، وگرنه دو موج در هم می‌برند و جهت را نمی‌شود فهمید. قفل: `EmissionPulse_NeverOvertakesTheReturningCarrier`.
+**Decision:** `emissionPulseSeconds` (default `0.16`) opens a plain line in the ping's cone outward from the origin, fading out as the returning arc collapses. It has no shape: a constant radius across all samples, no `d(θ)`.
+**Reason:** the second complaint of the week 1 playtest was "sound only arrives, nothing leaves the player". The GDD's mathematical model shows the returning wave as a collapsing ring and never shows the emission side; without a visual reference to the origin, the player does not read themselves as the source.
+**Cost:** 40 extra quads during the first 0.16 seconds of each ping (the `MaxQuads = 2400` budget has room at 200 rays). The clutter risk is contained by the short window and the squared fade; it is removed with `0` in the same ScriptableObject.
+**Rule:** the ring's radius never passes the returning carrier (`ArcMath.EmissionRadius` clamps it), otherwise the two waves cross and the direction becomes unreadable. Lock: `EmissionPulse_NeverOvertakesTheReturningCarrier`.
 
-## در دست تصمیم‌گیری
+## 2026-10-22 — Until the microphone, Space is the only ping input
 
-- علامت `gainSign` در فرمول: پیش‌فرض `+1`؛ با یک اسلایدر در ادیتور روی سه شیء تست و در `Docs/PLAYTEST_REPORT.md` ثبت می‌شود (هفته ۲).
-- آیا نقطه روشن گوشه به‌صورت زائیده‌شده (emergent) از قانون شکست کافی است، یا به boost صریح نزدیکى رأس نیاز دارد؟ (هفته ۲، با تست خوانایی).
+**Decision:** `SourceMode` got two explicit values: `ManualOnly = 0` (the code default and the value `Sandbox.unity` already stores) and `Simulated = 1`. In `ManualOnly` no `IEchoSource` is created at all, so `DriveAutoPing` does nothing and only `ForcePing` makes a ping. Space moved out of `FixedUpdate` into `Update`, and its loudness is read from `profile.manualEchoLoudness`; the duplicate field `PlayerMock.manualLoudness` was deleted.
+**Reason:** with `simulatedLoudness = 0.7` and `loudnessThreshold = 0.18`, the automatic driver fired a ping every 0.35 seconds: the three-ping pool stayed permanently full, the oldest ping was permanently dropped, and Space only added a fourth overlapping field on top of the clutter. The game's premise — "nothing exists until you make a sound" — was violated in the development scene, and the week 1 playtest verdict ("nothing comes back") was taken on a field that had never once been empty. The microphone is still the goal on both Windows and Linux; it just was not this step.
+**Cost:** `None` was removed and `ManualOnly` took its slot; because the value stored in the scene stays 0, `Sandbox.unity` was not edited (and hand-editing YAML with the editor open is risky). The automatic gate path still has no rising edge or hysteresis and will not run until week 3 — there it must produce one ping per vocal event, not a barrage every 0.35 seconds. Also a genuine `NullReferenceException` was fixed in `EchoDirector.Awake` (`source.Open(...)` when the source is `null`): the source-less mode had never been run, so it had never burned.
+
+## Under decision
+
+- The sign of `gainSign` in the formula: default `+1`; it will be set with a slider in the editor against the three test objects and recorded in `Docs/PLAYTEST_REPORT.md` (week 2).
+- Is the corner hot-spot emergent enough from the breakup rule alone, or does it need an explicit vertex-proximity boost? (week 2, with the readability test).

@@ -1,227 +1,227 @@
-# سند طراحی بازی (GDD)
+# Game Design Document (GDD)
 
-**اسم پروژه:** پژواک (Echo) — **اسم کد:** `echo-maze`
-**نسخه سند:** ۱.۱ (بازنویسی نسخه ۱.۰)
-**موتور:** Unity 2D (نسخه قفل‌شده: `6000.6.3f1` — ببین [TEAM_SETUP.md](TEAM_SETUP.md))
-**پلتفرم هدف:** ویندوز (PC) با میکروفون
+**Project name:** Echo — **code name:** `echo-maze`
+**Document version:** 1.1 (rewrite of version 1.0)
+**Engine:** Unity 2D (pinned version: `6000.6.3f1` — see [TEAM_SETUP.md](TEAM_SETUP.md))
+**Target platform:** Windows (PC) with a microphone
 
-> این فایل نسخه متن‌باز همان سندیه که تیم در ابتدا نوشت. تصاویر مرجع (تصویر ۱ تا ۴) در ریپو نیستند؛ فقط به‌عنوان «تصویر n از سند اصلی» به آن‌ها اشاره شده بود که حذف شد. تصمیم‌های اجرایی که روی این سند سوار شده در [الحاقیه: تصمیم‌های اجرا](#الحاقیه-تصمیمهای-اجرا) و [DESIGN_DECISIONS.md](DESIGN_DECISIONS.md) آمده. لیست چیزهایی که عمداً ساخته نمی‌شود در [SCOPE_CUTS.md](SCOPE_CUTS.md).
+> This file is the open-source version of the document the team wrote initially. The reference images (images 1 to 4) are not in the repo; they were only ever cited as "image n of the original document" and have been dropped. The implementation decisions layered on top of this document are in [the implementation appendix](#implementation-appendix) and [DESIGN_DECISIONS.md](DESIGN_DECISIONS.md). The list of things deliberately not built is in [SCOPE_CUTS.md](SCOPE_CUTS.md).
 
 ---
 
-## ایده در یک جمله
+## The idea in one sentence
 
-همه جا تاریکه و صفحه کاملا سیاهه. تو صدا درمیاری، صدات یه موج میشه که جلوی چشمت پخش میشه، به دیوارها و آدمای بد میخوره و برمیگرده. از روی شکل موجی که برگشته میفهمی اونجا چی هست. ولی هر صدایی که درمیاری، موجودات تاریکی هم میشنون.
+Everything is dark and the screen is completely black. You make a sound, your sound becomes a wave that spreads in front of you, hits walls and bad creatures and comes back. From the shape of the returning wave you figure out what is there. But every sound you make, the creatures of the dark hear too.
 
-## هدف پروژه
+## Project goal
 
-این بازی پروژه درس نظریه بازی (Game Theory) ماست. هدف اصلیمون اینه که یه بازی مخفی کاری و ترسناک بسازیم که مکانیک اصلیش «دیدن با شنیدن» باشه. بازیکن محیطو نمیبینه، فقط شکل موج برگشتی رو میبینه و باید ازش بفهمه جلوش دیوار هست، ستون هست یا یه دشمن.
+This game is our Game Theory course project. Our main goal is to make a stealth and horror game whose core mechanic is "seeing by hearing". The player never sees the environment — they only see the shape of the returning wave and must understand from it whether there is a wall, a pillar or an enemy in front of them.
 
-هدف دومون اینه که بازی ساده و مینیمال باشه تا تو زمان یه ترم تموم بشه، ولی ایدش اونقدر خاص باشه که بعدا بشه روش کار کرد و منتشرش کرد.
+Our second goal is for the game to be simple and minimal so it finishes within one term, while the idea is distinctive enough to keep working on and publish later.
 
-### چرا این ایده؟
+### Why this idea?
 
-- هزینه ساخت کمه: مدل سه بعدی و تکسچر نمیخواد.
-- به زبان وابسته نیست، پس تو بازار بین المللی هم میشه عرضه کرد.
-- برای استریم و ویدیوی واکنش عالیه، چون صدای خود بازیکن بخشی از بازیه.
-- برای ما یه فرصت یادگیریه: ورودی میکروفون، ری کست و شیدر نویسی.
+- Low production cost: no 3D models and no textures needed.
+- Not tied to a language, so it can be released internationally.
+- Great for streaming and reaction videos, because the player's own voice is part of the game.
+- A learning opportunity for us: microphone input, raycasting and shader writing.
 
-### مخاطب
+### Audience
 
-سن ۱۵ تا ۳۵ سال، بدون محدودیت جنسی. کسایی که ژانر ترسناک، مخفی کاری و بازی های تجربی (Experimental) دوست دارن. استریمرها و تولید کننده های محتوا.
+Ages 15 to 35, no gender restriction. People who like horror, stealth and experimental games. Streamers and content creators.
 
-## تیم و وظایف
+## Team and responsibilities
 
-| اسم | نقش | وظیفه |
+| Name | Role | Duties |
 |---|---|---|
-| حسین عسکری | برنامه نویس ۱ | هسته بازی: ورودی میکروفون، ری کست مخروطی، سیستم موج و بازتاب |
-| مهزیار میرعظیمی | برنامه نویس ۲ | UI، هوش مصنوعی دشمن ها، مرحله ها و منوها |
-| سید سعید نوریان | طراح بازی و صدا | طراحی مرحله ها، دشمن ها، بالانس و حس ترس |
+| Hossein Askari | Programmer 1 | The game core: microphone input, conical raycast, wave and reflection system |
+| Mahziar Mirazimi | Programmer 2 | UI, enemy AI, levels and menus |
+| Seyed Saeed Nourian | Game and sound designer | Level design, enemies, balancing and the feeling of fear |
 
-> در عمل برای این ترم، **کل کد را برنامه نویس ۱ می‌زند** و دو نفر دیگر طراحی مرحله، بالانس و تست می‌کنند. به همین دلیل فازبندی [PLAN.md](PLAN.md) تک‌نفره چیده شده، ولی مستندات و پارامترها طوری‌اند که بدون دست‌زدن به کد قابل تغییر باشند.
+> In practice for this term, **programmer 1 writes all the code** and the other two do level design, balancing and testing. That is why the phasing in [PLAN.md](PLAN.md) is laid out for one person — but the documentation and parameters are shaped so they can be changed without touching code.
 
-## حدود پروژه: الان چی میسازیم، بعدا چی
+## Project boundaries: what we build now, what comes later
 
-ایده های زیادی داریم، ولی زمان ترم محدوده. پس همه چیو دو دسته کردیم. اول دسته «الان» کامل و تمیز تموم میشه، بعد اگه وقت موند میریم سراغ «بعدا».
+We have many ideas, but the term is short. So everything is split into two groups. The "now" group is finished completely and cleanly first; only if time remains do we get to "later".
 
-| بخش | الان (نسخه تحویل ترم) | بعدا (اگه وقت شد یا بعد از ترم) |
+| Area | Now (this term's delivery version) | Later (if time allows, or after the term) |
 |---|---|---|
-| مکانیک اصلی | ورودی میکروفون، موج خروجی مخروطی، موج بازتابی، پژواک دستی با Space | پژواک های دروغی (Ghost Echoes)، مناطق کر کننده (Deaf Zones) |
-| جنس سطح | سه نوع: فلزی (بازتاب قوی)، اسفنجی (جذب صدا)، معمولی | شیشه (صدا ازش رد میشه)، آینه صوتی زاویه دار |
-| دشمن ها | خزنده، خارپشت، بلعنده صدا (Absorber) | ساکت، عنکبوت، تقلید کننده (Mimic)، شکارچی فرکانس |
-| ابزار | تیله صوتی (Decoy)، نبض ضعیف | سوت اولتراسونیک، ضبط صوتی، تیونر فرکانسی، پاورآپ های دیگه |
-| مرحله ها | ۴ مرحله | مرحله های بیشتر، غول آخر (اتاق پژواک ناپایدار) |
-| مودها | داستانی کوتاه، سکوت (Silent Mode) | بقا (Survival)، نابینا (Blind)، همکاری دو نفره |
-| بقیه | HUD، منوها، کالیبره میکروفون، دفترچه موجودات | مود استریمر، ضربان قلب، حالت ترس صوتی کامل، اندروید |
+| Core mechanic | Microphone input, outgoing conical wave, reflected wave, manual echo with Space | Ghost Echoes, Deaf Zones |
+| Surface material | Three kinds: metallic (strong reflection), spongy (absorbs sound), ordinary | Glass (sound passes through), angled acoustic mirror |
+| Enemies | Crawler, Spike, sound Absorber | The Silent, Spider, Mimic, Frequency Hunter |
+| Tools | Decoy marble, weak pulse | Ultrasonic whistle, audio recording, frequency tuner, other power-ups |
+| Levels | 4 levels | More levels, a final boss (the unstable-echo room) |
+| Modes | Short story, Silent Mode | Survival, Blind, two-player co-op |
+| Rest | HUD, menus, microphone calibration, creature notebook | Streamer mode, heartbeat, full audio-horror pass, Android |
 
-**دلیل انتخاب «الان»:** سه پیشنهاد اولویت دار فایل ایده ها (دو جنس سطح، یه ابزار صوتی ساده، دشمن Absorber) رو برداشتیم، چون هم پیاده سازیشون ساده ست و هم حس بازی رو خیلی عوض میکنن.
+**Why this "now" set:** we took the three priority proposals from the idea file (two surface materials, one simple audio tool, an Absorber enemy), because they are both cheap to implement and change the feel of the game a great deal.
 
-## مکانیک اصلی: موج چطور کار میکنه
+## Core mechanic: how the wave works
 
-مهمترین بخش بازیه و همه چیز روش ساخته میشه.
+This is the most important part of the game and everything is built on it.
 
-1. **بازیکن ساکته، چیزی دیده نمیشه** (تصویر ۱ سند اصلی). صفحه سیاهه. بازیکن هیچ نوری نداره. دیوار و ستون و دشمن همه اونجان ولی دیده نمیشن. فقط یه متن کم رنگ: "Make a sound to listen".
-2. **بازیکن صدا درمیاره، موج خروجی میره** (تصویر ۲). میکروفون صدا رو میگیره و یه موج به شکل مخروط (نه دایره کامل) تو جهتی که بازیکن نگاه میکنه پخش میشه. این موج خروجی دیده میشه.
-3. **موج میخوره به چیزی و برمیگرده** (تصویر ۳). موج برگشتی به شکل کمان های تودرتو (از بزرگ و جدید تا کوچیک و قدیمی) به سمت بازیکن میاد. شکل هر کمان از روی شکل سطحی که بهش خورده ساخته میشه:
-   - سطح گرد (ستون): کمان نرم و صاف
-   - سطح صاف (دیوار): کمان صاف و کشیده
-   - گوشه (جعبه): یه نقطه روشن
-   - سطح تیز یا دندانه دار (خارپشت): کمان دندانه دار
-   - **مهم:** بازیکن هیچوقت شکل کامل شیء رو نمیبینه. کمان ها شکسته ان و فقط قسمتی از سطحی که رو به بازیکنه خونده میشه. موج بازتابی باید حس برگشتن بده، یعنی از شیء به سمت بازیکن حرکت کنه، نه برعکس.
-4. **بازیکن شکل رو میخونه** (تصویر ۴). هر شیء و هر دشمن یه «امضای موجی» مخصوص خودش داره.
+1. **The player is silent, nothing is visible** (original document, image 1). The screen is black. The player emits no light. Walls, pillars and enemies are all there but invisible. Only a faint line of text: "Make a sound to listen".
+2. **The player makes a sound, the outgoing wave travels** (image 2). The microphone captures the sound and a cone-shaped wave (not a full circle) spreads in the direction the player is looking. This outgoing wave is visible.
+3. **The wave hits something and returns** (image 3). The returning wave comes back as a set of nested arcs (from large and new to small and old) toward the player. The shape of each arc is built from the shape of the surface it hit:
+   - Round surface (pillar): a soft, smooth arc
+   - Flat surface (wall): a flat, elongated arc
+   - Corner (box): one bright point
+   - Sharp or serrated surface (Spike): a serrated arc
+   - **Important:** the player never sees the complete shape of an object. The arcs are broken and only the part of the surface facing the player is read. The returning wave must feel like it is coming back, i.e. moving from the object toward the player, not the other way round.
+4. **The player reads the shape** (image 4). Every object and every enemy has its own "wave signature".
 
-### قوانین اصلی
+### Core rules
 
-- بلندی صدا برد و تراکم پرتوها رو تعیین میکنه. صدای بلندتر یعنی دید بیشتر.
-- دشمن ها هم صدا رو میشنون. صدای بلند یعنی دشمن میاد سمتت.
-- بعد از هر پژواک یه زمان انتظار (Cooldown) هست که تو HUD نشون داده میشه.
-- اگه بازیکن میکروفون نداشت یا نخواست حرف بزنه، با Space میتونه پژواک دستی بده (با Cooldown بیشتر و برد کمتر).
-- Shift یعنی حرکت آهسته و بی صدا.
+- Loudness determines reach and ray density. Louder means more visibility.
+- The enemies hear sound too. Loud sound means an enemy comes toward you.
+- After each echo there is a cooldown, shown in the HUD.
+- If the player has no microphone or does not want to speak, Space gives a manual echo (longer cooldown, shorter reach).
+- Shift is slow, silent movement.
 
-### جنس سطح ها (الان)
+### Surface materials (now)
 
-| جنس | رفتار موج | شکل تو بازی |
+| Material | Wave behaviour | Shape in game |
 |---|---|---|
-| معمولی (بتن، دیوار) | بازتاب متوسط | کمان با روشنایی معمولی |
-| فلزی | بازتاب قوی، برد بیشتر | کمان خیلی روشن و تیز |
-| اسفنجی (پارچه، گل) | صدا رو جذب میکنه | کمان تیره، کوتاه و کم رنگ. اتاق رو سخت میشه تشخیص داد |
+| Ordinary (concrete, wall) | Medium reflection | Arc with normal brightness |
+| Metallic | Strong reflection, longer reach | Very bright, sharp arc |
+| Spongy (cloth, mud) | Absorbs sound | Dark, short, faint arc. The room becomes hard to read |
 
-## شخصیت ها
+## Characters
 
-**بازیکن:** یه موجود کوچیک و کم نور که از بالا دیده میشه. نور نمیده و تقریبا نامرئیه.
+**Player:** a small, dim creature seen from above. It gives off no light and is nearly invisible.
 
-### دشمن ها (الان)
+### Enemies (now)
 
-| اسم | امضای موجی | رفتار |
+| Name | Wave signature | Behaviour |
 |---|---|---|
-| خزنده | دو برآمدگی گرد و یه شکاف بینشون | کند، شنوایی متوسط |
-| خارپشت | دندانه ای مثل اره | سریع، ولی شنوایی ضعیف |
-| بلعنده صدا (Absorber) | هیچ موجی برنمیگرده. یه لکه سیاه و خالی وسط کمان ها | صدا رو میبلعه. وقتی بهش نزدیک میشی کمان ها یهو خالی میشن و همین ترسناکه |
+| Crawler | Two round bumps with a gap between them | Slow, medium hearing |
+| Spike | Serrated, like a saw | Fast, but weak hearing |
+| Sound Absorber | No wave returns at all. A black empty patch in the middle of the arcs | Swallows sound. When you get close the arcs suddenly empty out, and that is the scary part |
 
-### دشمن ها (بعدا)
+### Enemies (later)
 
-ساکت (خیلی آروم، به کوچیکترین صدا واکنش میده)، عنکبوت (سریع و مسیر نامنظم)، تقلید کننده (صدای ضبط شده خود بازیکن رو پخش میکنه)، شکارچی فرکانس (فقط به صدای بم یا زیر واکنش میده).
+The Silent (very quiet, reacts to the smallest sound), Spider (fast, irregular path), Mimic (plays back the player's own recorded sound), Frequency Hunter (reacts only to low or high pitch).
 
-### موانع و اشیا
+### Obstacles and objects
 
-ستون: کمان نرم و گرد — جعبه: خط صاف با نقطه روشن تو گوشه ها — دیوار: خط صاف و بلند، ولی شکسته — در: دو تکه خط با یه شکاف بینشون.
+Pillar: soft round arc — Box: straight line with a bright point at the corners — Wall: straight, long line, but broken — Door: two line fragments with a gap between them.
 
-### ابزار و آیتم ها
+### Tools and items
 
-**الان:** تیله صوتی (Decoy) که پرتاب میکنی و تو نقطه برخوردش صدا درمیاره تا دشمن بره اونجا. نبض ضعیف که یه پژواک خیلی کوتاه و کم صدا میده که دشمن ها کمتر میشنون.
-**بعدا:** تقویت کننده پژواک، کفش نرم، باتری میکروفون، سوت اولتراسونیک، ضبط صوتی، تیونر فرکانسی.
+**Now:** the decoy marble, which you throw and which makes a sound where it lands, drawing the enemy there. The weak pulse, which gives a very short, quiet echo that the enemies hear much less.
+**Later:** echo amplifier, soft shoes, microphone battery, ultrasonic whistle, audio recording, frequency tuner.
 
-## کنترل ها
+## Controls
 
-| ورودی | کار |
+| Input | Action |
 |---|---|
-| میکروفون | ساختن پژواک. بلندی صدا برد و تراکم پرتو رو تعیین میکنه |
-| W A S D یا جهت ها | حرکت |
-| ماوس | جهت نگاه (جهت مخروط پژواک) |
-| Shift | حرکت آهسته و بی صدا |
-| Space | پژواک دستی بدون میکروفون |
-| کلیک راست یا Q | پرتاب تیله صوتی |
-| Esc | منوی توقف |
+| Microphone | Creating an echo. Loudness sets reach and ray density |
+| W A S D or arrows | Movement |
+| Mouse | Aim direction (the direction of the echo cone) |
+| Shift | Slow, silent movement |
+| Space | Manual echo without a microphone |
+| Right click or Q | Throw the decoy marble |
+| Esc | Pause menu |
 
-## قوانین برد و باخت
+## Win and lose rules
 
-- رسیدن به خروجی مرحله یعنی برد.
-- اگه دشمن به بازیکن برسه یا سلامتی تموم بشه یعنی باخت. صفحه باخت: "YOU WERE HEARD".
-- **نوار نفس (BREATH):** دویدن و حرکت سریع نفس رو کم میکنه، با نفس کم صدای نفس بازیکن بلندتر میشه و دشمن ها میشنون. این بخش **از دامنه این ترم حذف شد** (ببین [SCOPE_CUTS.md](SCOPE_CUTS.md)).
+- Reaching the level exit means winning.
+- An enemy reaching the player, or health running out, means losing. Lose screen: "YOU WERE HEARD".
+- **BREATH bar:** running and fast movement deplete breath; with low breath the player's breathing gets louder and the enemies hear it. This part is **cut from this term's scope** (see [SCOPE_CUTS.md](SCOPE_CUTS.md)).
 
-## مرحله ها (الان)
+## Levels (now)
 
-| مرحله | محتوا | سختی |
+| Level | Content | Difficulty |
 |---|---|---|
-| ۱ (آموزش) | اتاق ساده با ستون و جعبه، بدون دشمن. یاد گرفتن پژواک و خوندن شکل موج. یه دیوار اسفنجی هم هست تا فرق جنس ها رو ببینن | آسون |
-| ۲ | راهرو و در، دشمن خزنده | آسون تا متوسط |
-| ۳ | فضای باز با موانع زیاد، دشمن های خارپشت و خزنده، دیوار فلزی و اسفنجی | متوسط |
-| ۴ (آخر) | همه دشمن ها و بلعنده صدا، استفاده از تیله صوتی ضروریه. پایان کوتاه داستان | سخت |
+| 1 (tutorial) | Simple room with pillars and boxes, no enemies. Learning the echo and reading wave shapes. One sponge wall as well, so they see the difference between materials | Easy |
+| 2 | Corridor and door, Crawler enemy | Easy to medium |
+| 3 | Open space with many obstacles, Spike and Crawler enemies, metal and sponge walls | Medium |
+| 4 (finale) | All enemies plus the Absorber, using the decoy marble is mandatory. Short story ending | Hard |
 
-زمان بازی: حدود ۳۰ تا ۶۰ دقیقه برای مود داستانی کوتاه.
+Playtime: roughly 30 to 60 minutes for the short story mode.
 
-## مودها
+## Modes
 
-**داستانی (الان):** ۴ مرحله پشت سر هم. **سکوت (الان در سند، حذف‌شده در اجرا):** فقط تعداد محدودی صدا. **بعدا:** بقا، نابینا، همکاری دو نفره.
+**Story (now):** 4 levels in sequence. **Silent (in scope in the document, cut in the implementation):** only a limited number of sounds. **Later:** survival, blind, co-op.
 
-## داستان (کوتاه)
+## Story (short)
 
-یه پژوهشگر تو یه تاسیسات متروکه از زیرزمین بیدار میشه. برق قطعه و چیزی دیده نمیشه. فقط صدای خودشو داره. جاش پر از موجوداتیه که به صدا واکنش نشون میدن. باید راه خروجو پیدا کنه بدون اینکه بفهمن کجاست. تو آخر معلوم میشه تاسیسات برای مطالعه همین «پژواک ها» ساخته شده بود.
+A researcher wakes up in the basement of an abandoned facility. The power is out and nothing is visible. They can only hear their own voice. The place is full of creatures that react to sound. They must find the exit without being detected. At the end it emerges that the facility was built to study these very "echoes".
 
-## ظاهر و حال و هوا
+## Look and mood
 
-دو بعدی، نمای از بالا (Top-down)، دوربین ثابت روی بازیکن. پس زمینه سیاه خالص، خط های نازک و درخشان به رنگ فیروزه ای (cyan، حدود `#7fe9f0`) با افکت درخشش (Bloom). HUD هم با خط های نازک فیروزه ای و کم نورتر از موج ها، تا خودش منبع نور دیده نشه. فونت مونواسپیس مثل JetBrains Mono یا Share Tech Mono و یه فونت فارسی مناسب.
+2D, top-down view, camera locked to the player. Pure black background, thin bright lines in cyan (about `#7fe9f0`) with a Bloom glow. The HUD uses the same thin cyan lines but dimmer than the waves, so it never becomes a visible light source itself. A monospace font such as JetBrains Mono or Share Tech Mono, plus a suitable Persian font.
 
-## صفحه ها و منوها
+## Screens and menus
 
-### HUD داخل بازی
+### In-game HUD
 
-بالا چپ: نوار سلامتی (HEALTH) — بالا وسط: نوار بلندی صدای میکروفون (VOICE INPUT) و برد صدا (SOUND RANGE) — بالا راست: توقف و تنظیمات — پایین چپ: نوار نفس (حذف‌شده) — پایین راست: دایره زمان انتظار پژواک (ECHO COOLDOWN) — پایین وسط: متن "Make a sound to listen" — بالا وسط (کم رنگ): هشدار نزدیکی "SOMETHING IS CLOSE".
+Top left: HEALTH bar — top centre: VOICE INPUT level and SOUND RANGE — top right: pause and settings — bottom left: breath bar (cut) — bottom right: ECHO COOLDOWN ring — bottom centre: the text "Make a sound to listen" — top centre (faint): the proximity warning "SOMETHING IS CLOSE".
 
-### منوها
+### Menus
 
-- **منوی اصلی:** PLAY، OPTIONS، CREDITS، QUIT. پس زمینه یه کمان پژواک که آروم حرکت میکنه.
-- **توقف (Pause):** RESUME، SETTINGS، CALIBRATE MIC، QUIT و یه جعبه نکته (TIP).
-- **تنظیمات:** انتخاب میکروفون، حساسیت، میزان صدا، کیفیت افکت ها.
-- **کالیبره میکروفون:** نمایش زنده موج صدا، اسلایدر حساسیت و آستانه نویز، دکمه آزمایش.
-- **پیروزی:** ستاره بر اساس کم صدا بودن، سلامتی و زمان (حذف‌شده در اجرا).
-- **شکست:** صفحه سیاه با "YOU WERE HEARD" و دکمه RETRY.
-- **دفترچه موجودات (Bestiary):** امضای موجی هر چیزی که کشف شده (حذف‌شده در اجرا).
-- **سازندگان (Credits).**
+- **Main menu:** PLAY, OPTIONS, CREDITS, QUIT. Background is an echo arc drifting slowly.
+- **Pause:** RESUME, SETTINGS, CALIBRATE MIC, QUIT and a TIP box.
+- **Settings:** microphone selection, sensitivity, volume, effect quality.
+- **Microphone calibration:** live waveform, sensitivity and noise-threshold sliders, TEST button.
+- **Victory:** stars based on quietness, health and time (cut in the implementation).
+- **Defeat:** black screen with "YOU WERE HEARD" and a RETRY button.
+- **Bestiary:** the wave signature of everything discovered (cut in the implementation).
+- **Credits.**
 
-## بخش فنی (Unity)
+## Technical section (Unity)
 
-| بخش | چطور |
+| Part | How |
 |---|---|
-| ورودی میکروفون | `Microphone.Start` و خوندن نمونه ها با `GetData`. بلندی صدا با RMS حساب میشه، بعد فیلتر نویز، آستانه حساسیت و کالیبراسیون |
-| ری کست مخروطی | با `Physics2D.Raycast`. وقتی صدا از آستانه گذشت، ۱۰۰ تا ۲۰۰ پرتو تو یه مخروط تو جهت ماوس شلیک میشه. پرتو ها دیده نمیشن، فقط فاصله برخورد هر کدوم ذخیره میشه |
-| موج خروجی | یه کمان روشن که با سرعت ثابت از بازیکن پخش میشه تا برد صدا |
-| موج بازتابی | هر شیء یه Collider و یه جنس (Material) داره. از فاصله برخورد پرتو ها کمان برگشتی ساخته میشه |
-| رسم کمان ها | LineRenderer یا Mesh با یه شیدر سفارشی برای درخشش (در اجرا: Mesh با ظرفیت ثابت + شیدر دست‌نویس) |
-| هوش مصنوعی | شنیدن صدا بر اساس بلندی و فاصله، حرکت به سمت منبع صدا، حالت های گشت، تعقیب و جستجو (state machine ساده) |
-| بلعنده صدا | پرتویی که بهش میخوره هیچ بازتابی نمیده، پس تو کمان یه جای خالی میمونه |
+| Microphone input | `Microphone.Start` and reading samples with `GetData`. Loudness computed as RMS, then noise filter, sensitivity threshold and calibration |
+| Conical raycast | With `Physics2D.Raycast`. When sound passes the threshold, 100 to 200 rays are fired inside a cone in the mouse direction. The rays are invisible; only each hit distance is stored |
+| Outgoing wave | A bright arc that spreads from the player at constant speed up to the sound's reach |
+| Reflected wave | Every object has a Collider and a material. The returning arc is built from the ray hit distances |
+| Drawing the arcs | LineRenderer or Mesh with a custom shader for the glow (in the implementation: a fixed-capacity Mesh plus a hand-written shader) |
+| AI | Hearing based on loudness and distance, moving toward the sound source, patrol/investigate/chase states (a simple state machine) |
+| Sound Absorber | A ray that hits it returns no reflection at all, so the arc keeps an empty gap there |
 
-### فرمول کمان برگشتی
+### The returning arc formula
 
-برای پرتویی با زاویه θ که `d(θ)` فاصله برخوردشه، کمان `k` رو اینجوری میکشیم:
+For a ray at angle θ whose hit distance is `d(θ)`, arc `k` is drawn as:
 
 ```
 r_k(θ) = R_k + A_k * (d(θ) - d_min)
 ```
 
-- `R_k`: شعاع پایه کمان که با زمان کم میشه، یعنی کمان به سمت بازیکن میاد.
-- `A_k`: دامنه شکل. برای کمان های داخلی (قدیمی تر) کمتر میشه، یعنی محو میشن.
-- `d_min`: نزدیکترین فاصله برخورد تو اون پژواک.
+- `R_k`: the arc's base radius, which decreases over time — the arc travels toward the player.
+- `A_k`: the deformation amplitude, reduced for the inner (older) arcs, i.e. they fade out.
+- `d_min`: the closest hit distance in that ping.
 
-یعنی هر جا که شیء به بازیکن نزدیکتره، کمان زودتر و نزدیکتر به بازیکن میرسه و کمان به سمت بازیکن گود میشه (شکل U). با این علامت کمان واقعا حس برگشتن میده. **نسخه ۱.۰ علامت رو برعکس نوشته بود و کمان ها مثل موج خروجی دیده میشدن.**
+So wherever an object is nearer to the player, the arc reaches that point sooner and closer to the player, and the arc dents toward the player (a U shape). With this sign the arc genuinely feels like it is returning. **Version 1.0 of the document had the sign reversed, and the arcs looked like outgoing waves.**
 
-در هر فاصله زمانی ثابت بعد از صدا یه کمان جدید ساخته میشه (قطار کمان های تودرتو). شکستگی: هرجا اختلاف فاصله برخورد دو پرتو کنار هم از یه حدی بیشتر باشه، خط شکسته میشه. تو سطح صاف هم چند تا فاصله تصادفی میندازیم تا همیشه ناقص دیده بشه. چون شکل از فاصله های واقعی میاد، هر شیء تو هر موقعیتی پروفایل متفاوتی میده و نیازی به دست کاری تقارن نیست.
+A new arc is created at each fixed time interval after the sound (a train of nested arcs). Breakup: wherever the difference in hit distance between two adjacent rays exceeds a limit, the line breaks. On a flat surface we also drop a few random distances so it always looks incomplete. Because the shape comes from real distances, every object at every position yields a different profile, so there is no need to force symmetry by hand.
 
-### ریسک ها
+### Risks
 
-| ریسک | راه حل |
+| Risk | Mitigation |
 |---|---|
-| صدای محیط و نویز میکروفون بازی رو خراب کنه | صفحه کالیبره میکروفون و آستانه نویز از روز اول، و پژواک دستی با Space |
-| تاخیر (Latency) میکروفون | بافر کوچیک و تست رو چند میکروفون مختلف |
-| پرفورمنس با پرتو و کمان های زیاد | تعداد پرتو و کمان قابل تنظیمه، کمان های قدیمی زود حذف میشن |
-| بازیکن موج رو نفهمه | مرحله آموزش، تست با کسایی که بازی رو ندیدن (نقطه go/no-go هفته ۲) |
-| زمان کم | همه چیز «بعدا» اختیاریه؛ لیست cut هفتگی در [PLAN.md](PLAN.md) |
+| Ambient noise and microphone hiss ruin the game | Microphone calibration page and noise threshold from day one, plus a manual echo with Space |
+| Microphone latency | Small buffer, and testing across several microphones |
+| Performance with many rays and arcs | Ray and arc counts are configurable, old arcs are removed early |
+| The player does not understand the wave | Tutorial level, testing with people who have never seen the game (the week 2 go/no-go point) |
+| Not enough time | Everything in "later" is optional; the weekly cut list is in [PLAN.md](PLAN.md) |
 
-### صدا
+### Audio
 
-موسیقی محیطی خیلی کم صدا و ترسناک، صدای قدم بازیکن، صدای تنفس و ضربان قلب با نزدیک شدن دشمن، صدای هر دشمن، افکت برخورد و آسیب، پیروزی و شکست، کلیک UI، و صدای پژواک بازتابی (یه صدای کوتاه با تاخیر برای هر کمان).
+Very quiet, scary ambient music, player footsteps, breathing and heartbeat as an enemy approaches, a sound per enemy, hit and damage effects, victory and defeat, UI clicks, and the reflected echo sound (a short delayed sound per arc).
 
 ---
 
-## الحاقیه: تصمیم‌های اجرا
+## Implementation appendix
 
-اینها تصمیم‌هایی‌اند که موقع برنامه‌ریزی ۵ هفته‌ای روی این سند گرفته شد و در کد و مستندات جاری‌اند:
+These are the decisions taken while planning the 5-week schedule, layered on this document, and live in the current code and docs:
 
-1. **زاویه مخروط:** پیش‌فرض ۶۴ درجه (`coneHalfAngleDeg = 32`)، عدد در ScriptableObject و قابل تغییر بدون کد. سوال باز سند با این بسته شد.
-2. **نوار نفس حذف شد** تا ۴ مرحله و سه دشمن به‌موقع برسد؛ مکانیزم «حرکت سریع‌تر = صدای بیشتر» با ضربان `loudness` در حالت Shift جبران می‌شود.
-3. **هدف‌گیری با موقعیت مطلق نشانگر ماوس** (مطابق GDD)، نه delta. اگر لبه‌های صفحه حس چسبندگی داد، حالت delta با اسلایدر حساسیت به Options اضافه می‌شود.
-4. **ورودی صدا از یک لایه انتزاعی `IEchoSource` می‌آید** با سه پیاده‌سازی: میکروفون واقعی، شبیه‌سازی‌شده، و اسکریپت‌شده (برای تست). دلیل: پشتیبانی میکروفون ادیتور Unity روی لینوکس مطمئن نیست و توسعه‌دهنده اصلی روی لینوکس کار می‌کند.
-5. **رسم کمان‌ها با Mesh با ظرفیت ثابت و یک شیدر دست‌نویس** انجام می‌شود، نه LineRenderer: ضخامت و رنگ per-sample لازمه و شکستن/نشدن خط به‌ازای هر نمونه لازم است.
-6. **ماسک شکستگی یک بار برای هر پینگ** محاسبه می‌شود و همه کمان‌های همان پینگ از آن می‌خوانند — تا الگوی قطعات موقع جمع‌شدن به سمت بازیکن یکدست بماند و چشم بتواند چند کمان را یک شیء بفهمد.
-7. **بیلد ویندوز با Mono از ادیتور لینوکس** گرفته می‌شود (ماژول Windows Build Support (Mono) نصب است؛ IL2CPP ویندوز روی لینوکس در دسترس نیست).
-8. **صدا و موسیقی کامل در هفته ۵** می‌آید؛ ریسک بازگشت صدای اسپیکر به میکروفون با کالیبره، hysteresis و توصیه هدفون مهار می‌شود.
+1. **Cone angle:** default 64 degrees (`coneHalfAngleDeg = 32`); the number lives in a ScriptableObject and can change without code. This closes the document's open question.
+2. **The BREATH bar was cut** so that 4 levels and 3 enemies could land on time; the "moving faster makes more noise" mechanic is compensated by the `loudness` pulse in Shift mode.
+3. **Aiming uses the absolute pointer position** (per the GDD), not delta. If the screen edges feel sticky, a delta mode with a sensitivity slider goes into Options.
+4. **Sound input comes from an abstract layer, `IEchoSource`**, with three implementations: real microphone, simulated, and scripted (for tests). Reason: Unity editor microphone support on Linux cannot be relied on, and the lead programmer develops on Linux.
+5. **Arcs are drawn with a fixed-capacity Mesh and one hand-written shader**, not LineRenderer: per-sample thickness and colour are required, and each sample must be able to break the line.
+6. **The fracture mask is computed once per ping** and every arc of that same ping reads from it — so the pattern of segments stays coherent while it collapses toward the player and the eye can read several arcs as one object.
+7. **The Windows build is a Mono build from the Linux editor** (the Windows Build Support (Mono) module is installed; Windows IL2CPP is not available on Linux).
+8. **Full sound and music arrive in week 5**; the risk of speaker sound returning into the microphone is mitigated by calibration, hysteresis and headphone advice.

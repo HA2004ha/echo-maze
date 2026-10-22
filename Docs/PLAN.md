@@ -1,114 +1,114 @@
-# برنامه توسعه ۵ هفته‌ای (+۱ هفته بافر)
+# 5-week development plan (+1 week buffer)
 
-**شروع:** ۱۹ اکتبر ۲۰۲۶ — **تحویل:** ۲۰ نوامبر ۲۰۲۶ — **بافر:** تا ۲۷ نوامبر
-**دامنه قطعی:** هسته پژواک + ۳ جنس سطح + ۳ دشمن + تیله صوتی و نبض ضعیف + ۴ مرحله + HUD و منوها + کالیبره میکروفون + صدای کامل + بیلد ویندوز.
-**خارج از دامنه:** [SCOPE_CUTS.md](SCOPE_CUTS.md) — این لیست را قبل از افزودن هر فیچر جدید بخوانید.
+**Start:** 19 October 2026 — **delivery:** 20 November 2026 — **buffer:** until 27 November
+**Final scope:** echo core + 3 surface materials + 3 enemies + decoy marble and weak pulse + 4 levels + HUD and menus + microphone calibration + complete audio + Windows build.
+**Out of scope:** [SCOPE_CUTS.md](SCOPE_CUTS.md) — read this list before adding any new feature.
 
-این فایل **سابقه زنده پروژه** است: پایان هر روز تیک کارها و وضعیت هفته اینجا ثبت و commit می‌شود، و پایان هر هفته همان commit با تگ `v0.x` می‌رود. برای تصمیم‌های فنی: [DESIGN_DECISIONS.md](DESIGN_DECISIONS.md). برای پارامترهای بالانس: [TUNING.md](TUNING.md).
+This file is the **living project history**: at the end of each day the ticked items and the week's status are recorded and committed here, and at the end of each week that same commit is tagged `v0.x`. For technical decisions: [DESIGN_DECISIONS.md](DESIGN_DECISIONS.md). For balancing parameters: [TUNING.md](TUNING.md).
 
-## قوانین ثابت هر فاز
+## Rules that never change
 
-1. پایان هر هفته `main` باید با ادیتور 6000.6.3f1 **باز و با Play قابل اجرا** باشد. اگر چیزی نصفه ماند، پشت یک `bool` در ScriptableObject خاموش می‌شود، نه اینکه پروژه اجرا نشود.
-2. معیار هر هفته «تست قابل بازی» است، نه تعداد فیچر.
-3. هر روز حداقل یک commit که کامپایل می‌شود.
-4. هیچ‌وقت نام فایل یا کلاس `.cs` بیرون از ادیتور عوض نمی‌شود (شکستن مرجع‌ها = صحنه غیرقابل اجرا).
-5. فایل‌های `ProjectSettings/**` فقط در commit جداگانه و دسته‌ای ویرایش می‌شوند.
+1. At the end of every week `main` must **open and be playable with editor 6000.6.3f1**. If something is left half-done, it is switched off behind a `bool` in a ScriptableObject — the project is never left unrunnable.
+2. Each week's success criterion is a "testable play session", not a feature count.
+3. At least one compiling commit per day.
+4. Never rename a `.cs` file or class outside the editor (broken references = an unrunnable scene).
+5. `ProjectSettings/**` files are only edited in a separate, batched commit.
 
-## جدول فازها
+## Phase table
 
-| هفته | تاریخ | خروجی | معیار خروج (تست قابل بازی) | تگ |
+| Week | Dates | Output | Exit criterion (playable test) | Tag |
 |---|---|---|---|---|
-| ۱ | ۱۹–۲۵ اکتبر | اسکلت + اولین کمان | با WASD حرکت و با Space یک حلقه فیروزه‌ای که حول ستون گود می‌شود، روی دیوار صاف می‌ایستد و در گوشه جعبه نقطه روشن می‌دهد؛ ۶۰fps، صفر خطا | `v0.1-sandbox` |
-| ۲ | ۲۶ اکتبر–۱ نوامبر | قطار کمان + جنس‌ها + ابزار دیباگ | یک تستر **حداقل ۳** مورد از {ستون، دیوار، جعبه، فلز، اسفنج} را فقط از کمان نام می‌برد — **نقطه go/no-go پروژه** | `v0.2-arc-train` |
-| ۳ | ۲–۸ نوامبر | حلقه صوت + منوها + مرحله ۱ | از منو شروع، کالیبره میکروفون روی ویندوز، رد کردن مرحله ۱ فقط با صدا (و روی لینوکس فقط با Space)، یک بار مردن و Retry، اولین بیلد ویندوز | `v0.3-mic-calibration` |
-| ۴ | ۹–۱۵ نوامبر | دشمن‌های خواندنی + تیله صوتی + مرحله ۲ و ۳ | در مرحله ۳ فقط از روی کمان بگو خزنده است یا خارپشت، با تیله یکی را دور کن و به خروجی برس | `v0.4-enemies` |
-| ۵ | ۱۶–۲۰ نوامبر | بلعنده + مرحله ۴ + صدا + تحویل | هر ۴ مرحله از سر تا پایان روی ویندوز با میکروفون واقعی و ۶۰fps؛ یک هم‌تیمی از clone تازه طبق README بالا بیاید | `v0.5-submission` |
-| ۶ | ۲۱–۲۷ نوامبر (بافر) | burn-down باگ‌ها، re-tune خوانایی، ضبط demo | نسخه نهایی ارائه | `v0.6-final` |
+| 1 | 19–25 Oct | Skeleton + the first arc | With WASD you move and with Space a cyan ring is emitted that dents around the pillar, stays flat on the wall and gives a bright point at the box corner; 60fps, zero errors | `v0.1-sandbox` |
+| 2 | 26 Oct–1 Nov | Arc train + materials + debug tooling | A tester names **at least 3** of {pillar, wall, box, metal, sponge} from the arcs alone — **the project's go/no-go point** | `v0.2-arc-train` |
+| 3 | 2–8 Nov | Audio loop + menus + level 1 | Start from the menu, calibrate the microphone on Windows, clear level 1 with sound only (and on Linux with Space only), die once and Retry, first Windows build | `v0.3-mic-calibration` |
+| 4 | 9–15 Nov | Readable enemies + decoy marble + levels 2 and 3 | In level 3, say from the arc alone whether it is a Crawler or a Spike, distract one with the marble and reach the exit | `v0.4-enemies` |
+| 5 | 16–20 Nov | Absorber + level 4 + audio + delivery | All 4 levels start to finish on Windows with a real microphone at 60fps; a teammate brings the project up from a fresh clone per README | `v0.5-submission` |
+| 6 | 21–27 Nov (buffer) | Bug burn-down, readability re-tune, demo recording | Final presentation build | `v0.6-final` |
 
-## لیست cut از پیش توافق‌شده (اگر هر هفته عقب افتاد)
+## Pre-agreed cut list (if any week falls behind)
 
-- **هفته ۱:** حذف ماسک شکستگی و lookup جنس (فقط `d` خام). **هرگز حذف نشود:** mesh builder، ScriptableObject پارامترها، درز `IEchoSource`.
-- **هفته ۲:** حذف اسفنج و رسیدن به دو جنس. اگر تست خوانایی خورد، هفته ۳ کامل به خوانایی می‌آید و گیم‌پلی شروع نمی‌شود.
-- **هفته ۳:** حذف CREDITS و متن پایان؛ حذف نشانگر بلندی voice (درِ نویز می‌ماند). **کالیبره هرگز حذف نمی‌شود.**
-- **هفته ۴:** خارپشت = همان خزنده با امضا و رفتار ساده‌تر؛ هشدار نزدیکی فقط متن.
-- **هفته ۵:** به این ترتیب: موانع مرحله ۳ کمتر ← بلعنده فقط «حفره» بدون پاس occlusion ← پایان به‌صورت صفحه متن. **مرز تعهد: ۴ مرحله — پولیش را cut کن، مرحله را نه.**
+- **Week 1:** drop the fracture mask and the material lookup (raw `d` only). **Never drop:** the mesh builder, the parameters ScriptableObject, the `IEchoSource` seam.
+- **Week 2:** drop sponge and land on two materials. If the readability test fails, week 3 goes entirely to readability and gameplay does not start.
+- **Week 3:** drop CREDITS and the ending text; drop the voice-loudness indicator (the noise gate stays). **Calibration is never dropped.**
+- **Week 4:** Spike = the Crawler with a simpler signature and behaviour; the proximity warning is text only.
+- **Week 5:** in this order: fewer obstacles in level 3 ← the Absorber is only a "hole" without the occlusion pass ← the ending becomes a text screen. **The commitment line is 4 levels — polish the cut, not the levels.**
 
 ---
 
-# هفته ۱ — چک‌لیست روزانه
+# Week 1 — daily checklist
 
-هدف تنها: یک حلقه فیروزه‌ای که با فرمول GDD حول ستون/دیوار/جعبه جمع می‌شود، با ۶۰fps و صفر خطا، و ریپویی که تیم بتواند باز کند.
-**عمداً ساخته نمی‌شود (تا دامنه نلغزد):** قطار کمان، ماسک شکستگی، جنس‌های فلز/اسفنج، میکروفون، HUD، منو، دشمن، مرحله.
+The only goal: one cyan ring that collapses around pillar/wall/box using the GDD formula, at 60fps with zero errors, and a repository the team can open.
+**Deliberately not built (so the scope does not slip):** arc train, fracture mask, metal/sponge materials, microphone, HUD, menus, enemies, levels.
 
-### روز ۱ — زیرساخت و اسناد
+### Day 1 — infrastructure and documents
 
-- [x] ثبت درایور merge و `git lfs install --local` و راستی‌آزمایی با `git config --get-regexp merge\.`
-- [x] `.gitattributes`: `text eol=lf` برای `*.md/*.json/*.cs/*.shader/*.hlsl` و کامنت دفاعی «Unity YAML هرگز LFS نمی‌شود»
-- [x] `Docs/`: GDD، PLAN، SCOPE_CUTS، GIT، TEAM_SETUP، README ریشه
-- [x] پاکسازی قالب: حذف `Assets/Welcome`، حذف `com.unity.learn.iet-framework` و فایل Settings آن، rename `SampleScene` → `Sandbox`
-- [x] ساختار پوشه‌ها و چهار `.asmdef` (Runtime / Editor / EditMode / PlayMode)
+- [x] Register the merge driver and `git lfs install --local`, verified with `git config --get-regexp merge\.`
+- [x] `.gitattributes`: `text eol=lf` for `*.md/*.json/*.cs/*.shader/*.hlsl` and the defensive comment "Unity YAML is never put in LFS"
+- [x] `Docs/`: GDD, PLAN, SCOPE_CUTS, GIT, TEAM_SETUP, root README
+- [x] Template cleanup: delete `Assets/Welcome`, remove `com.unity.learn.iet-framework` and its Settings file, rename `SampleScene` → `Sandbox`
+- [x] Folder structure and four `.asmdef` files (Runtime / Editor / EditMode / PlayMode)
 
-### روز ۲ — تنظیمات پروژه و صحنه
+### Day 2 — project settings and scene
 
-- [x] `Project Settings > Editor`: خاموش‌کردن Enter Play Mode Options (Domain Reload برگردد)
-- [x] لایه‌ها: `World, EchoTarget, Enemy, Absorber, Player, Trigger` — Sorting: `Default ← Echo ← HUD`
-- [x] صحنه `Sandbox`: دوربین ارتو ۶، پس‌زمینه مشکی، تیک Post Processing، حذف Global Light 2D
-- [x] Global Volume + `EchoVolumeProfile.asset` با override فقط Bloom
-- [x] سه شیء تست روی لایه `EchoTarget` (ستون / دیوار / جعبه) و GameObject `EchoField`
-- [x] `PlayerMock`: حرکت WASD، زاویه از نشانگر ماوس، Space → پینگ
+- [x] `Project Settings > Editor`: turn off Enter Play Mode Options (Domain Reload comes back)
+- [x] Layers: `World, EchoTarget, Enemy, Absorber, Player, Trigger` — Sorting: `Default ← Echo ← HUD`
+- [x] `Sandbox` scene: orthographic camera at size 6, black background, Post Processing ticked, Global Light 2D removed
+- [x] Global Volume + `EchoVolumeProfile.asset` with only a Bloom override
+- [x] Three test objects on the `EchoTarget` layer (pillar / wall / box) and an `EchoField` GameObject
+- [x] `PlayerMock`: WASD movement, angle from the mouse pointer, Space → ping
 
-### روز ۳ — ورودی و پرتوها
+### Day 3 — input and rays
 
-- [x] `EchoTuningProfile` + نمونه `Data/Echo/EchoTuning.asset` (با fallback اگر asset نبود)
+- [x] `EchoTuningProfile` + a sample `Data/Echo/EchoTuning.asset` (with a fallback if the asset is missing)
 - [x] `IEchoSource` + `SimulatedEchoSource` + `ScriptedEchoSource`
-- [x] `PingRecord` + `RayFan` با `Physics2D.Raycast` از رویدربار `ContactFilter2D` (خانواده `*NonAlloc` در Unity 6 حذف شده)
+- [x] `PingRecord` + `RayFan` using `Physics2D.Raycast` from an event-based `ContactFilter2D` (the `*NonAlloc` family was removed in Unity 6)
 
-### روز ۴ — هندسه و رندر
+### Day 4 — geometry and rendering
 
-- [x] `ArcMath` (کلاس ایستا و خالص، فرمول `r_k(θ) = R_k + A_k (d(θ) - d_min)`)
-- [x] `EchoRenderer` با Mesh ظرفیت ثابت + `IEchoRenderer`
-- [x] `EchoDirector`: نگهداری pooled سه پینگ، `ForcePing`، مرگ کمان در `R <= rKill`
-- [x] `EchoArc.shader` (additive، `_Hdr`، دامن نرم) + متریال `Arc_Cyan`
+- [x] `ArcMath` (a pure static class, formula `r_k(θ) = R_k + A_k (d(θ) - d_min)`)
+- [x] `EchoRenderer` with a fixed-capacity Mesh + `IEchoRenderer`
+- [x] `EchoDirector`: a pooled set of three pings, `ForcePing`, arc death at `R <= rKill`
+- [x] `EchoArc.shader` (additive, `_Hdr`, soft skirt) + the `Arc_Cyan` material
 
-### روز ۵ — تست و بستن هفته
+### Day 5 — tests and closing the week
 
-- [x] `Tests/EditMode/ArcMathTests.cs`: `Formula_MatchesGdd`، `MonotonicInDistance`، `CollapsesToOrigin_AsAgeGrows`، `AllMisses_ProduceNoSamples_AndNoNaN`، `GainSign_FlipsDeformation` (+ هفت تست دیگر: قطار داخلی، آلفا، زاویه نمونه‌ها، ظرفیت پرتو، بازشوری `PingRecord`، `EmissionPulse_NeverOvertakesTheReturningCarrier`)
-- [x] اجرای تست‌ها از خط فرمان با `-runTests -testPlatform EditMode` → ۱۶ از ۱۶ سبز (`Logs/editmode.xml`)
-- [x] `Tests/EditMode/ArcReadabilityTests.cs`: چهار ادعای خوانایی به پیکسل (گودبودن ستون، دو شعاع متفاوت برای ستون و دیوارپشتش، مرکز ستون درونی‌ترین نقطه، ضخامت نوار) — چون ادعای «هیچ‌چیز دیده نمی‌شود» با عدد باید جواب دهد، نه با نظر
-- [x] بازبالانس هفته ۱ (`gain0 = 1`، `baseThickness = 0.05`، `maxRadius = 6.5`) و حلقه رفتِ موج (`emissionPulseSeconds`)؛ دلیل و اندازه‌گیری در `Docs/TUNING.md` و `Docs/DESIGN_DECISIONS.md`
-- [x] `Docs/TUNING.md` با جدول پارامترها
-- [x] آیین commit ([GIT.md](GIT.md))
+- [x] `Tests/EditMode/ArcMathTests.cs`: `Formula_MatchesGdd`, `MonotonicInDistance`, `CollapsesToOrigin_AsAgeGrows`, `AllMisses_ProduceNoSamples_AndNoNaN`, `GainSign_FlipsDeformation` (+ seven more: inner train, alpha, sample angles, ray capacity, `PingRecord` reuse, `EmissionPulse_NeverOvertakesTheReturningCarrier`)
+- [x] Running the tests from the command line with `-runTests -testPlatform EditMode` → 16 of 16 green (`Logs/editmode.xml`)
+- [x] `Tests/EditMode/ArcReadabilityTests.cs`: four readability claims expressed in pixels (the pillar dent, two different radii for the pillar and the wall behind it, the pillar centre as the innermost point of the arc, ribbon thickness) — because the claim "nothing is visible" has to be answered with a number, not an opinion
+- [x] The week 1 rebalance (`gain0 = 1`, `baseThickness = 0.05`, `maxRadius = 6.5`) and the outgoing wave ring (`emissionPulseSeconds`); reason and measurement in `Docs/TUNING.md` and `Docs/DESIGN_DECISIONS.md`
+- [x] `Docs/TUNING.md` with the parameter table
+- [x] The commit ritual ([GIT.md](GIT.md))
 
-### معیار خروج هفته ۱
+### Week 1 exit criterion
 
-- [ ] clone تازه با 6000.6.3f1 باز می‌شود و `Sandbox` بدون خطا Play می‌شود ← این سه مورد فقط با ادیتور باز تأیید می‌شود، اجرای بی‌سرصفحه Play ندارد
-- [ ] حلقه فیروزه‌ای در ستون گود می‌شود، روی دیوار صاف است، در گوشه جعبه نقطه روشن دارد
-- [ ] ساخت هندسه در `EchoRenderer.AddArc`/`EndFrame` زیر ۳ms در Profiler؛ صفر خطا در Console
-- [x] `git lfs ls-files -n` باینری‌ها را لیست می‌کند (`Assets/Art/Sprites/Player_dot.png`)؛ `merge.unityyamlmerge.driver` ثبت است
-- [ ] تگ `v0.1-sandbox` و push با `--follow-tags`
-- [ ] اگر حلقه دیده نشد، به این ترتیب عیب‌یابی: تیک Post Processing دوربین ← لایه `EchoTarget` و ماسک پرتو ← `sortingLayer` و متریال ← `_Hdr` نسبت به `threshold` بلوم
+- [ ] A fresh clone opens with 6000.6.3f1 and `Sandbox` Plays without errors ← these three items can only be confirmed with the editor open; headless runs have no Play
+- [ ] The cyan ring dents at the pillar, is flat on the wall, has a bright point at the box corner
+- [ ] Mesh construction in `EchoRenderer.AddArc`/`EndFrame` under 3ms in the Profiler; zero errors in the Console
+- [x] `git lfs ls-files -n` lists the binaries (`Assets/Art/Sprites/Player_dot.png`); `merge.unityyamlmerge.driver` is registered
+- [ ] Tag `v0.1-sandbox` and push with `--follow-tags`
+- [ ] If the ring was not visible, debug in this order: the camera's Post Processing tick ← the `EchoTarget` layer and the ray mask ← `sortingLayer` and the material ← `_Hdr` against the Bloom `threshold`
 
-دو نکته که در Console ادیتور دیدنی‌اند و خطا نیستند: اخطار «assembly بدون اسکریپت» برای `EchoMaze.Tests.PlayMode.asmdef` (با تست‌های PlayMode هفته ۲ پر می‌شود) و اخطار `EchoDirector has no EchoTuningProfile` که فقط وقتی می‌آید که صحنه بازسازی نشده و `profile` روی `Echo System` خالی است.
+Two things visible in the editor Console that are not errors: the "assembly has no scripts" warning for `EchoMaze.Tests.PlayMode.asmdef` (filled by the PlayMode tests in week 2) and the `EchoDirector has no EchoTuningProfile` warning, which only appears when the scene was not rebuilt and the `profile` field on `Echo System` is empty.
 
 ---
 
-# هفته ۲ — قطار کمان و آزمون خوانایی
+# Week 2 — arc train and the readability test
 
-کار: قطار کمان (`arcInterval` / `arcsPerPing` / `A_k` با `innerDecay` / `fadeCurve`)، ماسک شکست پایدار به‌ازای هر پینگ + gapهای با seed، SO سه جنس، اعتبارسنجی «نقطه گوشه»، `EchoDebugWindow` (Force Ping، رسم خام پرتوها در Scene view، نمودار `d[i]` و `amp[i]`، freeze کمان، زمان‌سنج و allocation)، تست‌های EditMode ریاضی و شکست، گالری اشیاء در `Sandbox`، `Docs/TUNING.md`.
-معیار: go/no-go خوانایی. اگر خورد، همه‌چیز متوقف و روی خوانایی کار می‌شود.
+Work: the arc train (`arcInterval` / `arcsPerPing` / `A_k` with `innerDecay` / `fadeCurve`), a stable per-ping fracture mask + seeded gaps, three material ScriptableObjects, validating the "corner point", `EchoDebugWindow` (Force Ping, drawing raw rays in the Scene view, `d[i]` and `amp[i]` plots, arc freeze, timer and allocation), EditMode tests for the math and the breakup, a gallery of objects in `Sandbox`, `Docs/TUNING.md`.
+Criterion: the readability go/no-go. If it fails, everything stops and the time goes to readability.
 
-# هفته ۳ — حلقه صوت، کالیبره، منوها، مرحله ۱
+# Week 3 — audio loop, calibration, menus, level 1
 
-کار: `MicrophoneEchoSource` + `LoudnessFollower` + `NoiseGate`، صفحه کالیبراسیون با موج زنده، Options با PlayerPrefs، بازنویسی `InputSystem_Actions.inputactions` و `GameInput` (جانشینی `PlayerMock`)، Shift بی‌صدا، پژواک دستی + cooldown ring، HUD کامل، `GameFlow` + Pause، پنل برد/باخت، `Boot.unity` و `Level01_QuietRoom`، **اولین بیلد ویندوز Mono و اولین تست جدی میکروفون روی ویندوز** (`Docs/MIC_TEST_MATRIX.md`).
+Work: `MicrophoneEchoSource` + `LoudnessFollower` + `NoiseGate`, a calibration page with a live waveform, Options with PlayerPrefs, rewriting `InputSystem_Actions.inputactions` and `GameInput` (replacing `PlayerMock`), Shift for silent movement, manual echo + cooldown ring, full HUD, `GameFlow` + Pause, win/lose panels, `Boot.unity` and `Level01_QuietRoom`, **the first Windows Mono build and the first serious microphone test on Windows** (`Docs/MIC_TEST_MATRIX.md`).
 
-# هفته ۴ — دشمن‌ها و تیله صوتی، مرحله ۲ و ۳
+# Week 4 — enemies and the decoy marble, levels 2 and 3
 
-کار: `NoiseBoard`، تابع خالص `HeardBy` با جریمه line-of-sight + تست، `EnemyBrain` (Patrol/Investigate/Chase/Lost)، امضای موجی خزنده و خارپشت به‌صورت SO، هشدار نزدیکی، تیله صوتی با پینگ از مبدأ خودش، نبض ضعیف، `Interactable/Door/Exit`، `Level02_Corridor` کامل، ژئومتری `Level03_Arena`.
+Work: `NoiseBoard`, the pure `HeardBy` function with a line-of-sight penalty + tests, `EnemyBrain` (Patrol/Investigate/Chase/Lost), the Crawler and Spike wave signatures as ScriptableObjects, the proximity warning, the decoy marble pinging from its own origin, the weak pulse, `Interactable/Door/Exit`, a complete `Level02_Corridor`, the geometry of `Level03_Arena`.
 
-# هفته ۵ — بلعنده، مرحله ۴، صدا، تحویل
+# Week 5 — Absorber, level 4, audio, delivery
 
-کار: بلعنده (trigger + پاس occlusion + بی‌تفاوت به تله)، `Level04_Finale` با گذرگاه «تیله ضروری»، سطوح کیفیت (تعداد پرتو/Bloom/MSAA)، صدا و موسیقی کامل با AudioMixer و Snapshot توقف، بالانس از حداقل سه تست، `Docs/QA_CHECKLIST.md` برای هر ۴ مرحله، بیلد ویندوز + zip، تگ `v0.5-submission`، ضبط ۶۰ ثانیه demo.
+Work: the Absorber (trigger + occlusion pass + indifferent to traps), `Level04_Finale` with a "marble is required" passage, quality tiers (ray count/Bloom/MSAA), complete sound and music with an AudioMixer and a pause Snapshot, balancing from at least three test sessions, `Docs/QA_CHECKLIST.md` for all 4 levels, Windows build + zip, tag `v0.5-submission`, recording a 60-second demo.
 
-# هفته ۶ — بافر
+# Week 6 — buffer
 
-burn-down لیست باگ تسترها، re-tune خوانایی، Level Select دیباگ؛ هر آزمایش اختیاری (کمان روی GPU) پشت `#if` تا `main` قابل تحویل بماند.
+Burn-down of the testers' bug list, readability re-tune, a debug Level Select; any optional experiment (arcs on the GPU) stays behind `#if` so `main` remains deliverable.

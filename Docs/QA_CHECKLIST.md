@@ -1,45 +1,46 @@
-# چک‌لیست QA و اجرای تست‌ها
+# QA checklist and running the tests
 
-## قبل از هر تگ هفته
+## Before each weekly tag
 
 ```
-# تست‌های EditMode از خط فرمان (نیازمند license فعال روی همین ماشین)
-/home/ha/Unity/Hub/Editor/6000.6.3f1-x86_64/Editor/Unity \
-  -batchmode -nographics -projectPath "$PWD" \
+# EditMode tests from the command line (needs an active license on this machine)
+# Find your editor: ls "$HOME"/Unity*/Editor/Unity "$HOME"/Unity/Hub/Editor/*/Editor/Unity
+U=$HOME/Unity/6000.6.3f1/Editor/Unity
+"$U" -batchmode -nographics -projectPath "$PWD" \
   -runTests -testPlatform EditMode \
   -testResults ./Logs/editmode.xml -logFile ./Logs/editmode.log
 
-echo "exit=$?"        # صفر = همه سبز
+echo "exit=$?"        # zero = all green
 grep -o 'result="[A-Za-z]*"' ./Logs/editmode.xml | sort | uniq -c
 ```
 
-فعال‌سازی license: `Help ▸ Licensing` یک‌بار در ادیتور گرافیکی. در CI نمی‌رویم (دلیل در `SCOPE_CUTS.md`).
+License activation: `Help ▸ Licensing`, once, in the graphical editor. We do not go to CI for this (the reason is in `SCOPE_CUTS.md`).
 
-## آیین commit
+## Commit ritual
 
-`git status --short` ← `git add <file...>` ← `git lfs ls-files --summarize` ← `git commit` ← `git push origin main --follow-tags`. جزئیات: [GIT.md](GIT.md).
+`git status --short` ← `git add <file...>` ← `git lfs ls-files --summarize` ← `git commit` ← `git push origin main --follow-tags`. Details: [GIT.md](GIT.md).
 
-## باز کردن از clone تازه (هر هفته یک بار، با همین ترتیب)
+## Opening from a fresh clone (once a week, in this order)
 
-- [ ] clone در پوشه موقت، باز کردن با Unity 6000.6.3f1
-- [ ] import بدون خطا تمام می‌شود؛ Console صفر قرمز
-- [ ] `Assets/Scenes/Sandbox.unity` ▸ Play ▸ مکانیک کار می‌کند
-- [ ] هیچ «missing script» و هیچ پکیج override در Package Manager نیست
+- [ ] Clone into a temporary folder, open with Unity 6000.6.3f1
+- [ ] Import finishes without errors; Console has zero red
+- [ ] `Assets/Scenes/Sandbox.unity` ▸ Play ▸ the mechanic works
+- [ ] No "missing script" and no package override in Package Manager
 
-## چک‌لیست داخل بازی (از هفته ۳)
+## In-game checklist (from week 3)
 
-- [ ] کالیبره میکروفون: موج زنده حرکت می‌کند، دکمه TEST یک پینگ واقعی می‌زند، تنظیم بعد از restart می‌ماند
-- [ ] Pause: صدا قطع، میکروفون بسته، منو با کیبورد و ماوس کار می‌کند (EventSystem روی `InputSystemUIInputModule`)
-- [ ] Retry بعد از مرگ: صحنه reload می‌شود، state دشمن‌ها و HUD تمیز شروع می‌شود (نه ادامه از قبلی)
-- [ ] برد: رسیدن به خروجی، رفتن به مرحله بعد، و در مرحله ۴ صفحه پایان
-- [ ] متن فارسی در TMP درست و RTL نمایش داده می‌شود و به‌هم‌ریخته نیست
-- [ ] HUD از موج‌ها کم‌نورتر است و Bloom آن را درخشان نمی‌کند
-- [ ] عملکرد: ۶۰fps روی ماشین هدف با سه پینگ زنده و ۲۰۰ پرتو؛ allocation پایدار در فریم صفر
+- [ ] Microphone calibration: the live waveform moves, the TEST button fires a real ping, settings survive a restart
+- [ ] Pause: sound stops, microphone closes, the menu works with both keyboard and mouse (EventSystem on `InputSystemUIInputModule`)
+- [ ] Retry after death: the scene reloads and enemy/HUD state starts clean (not continuing from the previous run)
+- [ ] Win: reaching the exit, advancing to the next level, and on level 4 the ending screen
+- [ ] Persian text renders correctly RTL in TMP and is not garbled
+- [ ] The HUD is dimmer than the waves and Bloom does not make it glow
+- [ ] Performance: 60fps on the target machine with three live pings and 200 rays; zero stable per-frame allocation
 
-## چک‌لیست هر مرحله
+## Per-level checklist
 
-- [ ] از شروع تا خروج بدون گیرکردن (دیوار نامرئی، مسیر بسته)
-- [ ] هر دشمن در مرحله از روی کمان قابل تشخیص است
-- [ ] حالت بی‌صدا (فقط Space) برای تمام مرحله‌ها ممکن است
-- [ ] مسیر «کم‌سروصدا» برای هر مرحله وجود دارد (پاداش stealth)
-- [ ] متن آموزش/راهنما خوانده و فهمیده می‌شود
+- [ ] Start to exit without getting stuck (invisible wall, blocked path)
+- [ ] Every enemy in the level is identifiable from its arc
+- [ ] The silent mode (Space only) is possible for every level
+- [ ] A "quiet route" exists for every level (the stealth reward)
+- [ ] The tutorial/guide text is read and understood

@@ -1,49 +1,49 @@
-# گزارش تست بازی (بافتم)
+# Playtest report (session)
 
-این فایل را تسترها برای هر بافت کپی می‌کنند (`PLAYTEST_REPORT — 2026-11-05 — نام تستر.md`) و یافته را به‌صورت Issue یا PR روی همان **تگ** ثبت می‌کنند. کد را در `main` قضاوت نکنید؛ فقط تگ.
+Testers copy this file for each session (`PLAYTEST_REPORT — 2026-11-05 — tester name.md`) and record findings as an Issue or a PR against **that tag**. Do not judge the code on `main`; tags only.
 
-## مشخصات بافت
+## Session details
 
-| مورد | مقدار |
+| Item | Value |
 |---|---|
-| تگ / نسخه بیلد | |
-| پلتفرم (ویندوز / لینوکس) | |
-| دستگاه ورودی صدا (میک لپ‌تاپ / هدست / بدون میکروفون) | |
-| کالیبره انجام شد؟ | |
-| مدت بازی | |
-| آیا بازی را قبلاً دیده‌اند؟ | |
+| Tag / build version | |
+| Platform (Windows / Linux) | |
+| Sound input device (laptop mic / headset / no microphone) | |
+| Calibration performed? | |
+| Session length | |
+| Had they seen the game before? | |
 
-## آزمون خوانایی (معیار go/no-go هفته ۲)
+## Readability test (the week 2 go/no-go criterion)
 
-تستر فقط کمان‌ها را می‌بیند و باید بگوید جلوی او چیست. از لیست زیر حداقل ۳ مورد درست؟
+The tester only sees the arcs and has to say what is in front of them. At least 3 correct from the list below?
 
-| شیء | تشخیص درست؟ | یادداشت |
+| Object | Correct? | Notes |
 |---|---|---|
-| ستون (گرد) | | |
-| دیوار (صاف و بلند) | | |
-| جعبه / گوشه (نقطه روشن) | | |
-| سطح فلزی (روشن و تیز) | | |
-| سطح اسفنجی (تیره و کوتاه) | | |
-| دشمن خزنده (دو برآمدگی با شکاف) | | |
-| دشمن خارپشت (دندانه) | | |
-| بلعنده (جای خالی در کمان) | | |
+| Pillar (round) | | |
+| Wall (flat and long) | | |
+| Box / corner (hot-spot) | | |
+| Metal surface (bright and sharp) | | |
+| Sponge surface (dark and short) | | |
+| Crawler enemy (two bumps with a gap) | | |
+| Spike enemy (saw teeth) | | |
+| Absorber (a hole in the arcs) | | |
 
-## سوالات باز که باید جواب بگیریم
+## Open questions we need answers to
 
-1. اولین واکنش به صفحه سیاه چیست؟ (ناراحتی، کنجکاوی، کلافگی؟)
-2. Space (پژواک دستی) را فهمید یا منتظر صدا درآوردن بود؟
-3. چند بار بی‌دلیل فریاد زد/صدا درآورد و دشمن را کشاند؟ (نرخ false trigger)
-4. کدام مرحله گیر داد و چرا؟
-5. آیا «برگشتن» موج حس شد، یا موج خروجی به‌نظر آمد؟ (علامت `gainSign` — ببین [DESIGN_DECISIONS.md](DESIGN_DECISIONS.md))
+1. What is the first reaction to the black screen? (uncomfortable, curious, frustrated?)
+2. Did they understand Space (the manual echo), or did they wait to make a sound?
+3. How many times did they shout/make noise for no reason and drew an enemy? (false-trigger rate)
+4. Which level stalled and why?
+5. Was the wave felt as "returning", or did it look like an outgoing wave? (the sign of `gainSign` — see [DESIGN_DECISIONS.md](DESIGN_DECISIONS.md))
 
-## باگ‌ها
+## Bugs
 
-| # | مرحله | شرح | تکرارپذیری | جدی؟ |
+| # | Level | Description | Reproducible? | Serious? |
 |---|---|---|---|---|
-| ۱ | | | | |
+| 1 | | | | |
 
-## تصمیم بعد از این بافت
+## Decision after this session
 
-- [ ] ادامه طبق برنامه
-- [ ] وقت هفته بعد را روی خوانایی بگذاریم
-- [ ] این مورد از دامنه cut شود: …
+- [ ] Continue as planned
+- [ ] Spend next week's time on readability
+- [ ] Cut this from scope: …

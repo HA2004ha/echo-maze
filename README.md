@@ -1,41 +1,41 @@
-# پژواک (Echo) — `echo-maze`
+# Echo — `echo-maze`
 
-بازی مخفی‌کاری/ترسناک دوبعدی top-down که در آن صفحه کاملاً سیاه است و محیط را با **پژواک صدای خودتان** می‌بینید: صدا درمی‌آورید، موج مخروطی به جلو می‌رود، به دیوارها و موجودات می‌خورد و به‌صورت قطار کمان‌های بازگشتی برمی‌گردد؛ شکل هر کمان را باید بخوانید. پروژه درس نظریه بازی (Game Theory)، دانشگاه علم و صنعت ایران.
+A 2D top-down stealth/horror game where the screen is completely black and you see the world through **the echo of your own sound**: you make a noise, a cone-shaped wave travels forward, hits walls and creatures, and comes back as a train of returning arcs; you have to read the shape of each arc. This is a project for the Game Theory course at Iran University of Science and Technology.
 
-- سند طراحی: [Docs/GDD.md](Docs/GDD.md)
-- برنامه ۵ هفته‌ای و وضعیت: [Docs/PLAN.md](Docs/PLAN.md)
-- چیزهایی که عمداً ساخته نمی‌شود: [Docs/SCOPE_CUTS.md](Docs/SCOPE_CUTS.md)
-- کار با گیت/LFS: [Docs/GIT.md](Docs/GIT.md) · راه‌اندازی ماشین: [Docs/TEAM_SETUP.md](Docs/TEAM_SETUP.md)
+- Design document: [Docs/GDD.md](Docs/GDD.md)
+- 5-week plan and current status: [Docs/PLAN.md](Docs/PLAN.md)
+- Things deliberately not being built: [Docs/SCOPE_CUTS.md](Docs/SCOPE_CUTS.md)
+- Working with git/LFS: [Docs/GIT.md](Docs/GIT.md) · setting up your machine: [Docs/TEAM_SETUP.md](Docs/TEAM_SETUP.md)
 
-## نسخه ادیتور
+## Editor version
 
-**Unity 6000.6.3f1** — دقیقاً همین نسخه. باز کردن پروژه با ادیتور جدیدتر، فایل‌ها را یک‌طرفه ارتقا می‌دهد. جزئیات و ماژول‌های لازم در [Docs/TEAM_SETUP.md](Docs/TEAM_SETUP.md).
+**Unity 6000.6.3f1** — exactly this version. Opening the project with a newer editor upgrades the files one way. Required modules and details in [Docs/TEAM_SETUP.md](Docs/TEAM_SETUP.md).
 
-## باز کردن و اجرا
+## Opening and running
 
 ```
-Unity Hub ▸ Add project from disk ▸ این پوشه
+Unity Hub ▸ Add project from disk ▸ this folder
 Assets/Scenes/Sandbox.unity ▸ Play
 ```
 
-`Sandbox` صحنه آزمایش مکانیک پژواک است (حرکت با WASD، نگاه با ماوس، پینگ با Space). بیلد ویندوز با پلتفرم **Windows ▸ Mono** گرفته می‌شود.
+`Sandbox` is the mechanical test scene for the echo mechanic (move with WASD, aim with the mouse, ping with Space). The Windows build is produced with the platform set to **Windows ▸ Mono**.
 
-## ورودی صدا و محدودیت پلتفرم
+## Sound input and platform limits
 
-`Microphone` در ادیتور Unity روی لینوکس قابل اتکا نیست. کل ورودی صدا پشت یک لایه به نام `IEchoSource` است و در حالت توسعه از `SimulatedEchoSource` (اسلایدر/منحنی بلندی صدا) استفاده می‌شود، پس مکانیک روی لینوکس قابل توسعه و دمو است. مسیر میکروفون واقعی با بیلد ویندوز و طبق [Docs/MIC_TEST_MATRIX.md](Docs/MIC_TEST_MATRIX.md) تست می‌شود.
+All sound input sits behind one abstraction layer called `IEchoSource`. **Right now** the `Sandbox` scene runs with `sourceMode = ManualOnly`: no sound source is created at all, and `Space` is the only way to ping. Set `sourceMode` to `Simulated` if you want to see the automatic loudness gate without a microphone — it then reads a constant level from `simulatedLoudness`. A real microphone is the target on both Windows and Linux, but `Microphone` support in the Unity editor on Linux has never been verified here; that path is measured with a Windows build according to [Docs/MIC_TEST_MATRIX.md](Docs/MIC_TEST_MATRIX.md). Details in [Docs/DESIGN_DECISIONS.md](Docs/DESIGN_DECISIONS.md).
 
-## ساختار پوشه‌ها
+## Folder layout
 
 ```
-Assets/Scenes       صحنه‌ها: Sandbox (تست مکانیک)، Boot (منو)، Level01..Level04
-Assets/Scripts/Runtime   Core (پژواک) · Audio (ورودی صدا) · Gameplay · Data · UI · Debug
-Assets/Scripts/Editor    ابزار ادیتور (دیباگ پژواک، اعتبارسنجی مرحله، Validate Git Setup)
-Assets/Tests             EditMode (ریاضی کمان/شنوایی) و PlayMode (اعتبارسنجی صحنه‌ها)
-Assets/Data              ScriptableObjectهای بالانس: پارامترهای پژواک، جنس‌ها، دشمن‌ها
-Assets/Art               شیدر کمان، متریال‌ها، فونت‌ها
-Docs                     GDD، PLAN، SCOPE_CUTS، GIT، TEAM_SETUP، TUNING، DESIGN_DECISIONS، تست‌ها
+Assets/Scenes       Scenes: Sandbox (mechanic test), Boot (menu), Level01..Level04
+Assets/Scripts/Runtime   Core (echo) · Audio (sound input) · Gameplay · Data · UI · Debug
+Assets/Scripts/Editor    Editor tooling (echo debug window, level validation, Validate Git Setup)
+Assets/Tests             EditMode (arc math / readability) and PlayMode (scene validation)
+Assets/Data              Balancing ScriptableObjects: echo parameters, surfaces, enemies
+Assets/Art               Arc shader, materials, fonts
+Docs                     GDD, PLAN, SCOPE_CUTS, GIT, TEAM_SETUP, TUNING, DESIGN_DECISIONS, test docs
 ```
 
-## تیم
+## Team
 
-حسین عسکری (برنامه‌نویس اصلی — هسته پژواک، ورودی میکروفون، رندر) · مهزیار میرعظیمی (UI، AI، مرحله‌ها، تست) · سید سعید نوریان (طراحی بازی و صدا، بالانس).
+Hossein Askari (lead programmer — echo core, microphone input, rendering) · Mahziar Mirazimi (UI, AI, levels, testing) · Seyed Saeed Nourian (game and sound design, balancing).

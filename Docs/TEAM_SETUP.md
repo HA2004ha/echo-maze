@@ -1,36 +1,43 @@
-# راه‌اندازی ماشین شما برای باز کردن این پروژه
+# Setting up your machine to open this project
 
-## ۱) نسخه ادیتور: دقیقاً Unity 6000.6.3f1
+## 1) Editor version: exactly Unity 6000.6.3f1
 
-پروژه روی `6000.6.3f1` قفل است (`ProjectSettings/ProjectVersion.txt`). این **سیگنال است، نه اجبار**: اگر پروژه را با ادیتور جدیدتر باز کنید، ادیتور فایل‌های YAML را یک‌طرفه ارتقا می‌دهد و نسخه‌های قدیمی‌تر دیگر نمی‌توانند باز کنند. پس:
+The project is pinned to `6000.6.3f1` (`ProjectSettings/ProjectVersion.txt`). This is **a signal, not a coercion**: if you open the project with a newer editor, the editor upgrades the YAML files one way and older versions can no longer open them. So:
 
-- Unity Hub ▸ **Install Unity** ▸ نسخه **6000.6.3f1**
-- تیک ماژول‌ها: روی لینوکس **Linux Build Support** + **Windows Build Support (Mono)**؛ روی ویندوز **Windows Build Support (Mono)** (پیش‌فرض نصب است)
-- ادیتورهای 6000.7، 6000.6.x patch دیگر یا 2022.x را برای این ریپو **به کار نبرید**. اگر مجبورید با نسخه دیگری تست کنید، در یک clone جدا (scratch) کار کنید و **push نکنید**.
-- بعد از اولین باز کردن: import چند دقیقه طول می‌کشد. تا پایان آن هیچ‌جا کلیک نکنید و در `Window ▸ Package Manager ▸ Updates` هیچ دکمه‌ای نزنید.
-- **Input System (new) تنها حالت فعال است** (`activeInputHandler: 1`). کدهای قدیمی که با `Input.GetAxis` یا `Input.mousePosition` نوشته شده‌اند در این پروژه کامپایل/اجرا نمی‌شوند.
+- Unity Hub ▸ **Install Unity** ▸ version **6000.6.3f1**
+- Module checkboxes: on Linux **Linux Build Support** + **Windows Build Support (Mono)**; on Windows **Windows Build Support (Mono)** (installed by default)
+- Do **not** use editors 6000.7, a different 6000.6.x patch, or 2022.x for this repo. If you must test with another version, work in a separate scratch clone and **do not push**.
+- After the first open: import takes a few minutes. Do not click anywhere until it finishes, and do not press any button in `Window ▸ Package Manager ▸ Updates`.
+- **Input System (new) is the only active mode** (`activeInputHandler: 1`). Old code written against `Input.GetAxis` or `Input.mousePosition` will not compile/run in this project.
 
-## ۲) گیت و LFS
+## 2) Git and LFS
 
 ```
 git lfs install --local
 ```
 
-اگر از قبل clone کرده‌اید و فایل‌ها pointer به‌نظر می‌رسند: `git lfs pull`.
+If you already cloned and files look like pointers: `git lfs pull`.
 
-## ۳) ثبت درایور merge فایل‌های YAML
+## 3) Register the YAML merge driver
 
-بدون این، mergeهای `.unity` و `.prefab` بی‌صدا خراب می‌شوند.
+Without this, merges of `.unity` and `.prefab` are silently corrupted.
 
-روی **لینوکس** (مسیر را با نسخه خودتان چک کنید):
+First find the tool on your machine — it lives inside the editor install, not in the repo:
+
+```
+ls "$HOME"/Unity*/Editor/Data/Tools/UnityYAMLMerge \
+   "$HOME"/Unity/Hub/Editor/*/Editor/Data/Tools/UnityYAMLMerge 2>/dev/null
+```
+
+On **Linux**, using the path you just found (note that Hub installs and manually-extracted installs differ — `~/Unity/6000.6.3f1/...` vs `~/Unity/Hub/Editor/6000.6.3f1-x86_64/...`):
 
 ```
 git config merge.unityyamlmerge.name      "Unity Smart Merge"
-git config merge.unityyamlmerge.driver    "$HOME/Unity/Hub/Editor/6000.6.3f1-x86_64/Editor/Data/Tools/UnityYAMLMerge merge -p %O %A %B %P"
+git config merge.unityyamlmerge.driver    "$HOME/Unity/6000.6.3f1/Editor/Data/Tools/UnityYAMLMerge merge -p %O %A %B %P"
 git config merge.unityyamlmerge.recursive binary
 ```
 
-روی **ویندوز** (فقط اگر فایل وجود دارد):
+On **Windows** (only if the file exists):
 
 ```
 git config merge.unityyamlmerge.name      "Unity Smart Merge"
@@ -38,26 +45,26 @@ git config merge.unityyamlmerge.driver    "\"%PROGRAMFILES%\Unity\Hub\Editor\600
 git config merge.unityyamlmerge.recursive binary
 ```
 
-روی **مک**: ابزار `UnitySmartMerge` داخل bundle ادیتور است؛ مسیر را با Finder چک و به همان شکل ثبت کنید.
+On **macOS**: the `UnitySmartMerge` tool is inside the editor bundle; locate it with Finder and register it in the same shape.
 
-راستی‌آزمایی:
+Verification:
 
 ```
-git config --get-regexp 'merge\.'      # سه سطر باید باشد
+git config --get-regexp 'merge\.'      # the three lines must be there
 ```
 
-یا داخل ادیتور: منوی `Tools ▸ Echo Maze ▸ Validate Git Setup`.
+Or inside the editor: the menu `Tools ▸ Echo Maze ▸ Validate Git Setup`.
 
-## ۴) باز کردن و اجرا
+## 4) Opening and running
 
-1. Unity Hub ▸ Add project from disk ▸ پوشه ریشه ریپو (همان‌جا که `Assets/` و `ProjectSettings/` هست).
-2. صحنه `Assets/Scenes/Sandbox.unity` را باز کنید (مرحله آزمایشی مکانیک) یا `Assets/Scenes/Boot.unity` را (وقتی ساخته شد: منو و تنظیمات).
-3. Play. کنترل‌ها: WASD حرکت، ماوس جهت نگاه، Space پژواک دستی.
-4. **روی لینوکس انتظار نداشته باشید میکروفون کار کند.** پشتیبانی `Microphone` در ادیتور Linux مطمئن نیست؛ پروژه برای همین ورودی صدا را پشت لایه `IEchoSource` گذاشته و با `SimulatedEchoSource` (اسلایدر بلندی صدا) کار می‌کند. برای تست میکروفون واقعی، بیلد ویندوز لازم است.
+1. Unity Hub ▸ Add project from disk ▸ the repo root folder (the one containing `Assets/` and `ProjectSettings/`).
+2. Open the scene `Assets/Scenes/Sandbox.unity` (the mechanic test level), or `Assets/Scenes/Boot.unity` once it exists (menu and settings).
+3. Play. Controls: WASD to move, mouse for aim direction, Space for the manual echo.
+4. **Do not expect a working microphone yet.** It is the goal on both Windows and Linux, but `Microphone` support in the Unity editor on Linux has never been verified here. That is why sound input sits behind the `IEchoSource` layer. Today `Sandbox` runs with `sourceMode = ManualOnly` (no source at all, Space only); switching to `Simulated` feeds a constant `simulatedLoudness` through the automatic gate so the mic path can be developed and demoed without a mic. Real microphone testing currently requires a Windows build.
 
-## ۴-الف) ادیتور از خط فرمان (بدون باز کردن پنجره)
+## 4a) The editor from the command line (without opening a window)
 
-برای کامپایل و تست بدون GUI:
+To compile and test without a GUI:
 
 ```
 U=<path-to-editor>/Editor/Unity
@@ -66,20 +73,20 @@ U=<path-to-editor>/Editor/Unity
   -testResults "$PWD/Logs/editmode.xml" -logFile "$PWD/Logs/editmode.log"
 ```
 
-خروجی `0` یعنی همه تست‌ها سبزند؛ نتیجه خط‌به‌خط در `Logs/editmode.xml` است. سه ابزار داخل ادیتور هم همین‌طور صدا زده می‌شوند: `EchoMaze.EditorTools.SandboxSceneSetup.Bootstrap` (ساخت صحنه و assetها)، `.ApplyProjectSettings` (لایه‌ها و sorting)، `EchoMaze.EditorTools.GitSetupValidator.Validate`.
+Exit code `0` means every test is green; the per-test result is in `Logs/editmode.xml`. The three editor tools can be invoked the same way: `EchoMaze.EditorTools.SandboxSceneSetup.Bootstrap` (builds the scene and the assets), `.ApplyProjectSettings` (layers and sorting), `EchoMaze.EditorTools.GitSetupValidator.Validate`.
 
-سه تله‌ای که روی این ماشین دیدیم:
+Three traps we hit on this machine:
 
-- ادیتور کارش را تمام می‌کند و پیام «done» را در log می‌نویسد، ولی **خودش خارج نمی‌شود** و CPU را می‌خورد. یعنی نتیجه نوشته شده؛ با `timeout 400` صدا کنید و بعد از دیدن پیام موفقیت پروسه را `kill -TERM` کنید. فقط توجه کنید چیزهایی که ادیتور موقع exit روی دیسک می‌نویسد (مثل `ProjectSettings/EditorSettings.asset`) در این حالت flush نمی‌شوند؛ آن فایل را با ادیتور بسته دستی ویرایش کن.
-- **تست PlayMode در batchmode روی این ماشین دویده نمی‌شود** (با `-nographics` و هم با `DISPLAY=:0`): پروسه فوراً با خروجی `1` تمام می‌شود و `xml` نتیجه نمی‌نویسد. تست‌های PlayMode فقط داخل ادیتور (تب Test Runner) قابل اجرا هستند؛ چیزی که باید در CI سبز باشد EditMode نوشته می‌شود.
-- اگر بعد از ساخت asset با اسکریپت ادیتور، فیلدی در صحنه `objectReference: {fileID: 0}` شد: احتمالاً asset **قبل** از `EditorSceneManager.OpenScene(...)` لود شده. بار صحنه، assetهای بی‌مراجع را از حافظه بیرون می‌اندازد و متغیر محلی به شیء نابودشده اشاره می‌کند. ترتیب درست: اول `OpenScene`، بعد `EnsureX()`. `SandboxSceneSetup` حالا یک `LogError` صریح دارد اگر این حالت برگردد.
+- The editor finishes its work and writes the "done" message to the log, but **does not exit itself** and keeps eating CPU. The result has already been written; invoke it with `timeout 400` and `kill -TERM` the process once you see the success message. Note that whatever the editor would flush to disk on exit (such as `ProjectSettings/EditorSettings.asset`) does not get written in that state; edit that file by hand with the editor closed.
+- **PlayMode tests cannot be run in batchmode on this machine** (neither with `-nographics` nor with `DISPLAY=:0`): the process exits immediately with code `1` and writes no result `xml`. PlayMode tests are only runnable inside the editor (Test Runner tab). Whatever needs to be green in CI is written as EditMode.
+- If, after creating an asset with an editor script, some field in the scene ends up as `objectReference: {fileID: 0}`: the asset was probably loaded **before** `EditorSceneManager.OpenScene(...)`. Scene loading flushes asset references that have no scene reference, and your local variable points at a destroyed object. Correct order: `OpenScene` first, then `EnsureX()`. `SandboxSceneSetup` now has an explicit `LogError` if this happens again.
 
-## ۵) بیلد ویندوز از ادیتور لینوکس
+## 5) Windows build from the Linux editor
 
-`File ▸ Build Settings ▸ Platform: Windows ▸ Mono` (نه IL2CPP؛ ماژول IL2CPP ویندوز روی لینوکس وجود ندارد). خروجی را داخل `Builds/` بگذارید که ignored است. اولین بیلد ویندوز برنامه‌ریزی‌شده هفته ۳ است.
+`File ▸ Build Settings ▸ Platform: Windows ▸ Mono` (not IL2CPP — the Windows IL2CPP module does not exist on Linux). Put the output in `Builds/`, which is ignored. The first Windows build is scheduled for week 3.
 
-## ۶) نقش‌های تیم
+## 6) Team roles
 
-- کد: حسین عسکری (برنامه‌نویس اصلی) — شاخه‌های `feat/*` و merge به `main`.
-- طراحی مرحله/دشمن/بالانس و تست: سید سعید نوریان — پارامترها در `Assets/Data/**` و `Docs/TUNING.md`؛ بدون نیاز به کد.
-- تست و بازبین: مهزیار میرعظیمی — فقط تگ‌های `v0.x` را بازی می‌کند و یافته‌اش را در قالب `Docs/PLAYTEST_REPORT.md` ثبت می‌کند.
+- Code: Hossein Askari (lead programmer) — `feat/*` branches merged into `main`.
+- Level/enemy design, balancing and testing: Seyed Saeed Nourian — parameters live in `Assets/Data/**` and `Docs/TUNING.md`; no code required.
+- Testing and review: Mahziar Mirazimi — plays only the `v0.x` tags and records findings in the form of `Docs/PLAYTEST_REPORT.md`.

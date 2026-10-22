@@ -1,25 +1,25 @@
-# چیزهایی که عمداً ساخته نمی‌شود (دامنه‌ی حذف‌شده‌ها)
+# Things deliberately not built (out-of-scope)
 
-این فایل برای آن است که چیزی گم نشود: هر ایده‌ای که از نسخه تحویلی این ترم بیرون ماند، با دلیل و با «کجا ادامه‌اش بدهیم» اینجا ثبت می‌شود. قبل از آنکه هر فیچر جدید به بازی اضافه کنید، این لیست و جدول «الان/بعدا» در [GDD.md](GDD.md) را بخوانید.
+This file exists so nothing gets lost: every idea left out of this term's delivery version is recorded here, with the reason and "where we pick it up later". Before adding any new feature to the game, read this list and the "now/later" table in [GDD.md](GDD.md).
 
-## حذف‌های قطعی نسخه تحویل (پاییز ۲۰۲۶)
+## Final cuts for the delivery version (Autumn 2026)
 
-| مورد | دلیل حذف | ادامه‌اش کجاست |
+| Item | Why it was cut | Where it continues |
 |---|---|---|
-| دفترچه موجودات (Bestiary) | یک UI کامل با جمع‌آوری state و ذخیره می‌خواست؛ هیچ‌کدام در مکانیک اصلی نقش نداشت | بعد از ترم؛ داده‌های امضا موجی از همان `EchoSignature` assetها خوانده می‌شود |
-| مود سکوت (Silent Mode) | فقط یک شمارنده بود، ولی تست بالانس را دو برابر می‌کرد | بعد از ترم، روی همان `GameFlow` با یک محدودیت در `EchoDirector` |
-| ستاره و XP و امتیاز پایان مرحله | بالانس عددی می‌خواست و در ۵ هفته قابل تست نبود | بعد از ترم؛ ورودی‌اش از `NoiseBoard` (جمع بلندی صدا) و زمان آزاد می‌شود |
-| نوار نفس (BREATH) | در خود GDD هم «اگر وقت کم بود حذف می‌شود» نوشته شده بود؛ با `loudness` در حالت Shift هم‌پوشانی داشت | بعد از ترم، یا تبدیل به «خستگی» روی همان ضربان `loudness` |
-| جنس شیشه و آینه صوتی زاویه‌دار | شیشه یعنی عبور صدا و شکست مسیر؛ آینه یعنی بازتاب برداری — هر دو باز نویسی فنری پرتو | فنری پرتو در `RayFan` برای چند bounce باز می‌شود |
-| پژواک دروغی (Ghost Echoes) و مناطق کرکننده | بعد از ثابت‌شدن خوانایی کمان‌ها معنا دارد، وگرنه بازی‌ای که خوانده نمی‌شود را گیج‌کننده‌تر می‌کند | هفته ۶ به بعد؛ یک `secondOrderBounce` در `ArcMath` |
-| دشمن‌های ساکت، عنکبوت، تقلیدکننده، شکارچی فرکانس | چهار رفتار + چهار امضای موجی تازه = دو هفته؛ شکارچی فرکانس به‌طور خاص آنالایزر فرکانسی می‌خواهد | `Data/Enemies/*.asset` و `EchoSignature` برای این‌ها ساخته شده و فقط داده لازم دارد |
-| سوت اولتراسونیک، ضبط صوتی، تیونر فرکانسی | هر کدام یک زیرسیستم ورودی/ذخیره صدا می‌خواهد | بعد از ترم؛ ضبط صوتی روی همان `IEchoSource` سوار می‌شود |
-| غول آخر (اتاق پژواک ناپایدار) | یک مکانیک رندر سراسری + بالانس کامل | بعد از ترم |
-| مود استریمر (اتصال چت به صدا) | وابستگی بیرونی و تست‌ناپذیر در این زمان | بعد از ترم |
-| مودهای بقا، نابینا، همکاری دو نفره | هر سه نیازمند باز شدن معماری صحنه/مرحله | بعد از ترم؛ «نابینا» فقط یک flag در `EchoTuningProfile` است |
-| اندروید | ورودی میکروفون و عملکرد روی موبایل؛ هدف GDD ویندوز PC بود | هرگز در این پروژه؛ اگر شد، نسخه جدا |
-| CI روی GitHub Actions | فعال‌سازی license ادیتور Unity در runner خودش یک هفته کار است | اجرای محلی تست‌ها از خط فرمان؛ دستور در [QA_CHECKLIST.md](QA_CHECKLIST.md) |
+| Bestiary | Would have needed a complete UI with state collection and saving; neither plays any role in the core mechanic | After the term; its wave-signature data reads from the same `EchoSignature` assets |
+| Silent Mode | It was only a counter, but it doubled the balancing test load | After the term, on the same `GameFlow` with one limit inside `EchoDirector` |
+| End-of-level stars, XP and score | Needed numeric balancing that could not be tested in 5 weeks | After the term; its input is free from `NoiseBoard` (accumulated loudness) and time |
+| BREATH bar | The GDD itself said "cut this if time runs short"; it overlapped with the `loudness` pulse in Shift mode | After the term, or converted into "fatigue" on that same `loudness` pulse |
+| Glass material and angled acoustic mirror | Glass means sound passing through and the path bending; a mirror means vector reflection — both require rewriting the ray physics | The ray physics in `RayFan` reopens for multiple bounces |
+| Ghost Echoes and Deaf Zones | They only make sense after arc readability is proven, otherwise they make an unreadable game more confusing | Week 6 and later; a `secondOrderBounce` in `ArcMath` |
+| The Silent, Spider, Mimic and Frequency Hunter enemies | Four behaviours plus four new wave signatures = two weeks; the Frequency Hunter specifically needs a frequency analyser | `Data/Enemies/*.asset` and `EchoSignature` were built for these, so they only need data |
+| Ultrasonic whistle, audio recording, frequency tuner | Each needs its own sound input/recording subsystem | After the term; audio recording rides on the same `IEchoSource` |
+| Final boss (the unstable-echo room) | A global rendering pass plus full balancing | After the term |
+| Streamer mode (chat hooked to sound) | External dependency and untestable in this time | After the term |
+| Survival, Blind and two-player co-op modes | All three require opening up the scene/level architecture | After the term; "Blind" is only one flag in `EchoTuningProfile` |
+| Android | Microphone input and mobile performance; the GDD target was Windows PC | Never in this project; a separate version if it happens |
+| CI on GitHub Actions | Activating a Unity editor license on a runner is itself a week of work | Running the tests locally from the command line; the command is in [QA_CHECKLIST.md](QA_CHECKLIST.md) |
 
-## چیزی که از دامنه «الان» GDD **حذف نشد** و تعهد است
+## What was **not** cut from the GDD's "now" scope and is a commitment
 
-ورودی میکروفون با درِ نویز و کالیبره، موج خروجی مخروطی و قطار کمان بازتابی، سه جنس سطح (معمولی/فلزی/اسفنجی)، سه دشمن (خزنده/خارپشت/بلعنده)، تیله صوتی و نبض ضعیف، چهار مرحله، HUD، منوهای اصلی/توقف/تنظیمات/کالیبره/پیروزی/شکست، پایان کوتاه داستانی، صدا و موسیقی، بیلد ویندوز.
+Microphone input with a noise gate and calibration, the outgoing cone wave and the reflected arc train, three surface materials (concrete/metal/sponge), three enemies (Crawler/Spike/Absorber), the decoy marble and the weak pulse, four levels, the HUD, the main/pause/settings/calibration/win/lose menus, the short story ending, sound and music, and a Windows build.

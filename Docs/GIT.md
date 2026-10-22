@@ -1,33 +1,33 @@
-# کار با گیت در این ریپو (Unity + LFS)
+# Working with git in this repo (Unity + LFS)
 
-این فایل قرارداد گیت پروژه پژواک است. سه چیز را باید درست انجام دهید: چیزهای درست را commit کنید، فایل‌های دودوئی (binary) را LFS ببرد، و merge فایل‌های YAML ادیتور را با درایور درست انجام دهید.
+This file is the git contract for the Echo project. Three things have to be done correctly: commit the right things, let LFS carry the binary files, and merge editor YAML files with the correct driver.
 
-## چه چیزی commit می‌شود و چه چیزی نمی‌شود
+## What gets committed and what does not
 
-**همیشه commit:**
+**Always committed:**
 
-- `Assets/**` به‌همراه **همه فایل‌های `.meta`** (بدون `.meta` گودپاشی، GUIDها از بین می‌روند و مرجع‌ها در صحنه می‌شکنند)
-- `Packages/manifest.json` و `Packages/packages-lock.json`
-- `ProjectSettings/**` (از جمله `ProjectSettings/Packages/**`)
-- `.gitignore`، `.gitattributes`، `Docs/**`
+- `Assets/**` together with **every `.meta` file** (without `.meta` files the GUIDs are lost and references break inside scenes)
+- `Packages/manifest.json` and `Packages/packages-lock.json`
+- `ProjectSettings/**` (including `ProjectSettings/Packages/**`)
+- `.gitignore`, `.gitattributes`, `Docs/**`
 
-**هرگز commit نمی‌شود** (همه از قبل در `.gitignore` هستند؛ فقط چک کنید که چیزی به زور `git add -f` نشده باشد):
+**Never committed** (all of these are already in `.gitignore`; just check that nothing was force-added with `git add -f`):
 
-`Library/`، `Temp/`، `Obj/`، `Logs/`، `UserSettings/`، `Builds/`، `MemoryCaptures/`، `Recordings/`، `*.csproj`، `*.sln`، `*.slnx`، `*.user`، `sysinfo.txt`، `InitTestScene*.unity*`
+`Library/`, `Temp/`, `Obj/`, `Logs/`, `UserSettings/`, `Builds/`, `MemoryCaptures/`, `Recordings/`, `*.csproj`, `*.sln`, `*.slnx`, `*.user`, `sysinfo.txt`, `InitTestScene*.unity*`
 
-بیلد نهایی بازی **داخل ریپو نمی‌رود**؛ zip تحویل جداگانه فرستاده می‌شود.
+The final game build does **not** go into the repo; the delivery zip is sent separately.
 
-## آیین commit (هر بار، بدون استثنا)
+## Commit ritual (every time, no exceptions)
 
 ```
-git status --short                    # ۱. چه چیزی واقعا تغییر کرده؟
-git add <path> <path>                 # ۲. فایل به فایل، نه git add -A
-git lfs ls-files -n                   # ۳. هر png/ttf/otf/wav/ogg جدید باید اینجا باشد
-git commit -m "..."                   # ۴
-git push origin main --follow-tags    # ۵ (فقط روی شاخه‌های خودتان بدون --follow-tags)
+git status --short                    # 1. what actually changed?
+git add <path> <path>                 # 2. file by file, not git add -A
+git lfs ls-files -n                   # 3. every new png/ttf/otf/wav/ogg must be listed here
+git commit -m "..."                   # 4
+git push origin main --follow-tags    # 5 (on your own branches only, without --follow-tags)
 ```
 
-قدم ۳ حیاتی است: در این ریپو یک بار LFS **بی‌صدا اجرا نشد** و یک PNG ۸۱۶٬۴۶۴ بایتی خام در تاریخ commit شد. اگر فایلی در قدم ۳ نیست و باید باشد:
+Step 3 is critical: LFS **silently failed to run** once in this repo and a raw 816,464-byte PNG landed in commit history. If a file is missing from step 3 but should be there:
 
 ```
 git rm --cached <file>
@@ -35,31 +35,31 @@ git lfs install --local
 git add <file>
 ```
 
-پیام commit: `feat:` فیچر، `fix:` باگ، `chore:` زیرساخت، `test:` تست، `docs:` سند. پیشوندهای دامنه‌ای هم مجاز است: `chore(project-settings):`، `feat(sandbox):`.
+Commit messages: `feat:` for features, `fix:` for bugs, `chore:` for infrastructure, `test:` for tests, `docs:` for documentation. Scoped prefixes are allowed too: `chore(project-settings):`, `feat(sandbox):`.
 
-## شاخه‌ها و تگ‌ها
+## Branches and tags
 
-- `main` **همیشه با ادیتور 6000.6.3f1 باز و قابل Play است.** تسترها و بازبین‌ها فقط `main` یا یک تگ را می‌گیرند، نه شاخه کاری.
-- کار روی `feat/echo-mesh`، `feat/enemy-crawler`، … با عمر حداکثر **۲ روز**؛ merge به‌صورت squash.
-- پایان هر هفته یک تگ: `v0.1-sandbox`، `v0.2-arc-train`، `v0.3-mic-calibration`، `v0.4-enemies`، `v0.5-submission`، `v0.6-final`.
-- `main` هرگز `--force` push نمی‌شود. بعد از اولین clone توسط تیم، `git lfs migrate` و هر نوع بازنویسی تاریخ **ممنوع** است.
-- ویرایش‌های `ProjectSettings/**` (لایه‌ها، کیفیت، input handler، enter-play-mode) در یک commit جداگانه و دسته‌ای می‌آیند، نه وسط یک فیچر برنچ.
-- هر شاخه حداکثر **یک صحنه** را ویرایش کند. صحنه‌ها بزرگ‌ترین منبع تعارض‌اند.
+- `main` **always opens and plays with editor 6000.6.3f1.** Testers and reviewers take only `main` or a tag, never a working branch.
+- Work happens on `feat/echo-mesh`, `feat/enemy-crawler`, … with a maximum lifetime of **2 days**; merged as a squash.
+- One tag at the end of each week: `v0.1-sandbox`, `v0.2-arc-train`, `v0.3-mic-calibration`, `v0.4-enemies`, `v0.5-submission`, `v0.6-final`.
+- `main` is never force-pushed. After the team's first clone, `git lfs migrate` and any form of history rewriting is **forbidden**.
+- Edits to `ProjectSettings/**` (layers, quality, input handler, enter-play-mode) come in a separate, batched commit — never in the middle of a feature branch.
+- Each branch edits at most **one scene**. Scenes are the biggest source of conflicts.
 
-## درایور merge فایل‌های YAML (Unity Smart Merge)
+## The YAML merge driver (Unity Smart Merge)
 
-`.gitattributes` روی تمام فایل‌های YAML (`*.unity`, `*.prefab`, `*.asset`, `*.meta`, `*.mat`, …) مقدار `merge=unityyamlmerge` را خواسته است. اگر این درایور در تنظیمات گیتِ ماشین شما ثبت **نشده باشد**، گیت بی‌صدا به merge متنی ساده برمی‌گردد و ادغام صحنه را **خراب** می‌کند. ابزار داخل ادیتور است (در Unity 6 حذف نشده)؛ فقط باید ثبتش کنید — راهنما در [TEAM_SETUP.md](TEAM_SETUP.md).
+`.gitattributes` requests `merge=unityyamlmerge` for every YAML file (`*.unity`, `*.prefab`, `*.asset`, `*.meta`, `*.mat`, …). If this driver is **not registered** in your machine's git config, git silently falls back to a plain text merge and **ruins** the scene merge. The tool ships inside the editor (it has not been removed in Unity 6); you only have to register it — guide in [TEAM_SETUP.md](TEAM_SETUP.md).
 
-راستی‌آزمایی:
+Verification:
 
 ```
-git config --get-regexp 'merge\.'     # باید سه سطر unityyamlmerge برگرداند
+git config --get-regexp 'merge\.'     # should return the three unityyamlmerge lines
 ```
 
-داخل ادیتور هم می‌شود چک کرد: منوی `Tools ▸ Echo Maze ▸ Validate Git Setup` (اسکریپت ادیتور) PASS/FAIL می‌دهد.
+It can also be checked inside the editor: the menu `Tools ▸ Echo Maze ▸ Validate Git Setup` (editor script) reports PASS/FAIL.
 
-## LFS فقط برای باینری
+## LFS for binaries only
 
-قانون: `*.asset`، `*.unity`، `*.prefab`، `*.meta` **هرگز** به LFS نمی‌روند (کامنت دفاعی هم در `.gitattributes` نوشته شده). این‌ها YAML متن‌اند؛ اگر pointer شوند، ادیتور روی هر ماشینی که `git-lfs` نداشته باشد آن‌ها را به‌عنوان asset می‌خواند و پروژه می‌شکند، و درایور smart merge هم روی pointer کار نمی‌کند.
+The rule: `*.asset`, `*.unity`, `*.prefab`, `*.meta` **never** go to LFS (there is a defensive comment saying so in `.gitattributes` too). These are text YAML; if they become pointers, the editor on any machine without `git-lfs` reads them as assets and the project breaks — and the smart merge driver does not work on pointers either.
 
-سقف LFS در گیت‌هاب (پلن رایگان ≈ ۱ گیگ storage/bandwidth) را در نظر داشته باشید: بازی ما خط‌های برداری و اسپرایت‌های کوچک است، پس راحت جا می‌شود — ولی هیچ‌کس PSD بزرگ یا WAV خامِ ضبط‌شده را بدون بررسی داخل `Assets/` نیندازد.
+Keep the GitHub LFS limit in mind (the free plan is ≈1 GB of storage/bandwidth): our game is vector lines and small sprites, so it fits easily — but nobody should drop a large PSD or a raw recorded WAV into `Assets/` without thinking about it.
