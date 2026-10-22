@@ -13,16 +13,21 @@ namespace EchoMaze.Core
     [DisallowMultipleComponent]
     public sealed class EchoDirector : MonoBehaviour
     {
+        /// <summary>
+        /// Where the loudness that drives the automatic gate comes from. The numbers below are the
+        /// values stored in scenes, so ManualOnly keeps 0: Sandbox.unity already saves 0 and needs
+        /// no edit.
+        /// </summary>
         public enum SourceMode
         {
-            /// <summary>Constant loudness from the profile. The normal path on Linux.</summary>
-            Simulated,
-            /// <summary>No automatic pings; only ForcePing.</summary>
-            None
+            /// <summary>No sound source at all. Space and ForcePing are the only pings: the development path until the microphone lands.</summary>
+            ManualOnly = 0,
+            /// <summary>Constant loudness from the profile, fed through the automatic gate so the microphone path can be exercised without a microphone.</summary>
+            Simulated = 1
         }
 
         [SerializeField] EchoTuningProfile profile;
-        [SerializeField] SourceMode sourceMode = SourceMode.Simulated;
+        [SerializeField] SourceMode sourceMode = SourceMode.ManualOnly;
         [SerializeField] LayerMask echoLayerMask = ~0;
         [SerializeField] EchoRenderer fieldRenderer;
 
@@ -43,6 +48,12 @@ namespace EchoMaze.Core
         public int LivePingCount { get; private set; }
         public int LastRayCount { get; private set; }
 
+        /// <summary>
+        /// Loudness of the Space fallback, read from the profile so the tuning asset stays the only
+        /// source of truth for how loud a manual echo is.
+        /// </summary>
+        public float ManualEchoLoudness => profile.manualEchoLoudness;
+
         void Awake()
         {
             if (profile == null)
@@ -60,7 +71,7 @@ namespace EchoMaze.Core
             }
 
             source = CreateSource();
-            source.Open(null, 0);
+            source?.Open(null, 0);
 
             if (fieldRenderer == null)
             {
@@ -202,10 +213,10 @@ namespace EchoMaze.Core
         {
             switch (sourceMode)
             {
-                case SourceMode.None:
-                    return null;
-                default:
+                case SourceMode.Simulated:
                     return new SimulatedEchoSource(profile);
+                default:
+                    return null;
             }
         }
 

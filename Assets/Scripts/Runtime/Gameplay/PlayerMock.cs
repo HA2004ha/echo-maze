@@ -15,8 +15,6 @@ namespace EchoMaze.Gameplay
         [SerializeField] EchoDirector director;
         [SerializeField] float speed = 3.2f;
         [SerializeField] float quietMultiplier = 0.42f;
-        [Tooltip("Manual echo is quieter and shorter-ranged than a shout, so it needs a loudness of its own.")]
-        [Range(0f, 1f)] [SerializeField] float manualLoudness = 0.6f;
         [SerializeField] float aimSmoothing = 18f;
 
         Rigidbody2D body;
@@ -45,6 +43,14 @@ namespace EchoMaze.Gameplay
             IsQuiet = Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed;
             UpdateAim();
             director.SetPose(transform.position, aimRad);
+
+            // The edge is read here, not in FixedUpdate: wasPressedThisFrame is per-frame state, so a
+            // physics loop that ran zero times drops the press and one that ran twice pings twice.
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard != null && keyboard.spaceKey.wasPressedThisFrame)
+            {
+                director.ForcePing(director.ManualEchoLoudness);
+            }
         }
 
         void UpdateAim()
@@ -95,11 +101,6 @@ namespace EchoMaze.Gameplay
                 if (keyboard.dKey.isPressed || keyboard.rightArrowKey.isPressed)
                 {
                     input.x += 1f;
-                }
-
-                if (keyboard.spaceKey.wasPressedThisFrame && director != null)
-                {
-                    director.ForcePing(manualLoudness, transform.position, aimRad);
                 }
             }
 
