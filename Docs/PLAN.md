@@ -42,7 +42,7 @@ The only goal: one cyan ring that collapses around pillar/wall/box using the GDD
 
 ### Day 1 — infrastructure and documents
 
-- [x] Register the merge driver and `git lfs install --local`, verified with `git config --get-regexp merge\.`
+- [x] `git lfs install --local` and the merge driver registered — **this was ticked on day 1 and was false until the wrapper landed.** The recipe in `TEAM_SETUP.md` pointed git straight at `UnityYAMLMerge`, which cannot parse git's extension-less temp files: every scene merge either errored into a marker-less conflict or, worse, exited 0 having kept only our side. `Tools/unity-yaml-merge.sh` plus `Register Unity Merge Driver` is what made it real, and `Validate Git Setup` now proves it by merging an actual scene rather than reading three config lines.
 - [x] `.gitattributes`: `text eol=lf` for `*.md/*.json/*.cs/*.shader/*.hlsl` and the defensive comment "Unity YAML is never put in LFS"
 - [x] `Docs/`: GDD, PLAN, SCOPE_CUTS, GIT, TEAM_SETUP, root README
 - [x] Template cleanup: delete `Assets/Welcome`, remove `com.unity.learn.iet-framework` and its Settings file, rename `SampleScene` → `Sandbox`

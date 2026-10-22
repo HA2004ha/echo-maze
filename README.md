@@ -34,6 +34,7 @@ Assets/Tests             EditMode (arc math / readability) and PlayMode (scene v
 Assets/Data              Balancing ScriptableObjects: echo parameters, surfaces, enemies
 Assets/Art               Arc shader, materials, fonts
 Docs                     GDD, PLAN, SCOPE_CUTS, GIT, TEAM_SETUP, TUNING, DESIGN_DECISIONS, test docs
+Tools                    unity-yaml-merge.sh — the git merge driver wrapper (see Docs/TEAM_SETUP.md)
 ```
 
 ## Team

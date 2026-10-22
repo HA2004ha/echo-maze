@@ -48,15 +48,23 @@ Commit messages: `feat:` for features, `fix:` for bugs, `chore:` for infrastruct
 
 ## The YAML merge driver (Unity Smart Merge)
 
-`.gitattributes` requests `merge=unityyamlmerge` for every YAML file (`*.unity`, `*.prefab`, `*.asset`, `*.meta`, `*.mat`, …). If this driver is **not registered** in your machine's git config, git silently falls back to a plain text merge and **ruins** the scene merge. The tool ships inside the editor (it has not been removed in Unity 6); you only have to register it — guide in [TEAM_SETUP.md](TEAM_SETUP.md).
+`.gitattributes` requests `merge=unityyamlmerge` for every YAML file (`*.unity`, `*.prefab`, `*.asset`, `*.meta`, `*.mat`, …). If this driver is **not registered** in your machine's git config, git silently falls back to a plain text merge and **ruins** the scene merge. The tool ships inside the editor (it has not been removed in Unity 6), but it cannot be registered as the bare binary: git gives merge drivers extension-less temp files and the tool picks its parser from the extension. `Tools/unity-yaml-merge.sh` adapts it — full explanation and registration commands in [TEAM_SETUP.md](TEAM_SETUP.md).
 
-Verification:
+Verification — three config lines is **not** proof. A driver can be registered, correctly named, and still resolve nothing (that is how this repo shipped for a week). The only meaningful check is a real merge:
 
 ```
-git config --get-regexp 'merge\.'     # should return the three unityyamlmerge lines
+git config --get-regexp 'merge\.'      # step 1: the three unityyamlmerge lines exist
 ```
 
-It can also be checked inside the editor: the menu `Tools ▸ Echo Maze ▸ Validate Git Setup` (editor script) reports PASS/FAIL.
+then `Tools ▸ Echo Maze ▸ Validate Git Setup`, which performs an actual three-way merge on a copy of `Sandbox.unity` where two branches edit adjacent lines of the same object, and confirms both changes survive.
+
+**When the probe reports a conflict, there are no `<<<<<<<` markers to fix.** That is how git behaves with an external merge driver: on a non-zero exit it keeps the driver's output as-is and only records the stages. So never resolve a scene conflict by eyeballing the file or by `git add -A` — read the three stages and pick deliberately:
+
+```
+git show :1:Assets/Scenes/Sandbox.unity    # base
+git show :2:Assets/Scenes/Sandbox.unity    # ours
+git show :3:Assets/Scenes/Sandbox.unity    # theirs
+```
 
 ## LFS for binaries only
 

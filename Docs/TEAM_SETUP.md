@@ -22,38 +22,35 @@ If you already cloned and files look like pointers: `git lfs pull`.
 
 Without this, merges of `.unity` and `.prefab` are silently corrupted.
 
-First find the tool on your machine — it lives inside the editor install, not in the repo:
+**Do not register `UnityYAMLMerge` directly — that recipe does not work.** Measured on this project: git passes a merge driver three temporary, **extension-less** files (`.merge_file_XXXXXX`), and the tool chooses how to parse its input **from the file extension**. Called by git it prints `Couldn't locate merge tool to handle extension` and gives up. Worse, whenever the inputs *do* carry an extension it writes its result to `%P` (a path git ignores) and exits `0`, so git records a successful merge containing **only our side** — the other branch's scene edits vanish with no warning.
+
+`Tools/unity-yaml-merge.sh` exists to fix exactly this: it re-attaches the extension from `%P`, calls the tool, and copies the merged document into `%A`, which is the file git actually reads. Non-zero exit leaves `%A` untouched so git reports an honest conflict instead of a half-merged scene.
+
+The shortest way to register it is the menu — **`Tools ▸ Echo Maze ▸ Register Unity Merge Driver`** — which finds the tool inside your editor install, writes the three config keys and then runs the verification probe. By hand on **Linux/macOS** (substitute your own tool path, and keep the repo path absolute):
+
+```
+git config merge.unityyamlmerge.name      "Unity Smart Merge"
+git config merge.unityyamlmerge.driver    "UNITY_YAML_MERGE='$HOME/Unity/6000.6.3f1/Editor/Data/Tools/UnityYAMLMerge' '$PWD/Tools/unity-yaml-merge.sh' %O %A %B %P"
+git config merge.unityyamlmerge.recursive binary
+```
+
+Find your tool first if that path does not exist — Hub installs and manually-extracted installs differ (`~/Unity/6000.6.3f1/Editor/Data/Tools/` vs `~/Unity/Hub/Editor/<version>/Editor/Data/Tools/`):
 
 ```
 ls "$HOME"/Unity*/Editor/Data/Tools/UnityYAMLMerge \
    "$HOME"/Unity/Hub/Editor/*/Editor/Data/Tools/UnityYAMLMerge 2>/dev/null
 ```
 
-On **Linux**, using the path you just found (note that Hub installs and manually-extracted installs differ — `~/Unity/6000.6.3f1/...` vs `~/Unity/Hub/Editor/6000.6.3f1-x86_64/...`):
+On **Windows** the wrapper is a POSIX shell script, so it needs Git Bash. The tool there is `UnitySmartMerge.exe`. Whether the Windows build has the same extension dependency is **unverified** — nobody on this team has run a real scene merge on Windows yet. Register the plain form, then prove it with the probe below before you trust a merge:
 
 ```
 git config merge.unityyamlmerge.name      "Unity Smart Merge"
-git config merge.unityyamlmerge.driver    "$HOME/Unity/6000.6.3f1/Editor/Data/Tools/UnityYAMLMerge merge -p %O %A %B %P"
+git config merge.unityyamlmerge.driver    "\"%PROGRAMFILES%\Unity\Hub\Editor\6000.6.3f1\Editor\Data\Tools\UnitySmartMerge.exe\" merge -p %O %A %B %P"
 git config merge.unityyamlmerge.recursive binary
 ```
 
-On **Windows** (only if the file exists):
+Verification — `git config --get-regexp 'merge\.'` only proves three lines exist, which is precisely the check that passed while merging nothing. Use the editor probe instead: **`Tools ▸ Echo Maze ▸ Validate Git Setup`** performs a real three-way merge on a copy of `Sandbox.unity`, with two branches editing *adjacent lines* of the same GameObject (the case a text merge conflicts on), and requires both changes in the result. It reports `PASS probe merge resolved both sides of a real scene`.
 
-```
-git config merge.unityyamlmerge.name      "Unity Smart Merge"
-git config merge.unityyamlmerge.driver    "\"%PROGRAMFILES%\Unity\Hub\Editor\6000.6.3f1-x86_64\Editor\Data\Tools\UnitySmartMerge.exe\" merge -p %O %A %B %P"
-git config merge.unityyamlmerge.recursive binary
-```
-
-On **macOS**: the `UnitySmartMerge` tool is inside the editor bundle; locate it with Finder and register it in the same shape.
-
-Verification:
-
-```
-git config --get-regexp 'merge\.'      # the three lines must be there
-```
-
-Or inside the editor: the menu `Tools ▸ Echo Maze ▸ Validate Git Setup`.
 
 ## 4) Opening and running
 
