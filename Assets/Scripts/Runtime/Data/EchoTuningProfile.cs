@@ -3,12 +3,15 @@ using UnityEngine;
 
 namespace EchoMaze.Data
 {
+    /// <summary>
+    /// What a collider *is*, not what it is made of: GDD 3.0 removed surface materials and brightness
+    /// now comes from the curvature of the distance profile. The numbers are frozen because scenes and
+    /// prefabs store them as ints — Metal (2) and Sponge (3) are retired, their slots stay empty.
+    /// </summary>
     public enum SurfaceKind
     {
         None = 0,
-        Concrete = 1,
-        Metal = 2,
-        Sponge = 3,
+        Plain = 1,
         Absorber = 4,
         Crawler = 5,
         Spike = 6

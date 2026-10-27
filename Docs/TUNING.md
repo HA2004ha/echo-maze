@@ -2,6 +2,23 @@
 
 Every number in this table is live in `Assets/Data/Echo/EchoTuning.asset`, i.e. `Assets/Scripts/Runtime/Data/EchoTuningProfile.cs`. None of them are hard-coded in C#, so changing the balance needs no compile and can be tested in the editor with Play.
 
+The target these numbers have to hit is [GDD.md](../GDD.md) v3.0, whose tuning knob is **`ρ = enemy hearing radius / visible echo reach` at the same loudness**, starting at `0.8`. If `ρ` is too high, pinging is never worth it; if too low, there is no tension.
+
+## What is missing from this table (and lands when)
+
+GDD 3.0 is a stealth game with one hit and a suspicion meter, and this profile only knows about waves. The rest gets added to this file in the same commit as the field:
+
+| Group | Parameters | Week |
+|---|---|---|
+| Arc train | `arcsPerPing`, `arcInterval`, `fractureGapThreshold`, `flatDropChance` | 2 |
+| Brightness (replaces the deleted material lookup) | `brightnessBase`, `brightnessGain`, `distanceCurvature` | 2 |
+| Microphone | gate threshold with hysteresis, `minPingInterval` per vocal event, cooldown `0.6 + 1.4·L` | 2 |
+| Movement and `ρ` | walk `2.5` / Shift `1.0` / Listen `1.0` m/s, enemy speeds (`0.65×`, `1.3×`, `0.4×`), `rho` | 2–3 |
+| Hearing | suspicion thresholds `0.3 / 0.6 / 1.0`, drain `≈0.25/s`, alert freeze `0.5 s`, give-up search time | 3 |
+| Safety | listen radius `4 m`, weak pulse reach `1.5 m`, touch-mark fade `0.5 s`, memory trace `10–15 s`, hollow `×0.15`, noise zone `reach ×0.5 / hearing ×0.3` | 3 |
+| Doors and tools | Spike break time `3 s`, marbles per level `3` | 4 |
+| Level pacing | the 20–30 s hiding-option distance the level validator measures | 4 |
+
 ## Non-negotiable rules
 
 1. `waveSpeed >= 1.6 * maxPlayerSpeed` — if the arc travels slower than 1.6 times the player's speed, the returning arc can never overtake the player and the "returning" feeling dies. With the default player speed `3.2` in `PlayerMock`, the floor for `waveSpeed` becomes `5.12`; the default `7` sits with a safety margin.
@@ -37,7 +54,7 @@ The player said in Play "the wave just arrives, nothing comes back from the obje
 | `waveSpeed` | `7` | How fast the arc collapses toward the origin, units/second | `>=5.12` | Sharper feel, less readability | Slow wave, more time to read |
 | `rKill` | `0.35` | The radius at which the arc dies | `0.05..2` | The arc fades sooner, the origin stays clean | The arc lands on the player and eats readability |
 | `emissionPulseSeconds` | `0.16` | Lifetime of the outbound ring in the same cone as the ping; it carries no geometry information | `0..0.5` | The two rings collapse into each other and cause and effect are lost | At `0` it is removed and the player only sees the returning wave |
-| `gain0` | `1` | `A_0` in the formula: how much the hit distance deforms the arc | `0..2` | Object shapes are exaggerated and read faster, the ring is no longer a circle | The arc stays nearly circular and material/shape are lost |
+| `gain0` | `1` | `A_0` in the formula: how much the hit distance deforms the arc | `0..2` | Object shapes are exaggerated and read faster, the ring is no longer a circle | The arc stays nearly circular and the shape is lost |
 | `gainSign` | `+1` | Sign of the deformation | `+1 / -1` | `-1` makes the wave look like emission rather than return; only for a 5-second test | — |
 | `innerDecay` | `1` | Damping of `A_k` in the arc train (`A_k = gain0 * innerDecay^k`) | `0.1..1` | Inner arcs lose the shape | All arcs have the same shape and the train looks flat |
 | `alphaCurve` | `1 → 0.75 → 0` | Opacity against normalised arc age | — | Long tail, cluttered | Early fade, the next ping feels lonely |
@@ -62,3 +79,5 @@ With `arcColor ≈ 0.914` and `_Hdr = 2.5` the output is about `2.28`, which pas
 ## The week 1 test scene
 
 `Sandbox.unity` has three test bodies, all on the `EchoTarget` layer and with no SpriteRenderer: the pillar (`CircleCollider2D` r `0.6` at `(3, 0)`), the flat wall (`BoxCollider2D` `4×0.3` at `(0, 5)`) and the box for the "corner point" test (`BoxCollider2D` `1.2×1.2` at `(-3.5, 2.2)`). Ping with Space and ask the player what they see from the arcs alone.
+
+The `_Concrete` suffix in the first two names is a fossil of the material system GDD 3.0 deleted — every body in the scene is ordinary geometry with `kind = Plain`. The names stay because `GitSetupValidator`'s scene-merge probe matches on `Pillar_Concrete`; rename them inside the editor and fix the probe in the same commit.

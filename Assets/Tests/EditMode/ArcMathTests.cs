@@ -33,7 +33,7 @@ namespace EchoMaze.Tests
             for (int i = 0; i < distances.Length; i++)
             {
                 bool hit = !float.IsPositiveInfinity(distances[i]);
-                ping.WriteSample(i, distances[i], hit ? 1f : 0f, hit ? SurfaceKind.Concrete : SurfaceKind.None, hit);
+                ping.WriteSample(i, distances[i], hit ? 1f : 0f, hit ? SurfaceKind.Plain : SurfaceKind.None, hit);
             }
 
             return ping;
@@ -211,7 +211,7 @@ namespace EchoMaze.Tests
             Assert.AreEqual(8f, ping.dMax, 1e-5f);
 
             ping.Begin(ping.origin, 0.5f, 0f, profile.ConeHalfRad, 4f, 1f, 1, 99);
-            ping.WriteSample(0, 3f, 1f, SurfaceKind.Metal, true);
+            ping.WriteSample(0, 3f, 1f, SurfaceKind.Plain, true);
 
             Assert.AreEqual(3f, ping.dMin, 1e-5f, "a pooled record must not inherit the previous ping's dMin");
             Assert.AreEqual(3f, ping.dMax, 1e-5f);

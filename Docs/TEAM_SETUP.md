@@ -56,8 +56,8 @@ Verification — `git config --get-regexp 'merge\.'` only proves three lines exi
 
 1. Unity Hub ▸ Add project from disk ▸ the repo root folder (the one containing `Assets/` and `ProjectSettings/`).
 2. Open the scene `Assets/Scenes/Sandbox.unity` (the mechanic test level), or `Assets/Scenes/Boot.unity` once it exists (menu and settings).
-3. Play. Controls: WASD to move, mouse for aim direction, Space for the manual echo.
-4. **Do not expect a working microphone yet.** It is the goal on both Windows and Linux, but `Microphone` support in the Unity editor on Linux has never been verified here. That is why sound input sits behind the `IEchoSource` layer. Today `Sandbox` runs with `sourceMode = ManualOnly` (no source at all, Space only); switching to `Simulated` feeds a constant `simulatedLoudness` through the automatic gate so the mic path can be developed and demoed without a mic. Real microphone testing currently requires a Windows build.
+3. Play. Controls: WASD to move, mouse for aim direction, Space for the manual echo. From week 2 the same scene also answers your voice: `Shift` for silent movement, `F` for the 360° weak pulse.
+4. **Do not expect a working microphone on Linux.** It is the goal, and `MicrophoneEchoSource` is a week 2 deliverable, but `Microphone` support in the Unity editor on Linux has never been verified on this project; that is why sound input sits behind the `IEchoSource` layer. Today `Sandbox` runs with `sourceMode = ManualOnly` (no source at all, Space only); switching to `Simulated` feeds a constant `simulatedLoudness` through the automatic gate so the mic path can be developed and demoed without a mic. Measure your machine with **`Tools ▸ Echo ▸ Mic Probe`** and record the result in [MIC_TEST_MATRIX.md](MIC_TEST_MATRIX.md) — real microphone testing happens on a Windows build, so the Windows machine is needed from week 2, not week 3.
 
 ## 4a) The editor from the command line (without opening a window)
 
@@ -80,7 +80,7 @@ Three traps we hit on this machine:
 
 ## 5) Windows build from the Linux editor
 
-`File ▸ Build Settings ▸ Platform: Windows ▸ Mono` (not IL2CPP — the Windows IL2CPP module does not exist on Linux). Put the output in `Builds/`, which is ignored. The first Windows build is scheduled for week 3.
+`File ▸ Build Settings ▸ Platform: Windows ▸ Mono` (not IL2CPP — the Windows IL2CPP module does not exist on Linux). Put the output in `Builds/`, which is ignored. A Windows player is needed from **week 2** (that is where the microphone is finally measured, on real hardware, per [MIC_TEST_MATRIX.md](MIC_TEST_MATRIX.md)); the first *tagged* build ships with week 3.
 
 ## 6) Team roles
 

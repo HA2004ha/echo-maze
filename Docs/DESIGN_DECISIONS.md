@@ -6,7 +6,7 @@ Every choice that closes one path and leaves another open is recorded here, so t
 
 **Decision:** three implementations for the sound source: `MicrophoneEchoSource`, `SimulatedEchoSource`, `ScriptedEchoSource`. The rest of the game only ever deals with `Loudness` and `RawRms`.
 **Reason:** Unity editor microphone support on Linux cannot be relied on and the lead programmer works on Linux; also the math tests need deterministic input.
-**Cost:** one extra layer that must always stay in sync; the real microphone path does not run until week 3, on Windows.
+**Cost:** one extra layer that must always stay in sync; the real microphone path does not run until week 2, on Windows. *(Amended 2026-10-27: GDD 3.0 puts the microphone in week 2, because "ambient noise and microphone hiss ruin the game" is the design's first listed risk and a Linux-only core would mean building six weeks of gameplay against a signal nobody has measured.)*
 
 ## 2026-10-17 — The arc fracture mask is computed once per ping
 
@@ -38,11 +38,13 @@ Every choice that closes one path and leaves another open is recorded here, so t
 **Decision:** each level is a `.unity` scene with geometry laid out in the editor, plus one `LevelDefinition` ScriptableObject for progression metadata.
 **Reason:** tuning this game means reading arcs with your eyes; the Scene view with Snap, Undo and Play-in-editor makes that free. A Tilemap with `CompositeCollider2D` destroys the "one collider = one material" mapping, and a text format is overkill for four hand-tuned rooms.
 **Cost:** the `.unity` files are large and merge-prone → so the Smart Merge driver gets registered, one scene per branch, and batched `ProjectSettings` edits.
+*(Amended 2026-10-27: "four hand-tuned rooms" is now three levels — the enemy-free maze, The Corridor and The Sump — and the mapping the sentence defends is one collider = one **shape**, not one material.)*
 
 ## 2026-10-17 — One collider = one material = one GameObject
 
 **Decision:** `EchoSurface` sits on the same GameObject that owns the collider; a multi-material collider is not allowed.
 **Reason:** both technical (a hit returns only one collider) and design: separating material at the surface is exactly what makes the arc readable.
+*(Amended 2026-10-27: GDD 3.0 deleted the material system, so the reason above no longer holds — but the rule does, for a better cause: one collider = one **wave signature**. The Crawler is two circle colliders with a gap and the Spike is a sawtooth polygon collider, so the existing ray pipeline draws their silhouettes with no special code. `EchoSurface.kind` is now a signature tag (`Plain / Absorber / Crawler / Spike`) and brightness comes from the curvature of the distance profile.)*
 
 ## 2026-10-17 — Enter Play Mode Options stays off (until week 5)
 
@@ -72,6 +74,7 @@ Every choice that closes one path and leaves another open is recorded here, so t
 
 **Decision:** a 64-degree cone (`coneHalfAngleDeg = 32`) as the default; the BREATH bar is out of scope.
 **Reason:** the cone angle was an open question in the GDD itself; the number is in a ScriptableObject and is settled by balance testing. The breath bar overlapped with the `loudness` pulse in Shift mode and was not worth the fight.
+*(Amended 2026-10-27: GDD 3.0 names the replacement — footstep noise (walking is audible, `Shift` is silent) plus fear feedback (the arcs jitter as the nearest suspicious enemy closes in), with no UI. Loudness-driven cone width survives only as a tuning option: about 20° at a whisper to 45° at a shout, falling back to a constant 32° if playtests prefer it.)*
 
 ## 2026-10-17 — Mandatory API substitutions in Unity 6000.6
 
@@ -106,7 +109,7 @@ Every choice that closes one path and leaves another open is recorded here, so t
 
 **Decision:** `SourceMode` got two explicit values: `ManualOnly = 0` (the code default and the value `Sandbox.unity` already stores) and `Simulated = 1`. In `ManualOnly` no `IEchoSource` is created at all, so `DriveAutoPing` does nothing and only `ForcePing` makes a ping. Space moved out of `FixedUpdate` into `Update`, and its loudness is read from `profile.manualEchoLoudness`; the duplicate field `PlayerMock.manualLoudness` was deleted.
 **Reason:** with `simulatedLoudness = 0.7` and `loudnessThreshold = 0.18`, the automatic driver fired a ping every 0.35 seconds: the three-ping pool stayed permanently full, the oldest ping was permanently dropped, and Space only added a fourth overlapping field on top of the clutter. The game's premise — "nothing exists until you make a sound" — was violated in the development scene, and the week 1 playtest verdict ("nothing comes back") was taken on a field that had never once been empty. The microphone is still the goal on both Windows and Linux; it just was not this step.
-**Cost:** `None` was removed and `ManualOnly` took its slot; because the value stored in the scene stays 0, `Sandbox.unity` was not edited (and hand-editing YAML with the editor open is risky). The automatic gate path still has no rising edge or hysteresis and will not run until week 3 — there it must produce one ping per vocal event, not a barrage every 0.35 seconds. Also a genuine `NullReferenceException` was fixed in `EchoDirector.Awake` (`source.Open(...)` when the source is `null`): the source-less mode had never been run, so it had never burned.
+**Cost:** `None` was removed and `ManualOnly` took its slot; because the value stored in the scene stays 0, `Sandbox.unity` was not edited (and hand-editing YAML with the editor open is risky). The automatic gate path still has no rising edge or hysteresis and will not run until week 2 (`MicrophoneEchoSource` moved out of week 3 when GDD 3.0 made the microphone the primary input and the project's top risk) — there it must produce one ping per vocal event, not a barrage every 0.35 seconds. Also a genuine `NullReferenceException` was fixed in `EchoDirector.Awake` (`source.Open(...)` when the source is `null`): the source-less mode had never been run, so it had never burned.
 
 ## 2026-10-22 — The merge driver is wrapped, and verified by merging
 
@@ -114,7 +117,19 @@ Every choice that closes one path and leaves another open is recorded here, so t
 **Reason:** the usual recipe (`<tool> merge -p %O %A %B %P`, which this repo documented and ticked off as done) does not work. Git hands merge drivers three extension-less temp files, and the tool selects its parser from the extension, so in real git usage it prints `Couldn't locate merge tool to handle extension` and exits 1 — and because an external driver's failure leaves no `<<<<<<<` markers, the working file ends up holding only our side. When the inputs *do* carry an extension it is worse: the tool writes its result to `%P` (which git ignores, since git reads `%A`) and exits **0**, so git reports a clean merge that silently deleted the other branch's scene edits. Both modes were reproduced here, on this project's own scene file.
 **Cost:** one POSIX shell script, so a Windows registration cannot use it as-is (Git Bash would be required); whether `UnitySmartMerge.exe` has the same extension dependency is unverified, and the validator's probe is deliberately `/bin/sh`-only and reports `SKIP` there. The probe also depends on `Pillar_Concrete` staying in `Sandbox.unity`; if that object is renamed the probe reports `SKIP` instead of failing, which is a silent loss of the check — keep an eye on it when the scene gallery grows in week 2. `RegisterDriver` had a second bug: it looked for the tool under `applicationContentsPath/Data/Tools/`, but that property already ends in `Data`, so the menu item had never found the binary on any machine and always bailed to the "not found" dialog.
 
+## 2026-10-27 — GDD 3.0 is the design; the live document sits at the repo root
+
+**Decision:** [GDD.md](../GDD.md) at the repository root is the only design document. `Docs/GDD.md` (v1.1) stays on disk with a "superseded — history only" banner, and every other document links to the root file.
+**Reason:** v3.0 is not a polish pass on v1.1: it deleted the material system, the BREATH bar, the health bar and one whole level, and it added the stealth half of the game (suspicion, doors, hollows, sanctuaries, noise zones, one-hit death, the bot). Keeping both files unreadable-equal is how `PLAN.md` and `TUNING.md` start arguing with the design; the banner makes the older one obviously inert instead of subtly authoritative.
+**Cost:** a second GDD in the tree that a newcomer can open by mistake, and a root directory that no longer matches "documentation lives in `Docs/`" (see the 2026-10-17 entry above — that rule was about `Assets/`, so a root-level design file does not break it).
+
+## 2026-10-27 — `SurfaceKind` loses Metal and Sponge and keeps its numbers
+
+**Decision:** `Concrete` is renamed `Plain`; `Metal` (2) and `Sponge` (3) are deleted and their numeric slots stay empty; the remaining values (`Absorber = 4`, `Crawler = 5`, `Spike = 6`) do not move.
+**Reason:** materials are gone, and the enum's remaining job is tagging a collider with the **signature** it casts, which is geometry. Unity serialises enums as ints, and `Sandbox.unity` already stores `kind: 1` on three objects — renaming the member is free, renumbering the others would silently re-tag every collider in the scene and in every prefab built later.
+**Cost:** the fossil names `Pillar_Concrete` and `Wall_Concrete` stay in the scene, because `GitSetupValidator`'s scene-merge probe matches the literal `m_Name: Pillar_Concrete` and would report `SKIP` (a silent loss of the check) if it disappeared. Renaming them is an in-editor job that must land in the same commit as the probe update.
+
 ## Under decision
 
 - The sign of `gainSign` in the formula: default `+1`; it will be set with a slider in the editor against the three test objects and recorded in `Docs/PLAYTEST_REPORT.md` (week 2).
-- Is the corner hot-spot emergent enough from the breakup rule alone, or does it need an explicit vertex-proximity boost? (week 2, with the readability test).
+- Is the corner hot-spot emergent enough from the breakup rule alone, or does it need an explicit vertex-proximity boost? Week 2 answers this with the curvature term (`brightnessBase`, `brightnessGain`, `distanceCurvature`) at the same time as the readability test — the material lookup that used to be the fallback answer no longer exists.

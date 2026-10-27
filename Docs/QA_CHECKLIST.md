@@ -32,10 +32,15 @@ Before opening Unity, the clone can be checked from the shell: `cat ProjectSetti
 ## In-game checklist (from week 3)
 
 - [ ] Microphone calibration: the live waveform moves, the TEST button fires a real ping, settings survive a restart
+- [ ] Calibration inside the dark: the ≈5 s silence at the start of level 1 sets a gate that neither a quiet room nor normal speech breaks
 - [ ] Pause: sound stops, microphone closes, the menu works with both keyboard and mouse (EventSystem on `InputSystemUIInputModule`)
-- [ ] Retry after death: the scene reloads and enemy/HUD state starts clean (not continuing from the previous run)
-- [ ] Win: reaching the exit, advancing to the next level, and on level 4 the ending screen
-- [ ] Persian text renders correctly RTL in TMP and is not garbled
+- [ ] Death: one touch kills, "YOU WERE HEARD" appears, retry returns in under 2 s to the last sanctuary with **that section's state reset** (doors, enemies, marble count)
+- [ ] A closed door blocks a ray, blocks enemy hearing and stops a Crawler; the Spike breaks it in ≈3 s and it stays broken until the section resets
+- [ ] A hollow hides you from a patrolling enemy but not from one already in Chase; pinging inside breaks cover
+- [ ] A noise zone halves your reach, statics the arcs, masks Listen mode and the memory trace, and makes you much harder to hear
+- [ ] The alert telegraph fires before every chase (≈0.5 s freeze + a distinct sound) and the give-up cue fires when an enemy loses you
+- [ ] Win: reaching the exit, advancing to the next level, and on level 3 the exit light and the ending screen
+- [ ] All text is English and renders without missing glyphs (GDD 3.0 is English-only; there is no RTL requirement this term)
 - [ ] The HUD is dimmer than the waves and Bloom does not make it glow
 - [ ] Performance: 60fps on the target machine with three live pings and 200 rays; zero stable per-frame allocation
 
@@ -43,6 +48,8 @@ Before opening Unity, the clone can be checked from the shell: `cat ProjectSetti
 
 - [ ] Start to exit without getting stuck (invisible wall, blocked path)
 - [ ] Every enemy in the level is identifiable from its arc
-- [ ] The silent mode (Space only) is possible for every level
-- [ ] A "quiet route" exists for every level (the stealth reward)
+- [ ] The GDD level design checklist holds: a loop, a hiding option within 20–30 s of travel from anywhere, two usable doors in any space containing a Spike, a wake trigger that is the player's choice, a distinct landmark sound per room, one tool that answers the problem
+- [ ] The no-microphone path (`Space` only) completes the level — the game must stay playable in a noisy room
+- [ ] A quiet route exists for every level (the stealth reward)
 - [ ] The tutorial/guide text is read and understood
+- [ ] The bot has a scripted escape route through every chase space and completes it headless with a fixed seed

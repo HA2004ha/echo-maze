@@ -202,9 +202,13 @@ namespace EchoMaze.EditorTools
 
             EnsureVolume(volume);
             EchoRenderer field = EnsureEchoField(arcMaterial);
-            EnsureCollider("Pillar_Concrete", new Vector2(3f, 0f), Circle(0.6f), SurfaceKind.Concrete, 1f);
-            EnsureCollider("Wall_Concrete", new Vector2(0f, 5f), Box(4f, 0.3f), SurfaceKind.Concrete, 1f);
-            EnsureCollider("Box_CornerTest", new Vector2(-3.5f, 2.2f), Box(1.2f, 1.2f), SurfaceKind.Concrete, 1f);
+            // The "_Concrete" in these names is a leftover from the material system GDD 3.0 removed; the
+            // objects are ordinary geometry now. The names stay because GitSetupValidator's merge probe
+            // matches on "Pillar_Concrete", and renaming scene objects by hand-editing YAML is the exact
+            // trap this project's rules forbid. Rename them in the editor, and update the probe with them.
+            EnsureCollider("Pillar_Concrete", new Vector2(3f, 0f), Circle(0.6f), SurfaceKind.Plain, 1f);
+            EnsureCollider("Wall_Concrete", new Vector2(0f, 5f), Box(4f, 0.3f), SurfaceKind.Plain, 1f);
+            EnsureCollider("Box_CornerTest", new Vector2(-3.5f, 2.2f), Box(1.2f, 1.2f), SurfaceKind.Plain, 1f);
             GameObject player = EnsurePlayer();
             EnsureDirector(tuning, field);
 

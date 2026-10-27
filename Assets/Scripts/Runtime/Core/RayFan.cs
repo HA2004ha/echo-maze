@@ -96,7 +96,7 @@ namespace EchoMaze.Core
         static SurfaceKind KindOf(Collider2D hit)
         {
             var surface = hit != null ? hit.GetComponent<EchoSurface>() : null;
-            return surface != null ? surface.kind : SurfaceKind.Concrete;
+            return surface != null ? surface.kind : SurfaceKind.Plain;
         }
     }
 }

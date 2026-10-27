@@ -1,5 +1,7 @@
 # Game Design Document (GDD)
 
+> **SUPERSEDED — this is version 1.1 of the design, kept only as history.** The live document is [GDD.md](../GDD.md) at the repository root (version 3.0). Nothing in this file is a requirement: the material system, the four levels, the BREATH bar and the health bar were all removed by v3.0, and [SCOPE_CUTS.md](SCOPE_CUTS.md) records what replaced them. Read this one only to understand why the plan and the tuning files are shaped the way they are.
+
 **Project name:** Echo — **code name:** `echo-maze`
 **Document version:** 1.1 (rewrite of version 1.0)
 **Engine:** Unity 2D (pinned version: `6000.6.3f1` — see [TEAM_SETUP.md](TEAM_SETUP.md))
