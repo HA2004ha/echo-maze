@@ -18,6 +18,24 @@ namespace EchoMaze.Core
             return Mathf.Lerp(profile.minRadius, profile.maxRadius, t);
         }
 
+        /// <summary>
+        /// How far a noise carries: the GDD's H = rho * R(L), i.e. the same loudness that sets the visible
+        /// reach also sets the radius an enemy can hear it from, scaled by one knob. Walls, closed doors,
+        /// noise zones and the per-enemy hearing factor are week 3 (NoiseBoard + HeardBy); this straight
+        /// line is what the week 2 Crawler stub reacts to, kept here so it can be tested without a scene.
+        /// </summary>
+        public static float HearingRadius(float loudness, EchoTuningProfile profile) =>
+            profile.rho * PingRadius(loudness, profile);
+
+        /// <summary>
+        /// The charge curve of the manual echo: a quick tap gives manualEchoLoudness, holding Space for
+        /// manualChargeSeconds gives a full shout. Pure, so the cost of a panic tap is a number in a test
+        /// rather than something only a playtest can notice.
+        /// </summary>
+        public static float ManualLoudness(float heldSeconds, EchoTuningProfile profile) =>
+            Mathf.Clamp01(Mathf.Lerp(profile.manualEchoLoudness, 1f,
+                       Mathf.Clamp01(heldSeconds / Mathf.Max(0.01f, profile.manualChargeSeconds))));
+
         public static int RayCount(float loudness, EchoTuningProfile profile)
         {
             int rays = Mathf.RoundToInt(Mathf.Lerp(profile.minRays, profile.maxRays, Mathf.Clamp01(loudness)));

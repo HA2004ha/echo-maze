@@ -68,9 +68,29 @@ namespace EchoMaze.Data
         [Range(0f, 3f)] public float cooldownBase = 0.6f;
         [Tooltip("Extra seconds of cooldown per unit of loudness. This is the cost that makes the signal costly, which is the whole game theory of it.")]
         [Range(0f, 4f)] public float cooldownPerLoudness = 1.4f;
-        [Tooltip("Loudness of the Space fallback echo.")]
+        [Tooltip("Loudness of a quick Space tap. Holding Space charges up to a full shout over manualChargeSeconds.")]
         [Range(0f, 1f)] public float manualEchoLoudness = 0.65f;
+        [Tooltip("Seconds of holding Space that take the manual echo from the tap loudness to 1. Long enough that a panic tap is not a shout, short enough that a deliberate charge fits inside one cooldown.")]
+        [Range(0.2f, 4f)] public float manualChargeSeconds = 1.2f;
         [Range(1, 4)] public int maxLivePings = 3;
+
+        [Header("Movement")]
+        [Tooltip("Walk speed in world units per second. waveSpeed must stay above 1.6x this or a returning arc can never overtake the player (Docs/TUNING.md rule 1).")]
+        [Range(0.5f, 8f)] public float walkSpeed = 2.5f;
+        [Tooltip("Speed while Shift is held. Slow enough to read as deliberate, and it makes no footstep noise at all, which is the only reason to press it.")]
+        [Range(0.1f, 8f)] public float silentSpeed = 1f;
+        [Tooltip("Seconds between footsteps while walking normally. Silent step emits none.")]
+        [Range(0.1f, 3f)] public float footstepInterval = 0.55f;
+        [Tooltip("Loudness of one footstep. GDD calls walking normally a small, short range noise; through H = rho * R(L) this maps to a couple of metres.")]
+        [Range(0f, 1f)] public float footstepLoudness = 0.12f;
+        [Tooltip("Loudness of a wall bump. Very low: careless walking has a cost, but a bump is not a shout.")]
+        [Range(0f, 1f)] public float bumpLoudness = 0.04f;
+
+        [Header("Hearing")]
+        [Tooltip("rho = enemy hearing radius / visible echo reach at the same loudness. The tuning knob from the GDD: too high and pinging is never worth it, too low and there is no tension.")]
+        [Range(0.05f, 3f)] public float rho = 0.8f;
+        [Tooltip("Crawler speed as a fraction of walk speed. Above 1 the creature cannot be outrun, which is the whole Crawler design.")]
+        [Range(0.1f, 2f)] public float crawlerSpeedMultiplier = 0.65f;
 
         [Header("Arc train")]
         [Tooltip("Arcs emitted per ping. One arc per ping is a single ring and reads as a pulse; three read as a wave with a front.")]
@@ -147,6 +167,13 @@ namespace EchoMaze.Data
             weakPulseRadius = Mathf.Clamp(weakPulseRadius, 0.25f, 4f);
             weakPulseRays = Mathf.Clamp(weakPulseRays, 24, 512) | 1;
             weakPulseCooldown = Mathf.Max(0.1f, weakPulseCooldown);
+            walkSpeed = Mathf.Max(0.5f, walkSpeed);
+            silentSpeed = Mathf.Clamp(silentSpeed, 0.1f, walkSpeed);
+            rho = Mathf.Max(0.05f, rho);
+            crawlerSpeedMultiplier = Mathf.Clamp(crawlerSpeedMultiplier, 0.1f, 2f);
+            // TUNING.md rule 1, enforced here so a designer raising walk speed cannot silently break
+            // the one property that makes a returning arc look like it is returning.
+            waveSpeed = Mathf.Max(waveSpeed, 1.6f * walkSpeed);
             if (alphaCurve == null || alphaCurve.length == 0)
             {
                 alphaCurve = new AnimationCurve(new Keyframe(0f, 1f), new Keyframe(1f, 0f));

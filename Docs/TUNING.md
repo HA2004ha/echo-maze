@@ -16,15 +16,15 @@ GDD 3.0 is a stealth game with one hit and a suspicion meter, and this profile o
 | Echo cost | `cooldownBase`, `cooldownPerLoudness` (they replace `minPingInterval`) | 2 — **landed**, rows below |
 | Silent fallbacks | `weakPulseRadius`, `weakPulseRays`, `weakPulseCooldown` | 2 — **landed**, rows below |
 | Living things | `heartbeatHz`, `shimmer` | 2 — **landed**, needs the Crawler in the scene to tune by eye |
-| Movement and `ρ` | walk `2.5` / Shift `1.0` / Listen `1.0` m/s, enemy speeds (`0.65×`, `1.3×`, `0.4×`), `rho` | 2–3 |
-| Hearing | suspicion thresholds `0.3 / 0.6 / 1.0`, drain `≈0.25/s`, alert freeze `0.5 s`, give-up search time | 3 |
+| Movement and `ρ` | walk `2.5` / Shift `1.0` / listen `1.0` m/s, enemy speeds (`0.65×`, `1.3×`, `0.4×`), `rho` | 2 — **landed**, rows below. The player half is `Player`; the `1.3×` and `0.4×` enemies (Chaser, Lurker) arrive with `EnemyBrain` in week 3 |
+| Hearing | suspicion thresholds `0.3 / 0.6 / 1.0`, drain `≈0.25/s`, alert freeze `0.5 s`, give-up search time | 3 — the Crawler already listens through `H = ρ·R(L)` and gives up after `huntSeconds`, which is the week-2 stub, not the suspicion meter |
 | Safety | listen radius `4 m`, weak pulse reach `1.5 m`, touch-mark fade `0.5 s`, memory trace `10–15 s`, hollow `×0.15`, noise zone `reach ×0.5 / hearing ×0.3` | 3 |
 | Doors and tools | Spike break time `3 s`, marbles per level `3` | 4 |
 | Level pacing | the 20–30 s hiding-option distance the level validator measures | 4 |
 
 ## Non-negotiable rules
 
-1. `waveSpeed >= 1.6 * maxPlayerSpeed` — if the arc travels slower than 1.6 times the player's speed, the returning arc can never overtake the player and the "returning" feeling dies. With the default player speed `3.2` in `PlayerMock`, the floor for `waveSpeed` becomes `5.12`; the default `7` sits with a safety margin.
+1. `waveSpeed >= 1.6 * walkSpeed` — if the arc travels slower than 1.6 times the player's speed, the returning arc can never overtake the player and the "returning" feeling dies. `walkSpeed` is `2.5`, so the floor is `4.0`; the default `7` sits with a wide margin. This one is not left to memory: `EchoTuningProfile.OnValidate` rewrites `waveSpeed` up to the floor the moment a designer raises `walkSpeed` in the inspector, so the rule cannot be broken by a typo.
 2. The fracture mask is computed once per ping and every arc of that ping reads the same mask. This is a readability decision, not an optimisation (read `Docs/DESIGN_DECISIONS.md`).
 3. A ray that hits nothing means "there is no information", not "a distant surface". `d = +inf` and `amp = 0`, and the line breaks right there.
 4. Balance is judged in pixels, not in world units. The sandbox camera is `orthographicSize = 6`, so on the short side of the screen 12 world units map onto 1080 pixels and each world unit is roughly 90 pixels. Any number in this table that ends up below 4 pixels, or below 25 pixels of shape change across the wave's lifetime, effectively does not exist in the game.
@@ -65,8 +65,16 @@ The player said in Play "the wave just arrives, nothing comes back from the obje
 | `loudnessThreshold` | `0.18` | Gated loudness an automatic ping needs; it sits **on top of** the microphone gate, so raising it makes the player be clearly loud, not merely audible | `0..1` | Every cough makes a ping | The player has to shout |
 | `cooldownBase` | `0.6` | Seconds of recovery every ping pays | `0..3` | Silence feels expensive, the pace drops | The signal is nearly free and the game becomes a shout fest |
 | `cooldownPerLoudness` | `1.4` | Extra seconds per unit of loudness: a shout costs `0.6 + 1.4 = 2.0 s`, a whisper `~0.7 s` | `0..4` | Being loud is a real risk, which is the game theory | Loud and quiet pings cost the same, so nobody whispers |
-| `manualEchoLoudness` | `0.65` | Loudness of the `Space` echo — the fallback that must stay playable on a machine with no microphone | `0..1` | `Space` makes the microphone pointless | A player without a microphone loses |
+| `manualEchoLoudness` | `0.65` | Loudness of a quick `Space` tap, and the floor the hold starts from — the fallback that must stay playable on a machine with no microphone | `0..1` | `Space` makes the microphone pointless | A player without a microphone loses |
+| `manualChargeSeconds` | `1.2` | Seconds of holding `Space` that take the manual echo from `manualEchoLoudness` to `1.0` (`ArcMath.ManualLoudness`) | `0.2..4` | A panic tap is safer, a deliberate shout takes real time in the open | The charge is over before the player decides whether to be loud |
 | `maxLivePings` | `3` | Simultaneous pings in the pool | `1..4` | Stacked arcs, unreadable shapes | A large room cannot be gathered in one ping |
+| `walkSpeed` | `2.5` | Metres per second, the normal pace. Every other speed in the game is measured against it, and rule 1 is enforced from it | `0.5..8` | Rooms empty faster, the returning arc has less time to be read, `waveSpeed` is pushed up with it | The player crawls and the arc waits |
+| `silentSpeed` | `1.0` | Metres per second while Shift is held. `Player` emits **no** footstep at this speed, which is the only cheap move the game offers | `0.1..walkSpeed` | Silence stops being a trade | Silent walking is as slow as standing still, so nobody uses it |
+| `footstepInterval` | `0.55` | Seconds between footstep noise events while walking normally | `0.1..3` | A fast walk is a drumbeat the Crawler can track | Footsteps become continuous and stop being a rhythm |
+| `footstepLoudness` | `0.12` | Loudness of one footstep. Through `H = ρ · R(L)` this puts a normal walker's hearing range a couple of metres behind the player | `0..1` | Walking is nearly a shout and Shift becomes mandatory everywhere | A Crawler two rooms away never hears you walk |
+| `bumpLoudness` | `0.04` | Loudness of the body pressing a wall, emitted with the touch mark. `Player` only emits it when the collision had real speed behind it (`relativeVelocity² > 0.25`) | `0..1` | Leaning on a wall to listen becomes a risk | Careless walking is free |
+| `rho` | `0.8` | The tuning knob from the GDD: enemy hearing radius / visible echo reach at the same loudness (`ArcMath.HearingRadius`) | `0.05..3` | Pinging is never worth it — you are heard before you see | No tension; the enemy is effectively deaf |
+| `crawlerSpeedMultiplier` | `0.65` | Crawler speed as a fraction of `walkSpeed`, i.e. `1.6` m/s. Below 1 by design: you can outrun it, you must not outrun the Chaser | `0.1..2` | The Crawler stops being an obstacle and becomes a chase | The creature is furniture |
 | `arcsPerPing` | `3` | Arcs in one train; one is a pulse, three is a wave with a front | `1..4` | More to read, more clutter, more quads | The wave stops looking like it is travelling |
 | `arcInterval` | `0.12` | Seconds between the arcs of one train | `0..0.5` | The arcs separate and read as three objects | They merge into one thick band |
 | `innerDecay` | `0.72` | Damping of `A_k` in the arc train (`A_k = gain0 * innerDecay^k`). Was `1`, which made all three arcs identical and the train read as one wide line | `0.1..1` | Inner arcs lose the shape | All arcs have the same shape and the train looks flat |
@@ -104,3 +112,23 @@ With `arcColor ≈ 0.914` and `_Hdr = 2.5` the output is about `2.28`, which pas
 `Sandbox.unity` has three test bodies, all on the `EchoTarget` layer and with no SpriteRenderer: the pillar (`CircleCollider2D` r `0.6` at `(3, 0)`), the flat wall (`BoxCollider2D` `4×0.3` at `(0, 5)`) and the box for the "corner point" test (`BoxCollider2D` `1.2×1.2` at `(-3.5, 2.2)`). Ping with Space and ask the player what they see from the arcs alone.
 
 The `_Concrete` suffix in the first two names is a fossil of the material system GDD 3.0 deleted — every body in the scene is ordinary geometry with `kind = Plain`. The names stay because `GitSetupValidator`'s scene-merge probe matches on `Pillar_Concrete`; rename them inside the editor and fix the probe in the same commit.
+
+## The week 2 blockout
+
+`Assets/Scenes/Level02_Corridor.unity` is generated by `Level02SceneSetup` (menu `Tools/Echo Maze/Week 2 Bootstrap`) and is not hand-built: the sizes, the patrol route and every scene reference come from that script, so the room can be re-made from the same numbers after a bad merge. The interior is `7 × 5` m — the GDD's 4–8 m room at the top of the range — and the south wall is split to leave a real pocket rather than a box standing in front of a wall. The player starts inside that pocket at `(2, -3.15)`, and the geometry the wave is supposed to distinguish is: `Wall_North/West/East/SouthWest/SouthEast` (straight runs), `Box_Corner` (the L), `Pillar` (the curve), the three `Alcove_*` slabs (the concave shape that becomes the week-4 hollow) and `Exit_Tile` (a trigger, excluded from the fan, so the wave must *not* measure it). One `Crawler` walks the two-waypoint leg between `(-2.2, -0.6)` and `(2.2, -0.6)`, which is far enough from the furniture that a patrolling thing never jams on a prop.
+
+The player-vs-audio numbers that were picked here rather than guessed, and where each one is locked:
+
+| Claim | Number | Lock |
+|---|---|---|
+| A ping is itself a noise at the player's own ears | `loudness` at `transform.position` | `NoiseStreamTests.AVisiblePing_IsAlsoANoiseAtItsOwnOrigin` |
+| A bare noise draws nothing and costs nothing | no ping, no cooldown | `NoiseStreamTests.ABareNoise_IsHeardButDrawsNothingAndCostsNothing` |
+| The `F` pulse is the quietest thing the player can do that still costs a cooldown | `weakPulse` before `cooldownBase` is paid | `NoiseStreamTests.TheWeakPulse_IsTheQuietestEventOnTheStream` |
+| Noise grows in the order the game teaches it | `bump < footstep < manualEcho < 1` | `NoiseStreamTests.TheNoisesThePlayerMakes_AreOrderedFromQuietToLoud` |
+| The Crawler hears inside `H = ρ·R(L)` and is deaf outside it | `rho 0.8` | `CrawlerHearingTests` (both directions) |
+| Its own footsteps do not startle it | `distance < arrivalRadius` | `CrawlerHearingTests` |
+| A hunt with no pathfinding is abandoned | `huntSeconds` | `CrawlerHearingTests.AHunt_IsGivenUpWhenNothingWasFound` |
+| One hit kills and the room restarts in under two seconds | `retryDelay 1` | `RunControllerTests.OneHit_PutsYouBackAtTheRoomStartUnderTwoSeconds` |
+| The retry resets the creatures, not just the player | same spawn, same seed | `RunControllerTests` |
+
+Nothing in this scene is tuned by eye yet: the walk/Shift speeds, `rho` and the crawler's pace are the GDD's starting values, and the readability session (day 5) is where they get judged in pixels.

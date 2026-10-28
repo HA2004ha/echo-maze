@@ -60,6 +60,35 @@ MonoBehaviour:
   baseThickness: 0.05
   arcColor: {r: 0.498, g: 0.914, b: 0.941, a: 1}
   loudnessThreshold: 0.18
+  cooldownBase: 0.6
+  cooldownPerLoudness: 1.4
   manualEchoLoudness: 0.65
+  manualChargeSeconds: 1.2
   maxLivePings: 3
+  walkSpeed: 2.5
+  silentSpeed: 1
+  footstepInterval: 0.55
+  footstepLoudness: 0.12
+  bumpLoudness: 0.04
+  rho: 0.8
+  crawlerSpeedMultiplier: 0.65
+  arcsPerPing: 3
+  arcInterval: 0.12
+  brightnessBase: 0.4
+  brightnessGain: 0.6
+  curvatureFloor: 2
+  curvatureRange: 6
+  flatDropChance: 0.18
+  fractureFlatBelow: 2.4
+  heartbeatHz: 1.1
+  shimmer: 0.35
+  microphoneDevice: 
+  gateOpenRms: 0.02
+  gateCloseRms: 0.012
+  gateFullRms: 0.12
+  loudnessHold: 0.25
   simulatedLoudness: 0.7
+  simulatedEventInterval: 1.6
+  weakPulseRadius: 1.5
+  weakPulseRays: 97
+  weakPulseCooldown: 1.2

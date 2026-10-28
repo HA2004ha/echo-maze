@@ -52,6 +52,14 @@ namespace EchoMaze.Core
         /// </summary>
         public event Action<PingRecord> PingEmitted;
 
+        /// <summary>
+        /// Every sound the world makes, whether or not it draws a wave: a ping, a footstep, a wall bump.
+        /// Position and loudness, nothing else. This is the seam week 3's NoiseBoard plugs into (walls,
+        /// closed doors, noise zones and the suspicion meter all hang off it); until then the Crawler
+        /// hears the straight-line rule in ArcMath.HearingRadius.
+        /// </summary>
+        public event Action<Vector2, float> NoiseEmitted;
+
         public IEchoSource Source => source;
 
         /// <summary>The tuning asset in force, so the debug window and tests read the same numbers the director does.</summary>
@@ -166,6 +174,15 @@ namespace EchoMaze.Core
             EmitPing(Mathf.Clamp01(loudness), origin, aim);
         }
 
+        /// <summary>
+        /// A sound that draws no wave: a footstep, a wall bump, later the decoy marble and doors. It costs
+        /// no cooldown and reveals nothing to its maker, it only travels.
+        /// </summary>
+        public void ReportNoise(Vector2 position, float loudness)
+        {
+            NoiseEmitted?.Invoke(position, Mathf.Clamp01(loudness));
+        }
+
         void EmitPing(float loudness, Vector2 origin, float aim)
         {
             Emit(loudness, origin, aim, ArcMath.PingRadius(loudness, profile),
@@ -213,6 +230,11 @@ namespace EchoMaze.Core
             nextReadyTime = Mathf.Max(nextReadyTime, Time.time + cooldown);
 
             PingEmitted?.Invoke(record);
+
+            // A wave is always also a noise. The weak pulse is the quietest thing that can be emitted
+            // (loudness 0, so it is heard only inside rho * minRadius), which is what "very low noise"
+            // means in the GDD's table without adding a second scale.
+            NoiseEmitted?.Invoke(origin, Mathf.Clamp01(loudness));
         }
 
         PingRecord AcquireRecord()
