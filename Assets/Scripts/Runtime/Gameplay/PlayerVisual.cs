@@ -27,7 +27,7 @@ namespace EchoMaze.Gameplay
         [SerializeField] Sprite backSprite;
         [Tooltip("The canonical side view, drawn facing screen right. Facing left is the same texture " +
                  "flipped: the two profile files the art came in as are exact pixel mirrors, so a second " +
-                 "sprite would be 7 MB of memory to redraw nothing.")]
+                 "sprite would be 2.7 MB of memory (1024 squared, DXT5, with mip levels) to redraw nothing.")]
         [SerializeField] Sprite sideSprite;
 
         [Header("Idle breath")]

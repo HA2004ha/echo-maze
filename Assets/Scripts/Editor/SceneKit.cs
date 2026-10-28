@@ -34,7 +34,7 @@ namespace EchoMaze.EditorTools
         /// defaults whoever refreshes first leaves behind, and the day the 3/4 camera lands the team
         /// inherits stale PPU-100 settings instead of correct ones. <c>Player_side_left</c> is the same
         /// reason the profiles exist at all — it is a pixel-exact mirror of <c>Player_side</c>, so the
-        /// runtime flips one texture rather than carrying 7 MB of memory to redraw nothing.
+        /// runtime flips one texture rather than carrying 2.7 MB of memory to redraw nothing.
         /// </summary>
         static readonly string[] PosePaths =
         {

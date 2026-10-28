@@ -135,8 +135,9 @@ namespace EchoMaze.Tests.PlayMode
 
             Assert.AreEqual(PlayerPose.ProfileLeft, visual.CurrentPose);
             Assert.AreEqual(sidePose, sprite.sprite,
-                "the left profile is the one texture mirrored: a second sprite file would be 7 MB of " +
-                "texture memory to redraw a picture the art already proved is a mirror");
+                "the left profile is the one texture mirrored: a second sprite file would be 2.7 MB of " +
+                "texture memory (1024 squared, DXT5, with mip levels) to redraw a picture the art already " +
+                "proved is a mirror");
             Assert.IsTrue(sprite.flipX);
         }
 
