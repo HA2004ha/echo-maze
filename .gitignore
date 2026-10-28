@@ -51,6 +51,9 @@
 # Editor screenshots taken while tuning (QA evidence, re-takeable, never imported by Unity)
 /Captures/
 /Assets/Screenshots/
+# …but the folder lives under Assets/, so Unity imports a meta for the folder itself.
+# Ignoring it too keeps `git status` clean on a machine that has taken captures.
+/Assets/Screenshots.meta
 
 # Gradle cache directory
 .gradle/
