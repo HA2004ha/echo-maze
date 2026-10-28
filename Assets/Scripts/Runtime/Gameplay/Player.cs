@@ -214,7 +214,10 @@ namespace EchoMaze.Gameplay
             ContactPoint2D contact = collision.GetContact(0);
             if (marks != null)
             {
-                marks.Flash(contact.point, contact.normal);
+                // The body centre travels with the mark: Flash needs it to tell which side of the surface
+                // the character is on, because the dash has to be pushed away from the body rather than
+                // sitting on the hitbox surface, which the drawn figure already covers.
+                marks.Flash(contact.point, contact.normal, body.position);
             }
 
             // Careless walking has a cost, but a body resting on a wall while listening does not: the

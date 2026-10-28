@@ -10,6 +10,10 @@ namespace EchoMaze.Gameplay
     /// Drawn from a small pool of sprites rather than from the wave mesh: a mark belongs to a place on a
     /// wall, not to the ping that happened to be in the air, so it has to outlive that ping and stay put
     /// while the arcs collapse past it.
+    ///
+    /// "At the contact point" means the contact point *of the drawn body*, not of the hitbox: the figure is
+    /// wider than the collider it stands in, so a mark placed where physics says the shapes meet is drawn
+    /// across the character's torso. <see cref="Flash"/> pushes it out of the silhouette and into the wall.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class TouchMarks : MonoBehaviour
@@ -19,6 +23,14 @@ namespace EchoMaze.Gameplay
         [Tooltip("World size of the dash: long along the wall, thin into it. One world unit is about ninety " +
                  "pixels in the blockout camera, so this is roughly 63 by 8 pixels.")]
         [SerializeField] Vector2 dashSize = new Vector2(0.7f, 0.09f);
+        [Tooltip("How far the dash is pushed past the surface, away from the body that touched it. The " +
+                 "player hitbox reaches 0.25 m from its centre and the drawn figure 0.447 m (2289 of a 4096 " +
+                 "canvas at PPU 2560), so the contact point physics reports sits 18-22 screen pixels inside " +
+                 "the torso. 0.24 = that overhang (0.197) plus half the dash's thickness (0.045), which lands " +
+                 "the dash's near edge on the silhouette. One number for poses that are not one width: the " +
+                 "side profile is only 1514 px, so facing a wall sideways the dash floats ~17 px off the " +
+                 "body. Re-measure whenever the player art or the collider radius changes.")]
+        [SerializeField, Range(0f, 0.6f)] float silhouetteClearance = 0.24f;
         [Tooltip("Marks sit below the wave in brightness: they tell you where a wall is, not what it is.")]
         [SerializeField] Color markColor = new Color(0.498f, 0.914f, 0.941f, 0.5f);
 
@@ -78,14 +90,21 @@ namespace EchoMaze.Gameplay
         }
 
         /// <summary>
-        /// Flashes a mark at a world contact point, laid out along the surface rather than across it.
+        /// Flashes a mark where a body touched a surface, laid out along the surface rather than across it.
+        /// The mark goes on the far side of the contact from <paramref name="bodyCenter"/>, which is the
+        /// only direction that is true for a flat wall, a corner and a rotated box at once.
         /// </summary>
-        public void Flash(Vector2 point, Vector2 surfaceNormal)
+        public void Flash(Vector2 contactPoint, Vector2 surfaceNormal, Vector2 bodyCenter)
         {
             if (surfaceNormal.sqrMagnitude < 1e-6f)
             {
                 return;
             }
+
+            // Vector2.normalized of a zero vector is zero, so a mark flashed without a body to clear is
+            // simply placed where it was asked for.
+            Vector2 awayFromBody = contactPoint - bodyCenter;
+            Vector2 point = contactPoint + awayFromBody.normalized * silhouetteClearance;
 
             int index = cursor;
             cursor = (cursor + 1) % pool.Length;
