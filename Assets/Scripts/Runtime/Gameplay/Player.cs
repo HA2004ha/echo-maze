@@ -23,6 +23,7 @@ namespace EchoMaze.Gameplay
         Rigidbody2D body;
         Vector2 lastInput;
         float aimRad;
+        float aimDistance = float.PositiveInfinity;
         bool hasAim;
         float chargeStart = -1f;
         float nextStepTime;
@@ -41,6 +42,14 @@ namespace EchoMaze.Gameplay
         /// the dependency runs one way.
         /// </summary>
         public float NextStepTime => nextStepTime;
+
+        /// <summary>
+        /// How far the pointer is from the body, in world units, on the frame the aim was last refreshed;
+        /// <see cref="float.PositiveInfinity"/> until there has been one. The visual needs the distance and
+        /// not just the angle, because an aim read three pixels off the character is the same information
+        /// as noise: the direction is real but nothing about it is stable (Docs/ISSUES.md #3, cause 3).
+        /// </summary>
+        public float AimDistance => aimDistance;
 
         /// <summary>
         /// The stride the bounce is measured against. Zero when the profile is missing, which parks the
@@ -98,6 +107,11 @@ namespace EchoMaze.Gameplay
             Vector2 screen = pointer.position.ReadValue();
             Vector2 world = camera.ScreenToWorldPoint(screen);
             Vector2 dir = world - (Vector2)transform.position;
+
+            // Recorded before the guard below, because "the pointer is on top of me" is the answer the
+            // visual needs, and it is exactly the case that has no usable angle.
+            aimDistance = dir.magnitude;
+
             if (dir.sqrMagnitude < 1e-6f)
             {
                 return;

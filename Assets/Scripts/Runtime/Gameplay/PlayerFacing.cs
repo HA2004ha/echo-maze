@@ -46,6 +46,17 @@ namespace EchoMaze.Gameplay
                 ? move
                 : new Vector2(Mathf.Cos(aimRad), Mathf.Sin(aimRad));
 
+            return ResolveDirection(dir);
+        }
+
+        /// <summary>
+        /// The same sector map, from a direction instead of from the movement/aim choice. <c>PlayerVisual</c>
+        /// needs it separated because the sticky layer decides *which vector* to ask about (a cursor parked
+        /// on the body is not an aim, and a pose held through a stop is not a new answer) and then applies
+        /// the band around the answer it already has.
+        /// </summary>
+        public static PlayerPose ResolveDirection(Vector2 dir)
+        {
             if (Mathf.Abs(dir.y) >= Mathf.Abs(dir.x) - 1e-6f)
             {
                 return dir.y >= 0f ? PlayerPose.Back : PlayerPose.Front;
@@ -53,6 +64,37 @@ namespace EchoMaze.Gameplay
 
             return dir.x > 0f ? PlayerPose.ProfileRight : PlayerPose.ProfileLeft;
         }
+
+        /// <summary>
+        /// The direction each pose is centred on, i.e. the heading it is most correct for. The four
+        /// cardinals, because the sectors are quarters: <c>SectorHalfWidthDegrees</c> is the distance from
+        /// here to the boundary where a neighbour takes over.
+        ///
+        /// This exists so that hysteresis can be written as an angle between two vectors rather than as
+        /// arithmetic on an <c>Atan2</c> result, which would have to handle the wrap at ±π by hand.
+        /// </summary>
+        public static Vector2 PoseCentre(PlayerPose pose)
+        {
+            switch (pose)
+            {
+                case PlayerPose.Front: return new Vector2(0f, -1f);
+                case PlayerPose.Back: return new Vector2(0f, 1f);
+                case PlayerPose.ProfileLeft: return new Vector2(-1f, 0f);
+                default: return new Vector2(1f, 0f);
+            }
+        }
+
+        /// <summary>
+        /// Half the width of a pose's slice of the compass: four poses over 360°. A heading this far plus
+        /// the hysteresis band away from <c>PoseCentre</c> has properly left the pose it is in, and a
+        /// neighbour is allowed.
+        ///
+        /// It is 45° only while there are four poses. Issue 2 in <c>Docs/ISSUES.md</c> widens the fan to
+        /// eight, which makes this 22.5° and the hysteresis band that sits on top of it half as many
+        /// degrees — the boundary count doubles, so the stickiness per boundary has to be halved to keep
+        /// the same total dead angle.
+        /// </summary>
+        public const float SectorHalfWidthDegrees = 45f;
 
         /// <summary>
         /// Where in one footstep the player is: 0 the instant the step lands, rising to 1 as the next one

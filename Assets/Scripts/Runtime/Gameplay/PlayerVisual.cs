@@ -56,6 +56,25 @@ namespace EchoMaze.Gameplay
                  "that it does not snap.")]
         [Range(0.05f, 1f)] [SerializeField] float calmSeconds = 0.2f;
 
+        [Header("Pose stability")]
+        [Tooltip("Degrees past a sector boundary the heading has to clear before a neighbour is allowed. " +
+                 "A WASD diagonal is an exact |vx| = |vy| tie by construction, and a cursor 10 px off the " +
+                 "body turns one pixel of shake into ~5.7 degrees of aim, so without a band the pose flips " +
+                 "as often as those numbers wobble. 10 degrees on a 45-degree boundary still leaves 35 " +
+                 "degrees of responsive angle either side of a switch; issue 2 in Docs/ISSUES.md halves both " +
+                 "numbers when the fan widens, because eight boundaries are twice as many places to stick.")]
+        [Range(0f, 20f)] [SerializeField] float boundaryDegrees = 10f;
+        [Tooltip("Shortest interval between two pose changes. This is the gate that kills the class " +
+                 "wholesale, including the handover when a key is released, where the velocity crosses the " +
+                 "movement deadzone constantly and hysteresis cannot see it because the direction is what " +
+                 "changed, not its sector. Costs 100 ms of response, which is less than one stride.")]
+        [Range(0f, 0.5f)] [SerializeField] float dwellSeconds = 0.1f;
+        [Tooltip("Pointer-to-body separation below which the aim is noise: the angle exists but nothing " +
+                 "about it is stable, so the current pose is held instead of resolved. 0.27 m is ~24 px at " +
+                 "the 1080p target, about a quarter of the character's own width, and parking the cursor on " +
+                 "the body is the normal resting state rather than an edge case.")]
+        [Range(0f, 1f)] [SerializeField] float aimNoiseRadius = 0.27f;
+
         /// <summary>How far a stride has run since the last footstep landed. 0 when not walking.</summary>
         public float Phase { get; private set; }
 
@@ -69,6 +88,7 @@ namespace EchoMaze.Gameplay
         Transform visuals;
         SpriteRenderer sprite;
         float calm = 1f;
+        float lastPoseChangeTime = float.NegativeInfinity;
 
         void Awake()
         {
@@ -85,6 +105,9 @@ namespace EchoMaze.Gameplay
             }
 
             ApplyPose(PlayerFacing.Resolve(body.linearVelocity, player.AimRadians));
+
+            // The first answer is not a change, and the dwell is only meant to space real ones out.
+            lastPoseChangeTime = float.NegativeInfinity;
         }
 
         void Update()
@@ -105,7 +128,7 @@ namespace EchoMaze.Gameplay
                 return;
             }
 
-            PlayerPose pose = PlayerFacing.Resolve(velocity, player.AimRadians);
+            PlayerPose pose = ResolveSticky(velocity);
             if (pose != CurrentPose)
             {
                 ApplyPose(pose);
@@ -115,9 +138,55 @@ namespace EchoMaze.Gameplay
             ApplyMotion(velocity, Phase, Mathf.Clamp01(velocity.magnitude / 0.3f));
         }
 
+        /// <summary>
+        /// Which pose to show, with the three gates <c>Docs/ISSUES.md</c> #3 asks for, none of which belong
+        /// in the pure resolver: the sector map stays boundary-deterministic so it stays testable, and the
+        /// stickiness is a property of drawing, not of aiming.
+        ///
+        /// The order matters. The cursor radius is checked before anything is resolved, because a heading
+        /// read off a pointer sitting on the character is not a measurement; the dwell is checked before the
+        /// band, because it is the cheaper test and it also has to gate the movement/aim handover, where the
+        /// direction changes without crossing anybody's boundary.
+        /// </summary>
+        PlayerPose ResolveSticky(Vector2 velocity)
+        {
+            bool walking = velocity.sqrMagnitude >= PlayerFacing.MoveDeadzoneSqr;
+
+            if (!walking && player.AimDistance <= aimNoiseRadius)
+            {
+                return CurrentPose;
+            }
+
+            Vector2 heading = walking
+                ? velocity
+                : new Vector2(Mathf.Cos(player.AimRadians), Mathf.Sin(player.AimRadians));
+
+            PlayerPose asked = PlayerFacing.ResolveDirection(heading);
+            if (asked == CurrentPose)
+            {
+                return CurrentPose;
+            }
+
+            if (Time.unscaledTime - lastPoseChangeTime < dwellSeconds)
+            {
+                return CurrentPose;
+            }
+
+            // How far the heading has left the pose we are drawing. Vector2.Angle rather than arithmetic on
+            // the aim, so the wrap at ±π stays somebody else's problem.
+            if (Vector2.Angle(heading, PlayerFacing.PoseCentre(CurrentPose))
+                <= PlayerFacing.SectorHalfWidthDegrees + boundaryDegrees)
+            {
+                return CurrentPose;
+            }
+
+            return asked;
+        }
+
         void ApplyPose(PlayerPose pose)
         {
             CurrentPose = pose;
+            lastPoseChangeTime = Time.unscaledTime;
 
             switch (pose)
             {
