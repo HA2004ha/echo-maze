@@ -32,18 +32,16 @@ namespace EchoMaze.EditorTools
         /// The pose sheet. The first three are the character as it walks; the rest are imported and
         /// configured on purpose even where nothing references them yet: an unimported PNG under Assets/
         /// gets whatever defaults whoever refreshes first leaves behind, and the day the wiring lands the
-        /// team inherits stale PPU-100 settings instead of correct ones. <c>Player_side_left</c> is the
-        /// delivered left profile, which <c>PlayerVisual</c> has to draw rather than flip the right one to
-        /// get (see <c>Docs/ISSUES.md</c> #5); <c>Player_34_*</c> are the diagonals issue 2 builds on. Note
-        /// that the 4096 re-delivery is <b>not</b> mirror-symmetric, so a file is a file here and not a
-        /// spare copy of its mirror.
+        /// team inherits stale PPU-100 settings instead of correct ones. <c>Player_34_*</c> are the
+        /// diagonals <c>Docs/ISSUES.md</c> #2 builds on. There is deliberately no left-profile file: the
+        /// two profiles were bit-exact mirrors (measured again on the 4096 delivery, after one non-mirrored
+        /// export went round and came back — issue #5), so facing left is one <c>flipX</c>.
         /// </summary>
         static readonly string[] PosePaths =
         {
             PoseFolder + "/Player_front.png",
             PoseFolder + "/Player_back.png",
             PoseFolder + "/Player_side.png",
-            PoseFolder + "/Player_side_left.png",
             PoseFolder + "/Player_34_front.png",
             PoseFolder + "/Player_34_back.png"
         };
@@ -383,11 +381,10 @@ namespace EchoMaze.EditorTools
             Sprite front = EnsurePoseSprite(PosePaths[0]);
             Sprite back = EnsurePoseSprite(PosePaths[1]);
             Sprite side = EnsurePoseSprite(PosePaths[2]);
-            Sprite sideLeft = EnsurePoseSprite(PosePaths[3]);
 
             // Configure every pose file, wired or not, so the deferred ones cannot be committed with
             // someone else's defaults.
-            for (int i = 4; i < PosePaths.Length; i++)
+            for (int i = 3; i < PosePaths.Length; i++)
             {
                 EnsurePoseSprite(PosePaths[i]);
             }
@@ -409,14 +406,6 @@ namespace EchoMaze.EditorTools
                 SetReference(visual, "frontSprite", front);
                 SetReference(visual, "backSprite", back);
                 SetReference(visual, "sideSprite", side);
-
-                // Optional on purpose: without it PlayerVisual falls back to flipping the right profile,
-                // which is how the character was drawn before the art team delivered a left one that is
-                // not a mirror. A scene missing this file must still show the character.
-                if (sideLeft != null)
-                {
-                    SetReference(visual, "sideLeftSprite", sideLeft);
-                }
             }
             else
             {

@@ -34,7 +34,6 @@ namespace EchoMaze.Tests.PlayMode
         Sprite frontPose;
         Sprite backPose;
         Sprite sidePose;
-        Sprite sideLeftPose;
         readonly List<Object> assets = new List<Object>();
 
         float Stride => profile.footstepInterval;
@@ -46,7 +45,6 @@ namespace EchoMaze.Tests.PlayMode
             frontPose = MakePose("test front");
             backPose = MakePose("test back");
             sidePose = MakePose("test side");
-            sideLeftPose = MakePose("test side left");
 
             GameObject go = New("rig visual player", false);
             go.transform.position = new Vector2(Far, Far);
@@ -65,7 +63,6 @@ namespace EchoMaze.Tests.PlayMode
             Wire(visual, "frontSprite", frontPose);
             Wire(visual, "backSprite", backPose);
             Wire(visual, "sideSprite", sidePose);
-            Wire(visual, "sideLeftSprite", sideLeftPose);
 
             // Built before the activation, because PlayerVisual resolves the Visuals child in Awake and a
             // component that misses it there never gets a second chance.
@@ -131,40 +128,22 @@ namespace EchoMaze.Tests.PlayMode
         }
 
         /// <summary>
-        /// The left profile is a drawing, not a flip. The 1024 originals were bit-exact mirrors, which is
-        /// what the first version of this component assumed; the 4096 re-delivery keeps its rim light, eye
-        /// and speculars on a fixed side, so mirroring the right profile draws a character lit the wrong
-        /// way. Docs/ISSUES.md #5 carries the measurement.
+        /// Facing left is the one texture mirrored. This is only free because the two profile files are
+        /// bit-exact mirrors — re-measured on the 4096 delivery, after one export arrived lit from the wrong
+        /// side and went back (Docs/ISSUES.md #5). If the art team ever draws the two sides differently, a
+        /// shield, a lantern, a fixed light, the mirror stops reproducing the drawing and this case is where
+        /// the change has to be made.
         /// </summary>
         [UnityTest]
-        public IEnumerator WalkingLeft_DrawsTheDeliveredLeftProfile()
+        public IEnumerator WalkingLeft_ReusesTheSameTextureFlipped()
         {
             WalkIn(Vector2.left);
             yield return null;
 
             Assert.AreEqual(PlayerPose.ProfileLeft, visual.CurrentPose);
-            Assert.AreEqual(sideLeftPose, sprite.sprite,
-                "facing left has to show the file the art team drew for it, not the right profile mirrored");
-            Assert.IsFalse(sprite.flipX,
-                "a flipped left profile puts the light on the side the delivered art does not light");
-        }
-
-        /// <summary>
-        /// The fallback that keeps the component optional: a scene wired with three poses and no left file
-        /// still shows a left-facing character, the way it did before the delivered profile existed.
-        /// </summary>
-        [UnityTest]
-        public IEnumerator WithoutTheLeftProfile_FacingLeft_FallsBackToTheFlippedSide()
-        {
-            Wire(visual, "sideLeftSprite", null);
-
-            WalkIn(Vector2.right);
-            yield return null;
-            WalkIn(Vector2.left);
-            yield return null;
-
-            Assert.AreEqual(PlayerPose.ProfileLeft, visual.CurrentPose);
-            Assert.AreEqual(sidePose, sprite.sprite, "a scene without the left file must still have a body");
+            Assert.AreEqual(sidePose, sprite.sprite,
+                "a second left-profile sprite file would be 2.7 MB of texture memory (1024 squared, DXT5, " +
+                "with mip levels) to redraw a picture the art is proved to be a mirror of");
             Assert.IsTrue(sprite.flipX);
         }
 
