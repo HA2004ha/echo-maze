@@ -9,10 +9,10 @@ impression and gets moved back to the report.
 | # | Issue | Severity | Status | Lands |
 |---|---|---|---|---|
 | 1 | A touch mark is drawn **inside the character** instead of where the body meets the wall | High — it is the game's primary "you touched something" cue and it currently points at the player | **closed** — mark flashes 0.486 m from the body centre, `Captures/markfix_wall_west.png` | week 3, done 2026-10-28 |
-| 2 | Four poses are too coarse: the face can be a quarter-turn off the direction the echo actually travels | Medium-high — it is the aim indicator the player reads direction off | open, **decided 2026-10-29**: eight poses from the six files in the repo, no new art | week 3, after issue 3 |
+| 2 | Four poses are too coarse: the face can be a quarter-turn off the direction the echo actually travels | Medium-high — it is the aim indicator the player reads direction off | open, **decided 2026-10-29**: eight poses from the five files in the repo (three of them flipped), no new art | week 3, after issue 3 |
 | 3 | The pose **flickers** on a sector boundary, with no hysteresis and no dwell anywhere | Medium — cosmetic, but it is the thing a player notices first and it doubles with issue 2 | open | week 3, and it is a *prerequisite* of issue 2 |
 | 4 | The character is **drawn wider than it collides**, so it visibly sinks into walls, and the touch mark and the echo arc disagree about where the surface is | Medium — it is the root cause issue 1 worked around, and it decides whether the alcove pocket and the corridor gaps read honestly | open, needs a decision (art scale, hitbox growth, or accept) | week 3 as a decision, week 4 as a change |
-| 5 | The new 4096 art **is not mirror-symmetric**, so the `flipX` that faces the character left draws it lit from the wrong side | Medium — the left-facing pose is visibly inconsistent with the file the art team delivered for it, and issue 2's eight-pose plan was priced on the old symmetry | **closed** — the delivered left profile is wired and drawn unflipped, `Captures/issue5_left_profile.png` | week 3, done 2026-10-29 |
+| 5 | The new 4096 art **is not mirror-symmetric**, so the `flipX` that faces the character left draws it lit from the wrong side | Medium — the left-facing pose is visibly inconsistent with the file the art team delivered for it, and issue 2's eight-pose plan was priced on the old symmetry | **closed** — turned out to be an export mistake, not a design decision: the lead re-exported the left profile and the pair is **bit-exact again (0 differing pixels)**, so the slot that had shipped for a day is reverted, `Player_side_left.png` is deleted, and `flipX` stands | week 3, done 2026-10-29 |
 
 ---
 
@@ -95,15 +95,16 @@ the two downward diagonals, `34_back` for the two upward ones. Sectors go to 45�
 
 What that costs, in the order that matters:
 
-- **The lighting does not mirror, and that is now measured rather than assumed.** This section used to price
-  the diagonals on the fact that the two delivered profiles were **bit-exact mirrors** (0 differing pixels),
-  which bought four poses from two stills. **The 4096 re-delivery broke it** — see issue 5: the artist keeps
-  the rim light and the eye on a fixed side instead of mirroring them with the body, so a flop-compare of the
-  new pair leaves 35 % of pixels differing by more than 8 per channel. The same fixed-lighting habit shows in
-  the 3/4 stills: each is **25 % different from its own mirror**. So `flipX` here is not a free bit-exact
-  reproduction of a delivered image, it is a pose lit from the opposite side to the rest of the set. Accepted
-  deliberately, because the alternative is no diagonals this week, and recorded here so that when the art team
-  sees it they know which two files to redraw rather than being handed a bug report about a boolean.
+- **The profiles mirror; the 3/4 stills do not, and that is now measured rather than assumed.** The side
+  profile is a free second pose — the flop-compare of `flip(Player_side)` against the left file the art team
+  delivered returns **0 differing pixels** (issue 5, closed: the version that did not mirror was an export
+  mistake, corrected by hand on 2026-10-29). The `Player_34_*` pair is a different case: each still differs
+  from **its own mirror** in **~25 % of the pixels of its content box**, three times the front pose's 8 %,
+  because the artist keeps the rim light and the eye on a fixed side instead of mirroring them with the body.
+  So `flipX` on the diagonals is not a bit-exact reproduction of a delivered image — it is the same body
+  lit from the opposite side. Accepted deliberately, because the alternative is no diagonals this week, and
+  recorded here so that when the art team sees it they know which two files to redraw rather than being
+  handed a bug report about a boolean.
 - **The two `Player_34_*` files change meaning.** They were imported as a 3/4 *camera*'s poses and left
   unwired; they are now the top-down diagonals. That is a real reading of the drawings — a 3/4 front *is*
   "facing down-right" — but it means the 3/4 camera discussion has to start from scratch when it happens,
@@ -119,8 +120,8 @@ What that costs, in the order that matters:
 
 **Acceptance:** the worst-case angle between the drawn face and the cone axis is **≤ 22.5°**, provable as a
 pure-function case over the same 1° sweep that already exists (`TheFourCardinals…` family), and one capture
-per diagonal pose. The memory line goes into `TUNING.md`: eight runtime poses from six 1024² DXT5 mip-chained
-textures, ~2.67 MB each.
+per diagonal pose. The memory line goes into `TUNING.md`: eight runtime poses from five 1024² DXT5
+mip-chained textures, ~2.67 MB each, three of them carrying a flipped half.
 
 ---
 
@@ -200,53 +201,56 @@ silhouette and the clearance are three numbers that add up instead of three that
 
 ---
 
-## 5 — The new art is not a mirror, so `flipX` faces a character lit the wrong way
+## 5 — The left profile arrived lit from the wrong side
 
 **Seen:** 2026-10-29, while re-measuring the pose files after the 4096 re-delivery, to check whether the
-number issue 2 was priced on still held. It does not.
+number issue 2 was priced on still held. It did not hold — and the answer turned out to be an export
+mistake rather than a design decision, which is the useful part of this record.
 
-**The measurement.** `Player_side_left.png` is compared against `flip(Player_side.png)` over the content box
-(`1514 × 2610`, sampled every 4th pixel, max over the four channels): **35.1 % of samples differ by more than
-8, mean difference 31.9**. The 1024 originals were bit-exact — 0 differing pixels — which is the fact
-`DESIGN_DECISIONS.md`'s 2026-10-28 entry and the old `TUNING.md` line were written against.
+**The measurement.** `Player_side_left.png` compared against `flip(Player_side.png)` over the content box
+(`1514 × 2610`, sampled every 4th pixel, max over the four channels): **35.1 % of samples differed by more
+than 8, mean difference 31.9**. The 1024 originals had been bit-exact — 0 differing pixels — which is the
+fact `DESIGN_DECISIONS.md`'s 2026-10-28 entry and the old `TUNING.md` line were written against.
 
-It is not a precision artefact. The difference image is structured: the **eye glow**, the **top rim arc** and
-the **two small speculars** are all on the opposite side in the delivered file from where a mirror puts them.
-Confirmed independently by self-mirror asymmetry per file — `Player_front` differs from its own mirror by
-8.1 % of samples, `Player_34_front` and `Player_34_back` by 25 %, `Player_side` by 35 %. A symmetric drawing
-would score near zero; the profiles scoring highest is the signature of **fixed lighting**: the artist keeps
-the light where it is in the room and redraws the body, rather than producing a mirror.
+It was not a precision artefact. The difference image was structured: the **eye glow**, the **top rim arc**
+and the **two small speculars** were all on the opposite side from where a mirror puts them. Confirmed
+independently by self-mirror asymmetry per file — `Player_front` differs from its own mirror by 8.1 % of
+samples, `Player_34_front` and `Player_34_back` by ~25 %, `Player_side` by 35 %. A symmetric drawing scores
+near zero; the profiles scoring highest looked like **fixed lighting**: light kept where it is in the room,
+body redrawn, rather than a mirror produced.
 
-**What is wrong in the game right now:** `PlayerVisual.ApplyPose` renders the left-facing pose as
-`sideSprite` with `flipX = true` (`Assets/Scripts/Runtime/Gameplay/PlayerVisual.cs:134-137`) and
-`Player_side_left.png` is imported, configured and **unwired**. So walking left shows a character whose eye
-and rim light are on the side the art team decided they are not on. It is one texture load away from correct,
-and the 2.67 MB the mirror was saving is already spent — the file is in the repo and imported either way.
+**What was wrong in the game:** `PlayerVisual.ApplyPose` renders the left-facing pose as `sideSprite` with
+`flipX = true`, so walking left showed a character whose eye and rim light were on the side the delivered
+left file says they are not — while that file sat imported, configured and unwired, its 2.67 MB already spent.
 
-**Fix:** a fourth `Sprite` slot on `PlayerVisual` for the delivered left profile, drawn with `flipX` false,
-`SceneKit` wiring it, and the `PlayerVisualTests` mirror case rewritten to assert the opposite — that facing
-left shows its own texture and does not flip. The slot is optional rather than required: a scene built
-without the file falls back to the flip, because losing the character is worse than a wrongly-lit one, and
-that fallback is itself a test case. The `Player_side_left` file stops being dead weight and the "if the team
-ever draws the two sides differently, `flipX` becomes a code change" clause in the 2026-10-28 decision entry
-is now the live case.
+**First fix, shipped and then withdrawn** (`eb7fd95`, `720b74d`, `0d96be1`): a fourth `Sprite` slot,
+`sideLeftSprite`, drawn unflipped, wired by `SceneKit` into both blockouts, with the mirror test rewritten to
+assert the opposite and an optional-slot fallback so a scene without the file still showed a body. Verified in
+Play mode (`pose=ProfileLeft sprite=Player_side_left flipX=False`) and in `Captures/issue5_left_profile.png`.
 
-**What this does *not* fix:** issue 2's diagonals still ship on `flipX`, because there is no other way to get
-eight poses from six files. That is accepted with its eyes open in issue 2's text, and the honest ask to the
-art team — whenever they next touch this character — is two more 3/4 stills, mirrored in *lighting* rather
-than in shape.
+**Closed 2026-10-29, by the file, not by the code.** The lead re-exported the correct drawing over it. The
+version now in the tree is **bit-exact against `flip(Player_side)` — a difference image over the full canvas
+returns no bounding box at all, 0 differing pixels** — so the second texture is redundant again and the flip
+reproduces the drawing exactly. The slot is reverted, `sideLeftSprite` is gone from `PlayerVisual` and from
+both scenes, and `Player_side_left.png` with its `.meta` are deleted: one profile file, two poses, 2.67 MB of
+runtime texture and 3.6 MB of repo back. Suite green on the reversal: 71/71 EditMode, 34/34 PlayMode.
 
-**Acceptance:** one capture of the character walking left, next to a capture of the delivered
-`Player_side_left.png`, in which the eye is on the same side in both.
+**The condition that reopens this, and where to change it:** the mirror is free only while the two sides are
+drawn the same. A shield, a lantern, or a light that stays fixed while the body turns ends it — this issue is
+exactly that case arriving by accident. `WalkingLeft_ReusesTheSameTextureFlipped` in
+`Assets/Tests/PlayMode/PlayerVisualTests.cs` is the seam: it asserts the flip, so the day the art stops
+mirroring, that case is where the second texture comes back.
 
-**Closed 2026-10-29.** `PlayerVisual` gained a `sideLeftSprite` slot, `SceneKit` wires
-`Assets/Art/Sprites/Player/Player_side_left.png` into it, and both blockouts serialise the reference. The
-left-facing pose now draws the delivered texture with `flipX = false` — verified in Play mode in
-`Level02_Corridor` (`pose=ProfileLeft sprite=Player_side_left flipX=False`) and in
-`Captures/issue5_left_profile.png`, where the in-game body and the source file agree on which side the eye
-and the rim light are on. The slot is **optional**: a scene wired without the file falls back to the old
-flip rather than losing its character, which is the same rule that keeps the placeholder dot alive, and
-`WithoutTheLeftProfile_FacingLeft_FallsBackToTheFlippedSide` is the case for it.
+**What this does *not* settle:** issue 2's diagonals still ship on `flipX`, and the 3/4 stills are **not**
+symmetric — each differs from its own mirror in ~25 % of the pixels of its content box, three times the front
+pose's 8 %. So the diagonal poses will be lit from the opposite side in their flipped half. That is accepted
+with its eyes open in issue 2's text, because there is no other way to get eight poses from the files that
+exist; the honest ask to the art team, whenever they next touch this character, is two more stills mirrored in
+*lighting* rather than only in shape.
+
+**Acceptance:** met by the measurement above — the delivered pair is bit-exact, so the flipped in-game body
+*is* the delivered drawing, and `Captures/issue5_left_profile.png` stands as the record of the version that
+was not.
 
 ---
 
