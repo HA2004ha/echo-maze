@@ -62,6 +62,7 @@ The player said in Play "the wave just arrives, nothing comes back from the obje
 | `alphaCurve` | `1 → 0.75 → 0` | Opacity against normalised arc age | — | Long tail, cluttered | Early fade, the next ping feels lonely |
 | `baseThickness` | `0.05` | Ribbon width in world units | `0.002..0.3` | Lines merge into each other, shapes are lost | Below `0.04` it disappears at the 1080p target |
 | `arcColor` | `#7fe9f0` | Base cyan colour, before `_Hdr` | — | — | The HUD uses the same colour; tune wave-vs-interface contrast here |
+| `creatureArcColor` | `#ffb56b` | The GDD's second tone: colour of the arc segments whose sample came back off a living thing (`SurfaceRead.IsCreature`), so a warm fragment inside a cyan ring says "that part of the wave came back alive" before the player decodes any shape. Only the tint changes — distance, deformation and the shimmer pulse still come from the same geometry | — | Every arc glows warm and the room is full of false creatures | A creature reads exactly like a pillar, which is the failure this colour exists to prevent |
 | `loudnessThreshold` | `0.18` | Gated loudness an automatic ping needs; it sits **on top of** the microphone gate, so raising it makes the player be clearly loud, not merely audible | `0..1` | Every cough makes a ping | The player has to shout |
 | `cooldownBase` | `0.6` | Seconds of recovery every ping pays | `0..3` | Silence feels expensive, the pace drops | The signal is nearly free and the game becomes a shout fest |
 | `cooldownPerLoudness` | `1.4` | Extra seconds per unit of loudness: a shout costs `0.6 + 1.4 = 2.0 s`, a whisper `~0.7 s` | `0..4` | Being loud is a real risk, which is the game theory | Loud and quiet pings cost the same, so nobody whispers |
@@ -107,6 +108,8 @@ arcColor(channel max) * _Hdr * shape(≈1)  >  bloom.threshold
 ```
 
 With `arcColor ≈ 0.914` and `_Hdr = 2.5` the output is about `2.28`, which passes the threshold of `0.55`. If the line looks dark and unlit, do not raise `_Hdr` first: check the camera's Post Processing tick and the `Echo` layer first (see `Docs/PLAN.md`, "if the ring was not visible").
+
+The warm creature tone is close to the same ceiling: `creatureArcColor` peaks at `1.0` on red, so a fully bright warm segment plus Bloom saturates toward cream rather than orange. It still reads as a different family from cyan in `Level02_Corridor` (verified on a frozen arc: warm and cyan vertices side by side in one mesh, distinct in the capture). If a future playtest says the two tones are hard to tell apart, lower `creatureArcColor` toward `#ff8a3d` before touching Bloom — the hue distance is the thing being tested, and Bloom's threshold is shared by both.
 
 ## The week 1 test scene
 
