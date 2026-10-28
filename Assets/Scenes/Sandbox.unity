@@ -985,6 +985,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: EchoMaze.Runtime::EchoMaze.Gameplay.TouchMarks
   fadeSeconds: 0.5
   dashSize: {x: 0.7, y: 0.09}
+  silhouetteClearance: 0.24
   markColor: {r: 0.498, g: 0.914, b: 0.941, a: 0.5}
   poolSize: 10
 --- !u!4 &2066138427
