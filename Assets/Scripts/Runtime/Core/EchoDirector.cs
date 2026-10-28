@@ -131,6 +131,17 @@ namespace EchoMaze.Core
             aimRad = aimRadians;
         }
 
+        /// <summary>
+        /// The clock the arcs are advanced on. Identical to <c>Time.time</c> outside the editor and while
+        /// unfrozen; the debug window holds it still (and can step it) so a wave can be measured and
+        /// screenshotted instead of arguing with a frame rate.
+        /// </summary>
+        float Clock =>
+#if UNITY_EDITOR
+            frozenAt >= 0f ? frozenAt :
+#endif
+            Time.time;
+
         void Update()
         {
             source?.Poll();
@@ -220,7 +231,9 @@ namespace EchoMaze.Core
                 return;
             }
 
-            record.Begin(origin, loudness, aim, coneHalf, radius, Time.time, rays, seedCounter++, closedRing);
+            // Clock, not Time.time: a ping emitted while the debug window holds the arcs still must be
+            // born at the frozen instant, or it would start its life already dead.
+            record.Begin(origin, loudness, aim, coneHalf, radius, Clock, rays, seedCounter++, closedRing);
             RayFan.Cast(record, echoFilter, rayBuffer);
             SurfaceRead.Compute(record, profile);
             LastRayCount = rays;
@@ -293,7 +306,7 @@ namespace EchoMaze.Core
                     continue;
                 }
 
-                float age = Time.time - ping.emitTime;
+                float age = Clock - ping.emitTime;
                 if (age > ping.TrainSeconds(profile))
                 {
                     ping.alive = false;
@@ -320,7 +333,7 @@ namespace EchoMaze.Core
                     }
 
                     renderer?.AddArc(ping, k, baseRadius,
-                                     ArcMath.Alpha(arcAge, arcLife, profile.alphaCurve), Time.time, profile);
+                                     ArcMath.Alpha(arcAge, arcLife, profile.alphaCurve), Clock, profile);
                 }
 
                 if (ArcMath.HasEmissionPulse(age, profile))
@@ -368,6 +381,46 @@ namespace EchoMaze.Core
         }
 
 #if UNITY_EDITOR
+        float frozenAt = -1f;
+
+        /// <summary>Read by the debug window: a negative value means the arcs run on the real clock.</summary>
+        public bool IsFrozen => frozenAt >= 0f;
+
+        /// <summary>
+        /// The clock the arcs are actually being advanced on, so the debug window can print an age the
+        /// wave itself agrees with instead of a second reading that only matches when unfrozen.
+        /// </summary>
+        public float ArcClock => Clock;
+
+        /// <summary>Stops the arc clock where it is. Cooldowns and the microphone keep running on real time.</summary>
+        public void FreezeArcs()
+        {
+            frozenAt = Time.time;
+        }
+
+        public void UnfreezeArcs()
+        {
+            frozenAt = -1f;
+        }
+
+        /// <summary>
+        /// Moves the frozen clock by a delta, so a held wave can be stepped through instead of only
+        /// photographed at one instant. Ignored while unfrozen.
+        /// </summary>
+        public void StepFrozenArcs(float seconds)
+        {
+            if (frozenAt >= 0f)
+            {
+                frozenAt += seconds;
+            }
+        }
+
+        /// <summary>
+        /// The pool itself, dead records included, so the debug window can plot a ping's samples after its
+        /// arcs have gone. Editor-only: nothing at runtime has any business reading another ping's buffer.
+        /// </summary>
+        public System.Collections.Generic.IReadOnlyList<PingRecord> PoolForDebugger => pool;
+
         /// <summary>
         /// Swap the tuning asset without a domain reload and rebuild everything it sizes. The debug
         /// window and the tests both need this: a profile is the only place the wave is configured.

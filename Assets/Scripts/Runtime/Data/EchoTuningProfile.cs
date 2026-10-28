@@ -105,8 +105,10 @@ namespace EchoMaze.Data
         [Range(0f, 1f)] public float brightnessGain = 0.6f;
         [Tooltip("Normalised curvature (|second difference| / distance) that counts as flat. A plane seen head-on is 1, the same plane at the edge of a 32 degree cone is about 1.8.")]
         [Range(0f, 8f)] public float curvatureFloor = 2f;
-        [Tooltip("Normalised curvature that saturates brightness. A 0.6 m pillar at 3 m is about 5; a corner is tens.")]
+        [Tooltip("Normalised curvature that saturates brightness. floor + range is the line between architecture and feature: measured in the blockout, every flat wall run sits at 1.0-2.0 and the 0.6 m pillar at 5.7 m at ~10.")]
         [Range(0.5f, 40f)] public float curvatureRange = 6f;
+        [Tooltip("A change of hit distance between neighbouring rays bigger than this fraction of the distance itself is not curvature: the fan stepped off one surface onto another. The line breaks there and neither side gets a brightness bonus, so a corner's kink can be the flare instead of every object's silhouette.")]
+        [Range(0.02f, 0.6f)] public float edgeJumpFraction = 0.12f;
 
         [Header("Fracture")]
         [Tooltip("Fraction of the segments across a locally flat run that are left undrawn. The break pattern is drawn from the ping's own seed, so every arc of that ping shows the same gaps and the eye tracks one wave instead of static.")]
@@ -161,6 +163,7 @@ namespace EchoMaze.Data
             brightnessGain = Mathf.Clamp(brightnessGain, 0f, 1f - brightnessBase);
             curvatureFloor = Mathf.Clamp(curvatureFloor, 0f, 8f);
             curvatureRange = Mathf.Max(0.5f, curvatureRange);
+            edgeJumpFraction = Mathf.Clamp(edgeJumpFraction, 0.02f, 0.6f);
             flatDropChance = Mathf.Clamp(flatDropChance, 0f, 0.6f);
             heartbeatHz = Mathf.Clamp(heartbeatHz, 0f, 4f);
             shimmer = Mathf.Clamp(shimmer, 0f, 1f);

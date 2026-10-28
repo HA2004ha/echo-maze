@@ -78,6 +78,7 @@ MonoBehaviour:
   brightnessGain: 0.6
   curvatureFloor: 2
   curvatureRange: 6
+  edgeJumpFraction: 0.12
   flatDropChance: 0.18
   fractureFlatBelow: 2.4
   heartbeatHz: 1.1

@@ -70,3 +70,12 @@ The tester only sees the arcs and has to say what is in front of them. At least 
 - [ ] Continue as planned
 - [ ] Spend next week's time on readability
 - [ ] Cut this from scope: …
+
+## Recorded before the session (developer, 2026-10-28)
+
+Two questions that were "under decision" are settled in code and in numbers. The session is asked to confirm them **in eyes**, not to re-open them:
+
+- **`gainSign = +1`, so the wave reads as returning**: the far wall is swallowed first and the nearest surface is the last thing standing. Locked by `ArcMathTests.NearestSurfaceSitsOnTheCarrierCircle`; question 5 above is the human half of that check.
+- **The corner hot-spot is emergent from curvature** — no per-object brightness was added, which is what GDD 3.0 deleted. Measured in the blockout at a shout: every flat wall run sits at 1.0–2.0 normalised curvature, the 0.6 m pillar at 5.7 m at ~10, and a crossing between two surfaces (a silhouette edge) now counts as nothing at all instead of ~10⁴.
+
+If the readability table above comes back with fewer than 3 of 6 named, the tuning numbers are not the suspect — the ordering in the second bullet is.

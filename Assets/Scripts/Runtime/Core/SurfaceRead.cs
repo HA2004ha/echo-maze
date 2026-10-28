@@ -57,6 +57,29 @@ namespace EchoMaze.Core
         }
 
         /// <summary>
+        /// True when the segment between two neighbouring samples crosses from one surface to another:
+        /// the hit distance changes by more than <c>edgeJumpFraction</c> of itself, which is a step, not a
+        /// slope.
+        ///
+        /// This is the difference between a corner and a room full of objects. A convex corner is a
+        /// <em>kink</em> — the distance function stays continuous and its slope jumps, which is exactly
+        /// what the second difference is for, and it should flare. A silhouette edge is a <em>step</em> —
+        /// two unrelated surfaces at unrelated distances — and in the blockout the step from a box corner
+        /// to the wall behind it measured 12670 against a saturation point of 8.
+        /// </summary>
+        public static bool IsSurfaceJump(PingRecord ping, int a, int b, float edgeJumpFraction)
+        {
+            if (!ArcMath.HasReflection(ping, a) || !ArcMath.HasReflection(ping, b))
+            {
+                return false;
+            }
+
+            float da = ping.d[a];
+            float db = ping.d[b];
+            return Mathf.Abs(db - da) > edgeJumpFraction * Mathf.Max(da, db);
+        }
+
+        /// <summary>
         /// Fills ping.brightness and ping.broken. Called at emit time only, never per frame, and the
         /// fracture RNG is seeded from the ping's own seed so the gaps are deterministic: replaying a
         /// recorded ping must produce the same wave, and the arcs of one train must agree about where
@@ -80,7 +103,14 @@ namespace EchoMaze.Core
                     continue;
                 }
 
-                ping.curvature[i] = NormalisedCurvature(ping, i);
+                // A sample that touches a step on either side is measured across two different surfaces,
+                // and a second difference taken over two surfaces says nothing about the shape of either.
+                int prev = NeighbourIndex(ping, i, -1);
+                int next = NeighbourIndex(ping, i, 1);
+                bool straddles = (prev >= 0 && IsSurfaceJump(ping, prev, i, profile.edgeJumpFraction)) ||
+                                 (next >= 0 && IsSurfaceJump(ping, i, next, profile.edgeJumpFraction));
+
+                ping.curvature[i] = straddles ? 0f : NormalisedCurvature(ping, i);
                 ping.brightness[i] = Brightness(ping.curvature[i], profile);
             }
 
@@ -91,6 +121,15 @@ namespace EchoMaze.Core
                 if (next < 0 || !ArcMath.HasReflection(ping, i) || !ArcMath.HasReflection(ping, next))
                 {
                     ping.broken[i] = false;
+                    continue;
+                }
+
+                if (IsSurfaceJump(ping, i, next, profile.edgeJumpFraction))
+                {
+                    // Never a probability: connecting the two sides of a step draws a radial spoke from
+                    // one object to the next, which is the one line in the whole wave that describes
+                    // nothing about either of them.
+                    ping.broken[i] = true;
                     continue;
                 }
 
