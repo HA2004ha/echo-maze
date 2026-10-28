@@ -861,6 +861,9 @@ MonoBehaviour:
   leanDegrees: 3
   leanReferenceSpeed: 2.5
   calmSeconds: 0.2
+  boundaryDegrees: 10
+  dwellSeconds: 0.1
+  aimNoiseRadius: 0.27
 --- !u!1 &1729051258
 GameObject:
   m_ObjectHideFlags: 0
