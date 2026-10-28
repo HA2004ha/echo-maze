@@ -1,6 +1,6 @@
 # Wave settings and balancing (TUNING)
 
-Every number in this table is live in `Assets/Data/Echo/EchoTuning.asset`, i.e. `Assets/Scripts/Runtime/Data/EchoTuningProfile.cs`. None of them are hard-coded in C#, so changing the balance needs no compile and can be tested in the editor with Play.
+Every number in this table is live in `Assets/Data/Echo/EchoTuning.asset`, i.e. `Assets/Scripts/Runtime/Data/EchoTuningProfile.cs`. None of them are hard-coded in C#, so changing the balance needs no compile and can be tested in the editor with Play. The character's motion is the one deliberate exception: those numbers are `[SerializeField]` on `PlayerVisual` in the scene and are listed under "The player's art and motion" at the end of this file. The profile is the balance brain — `OnValidate` enforces its invariants and `MovementAndHearingTests` asserts them — and a breathing rate is not balance.
 
 The target these numbers have to hit is [GDD.md](../GDD.md) v3.0, whose tuning knob is **`ρ = enemy hearing radius / visible echo reach` at the same loudness**, starting at `0.8`. If `ρ` is too high, pinging is never worth it; if too low, there is no tension.
 
@@ -147,4 +147,28 @@ The trap, learned the expensive way: this week's only "bug" — a `NullReference
 
 - **The metric is incidence-dependent, not only distance-dependent.** `NormalisedCurvature` divides by `d[i] · Δθ²`, which makes a flat plane measure exactly 1.0 *at normal incidence*; at grazing incidence the same plane measures `2/cos²ψ − 1`, i.e. 7 at 60° and 29 at 75°. In this 7 × 5 room it does not bite yet — every saturated sample in the `Wall_North` cone belongs to the `Pillar` or the `Crawler`, and none to a flat run — but looking *along* a wall rather than at it will eventually flare the wall. The fix is on record for week 3: store the hit normal's cosine per sample at emit time and divide by the plane's expected value, which costs one array and no extra raycasts.
 - **Percentage-of-cone cannot express shape.** Everything above is a count; whether a human separates "wall" from "pillar" from "corner" by brightness alone is the readability session, and no number in this file answers it.
+
+## The player's art and motion
+
+The character is four stills from `Assets/Art/Sprites/Player/` and a motion computed in `PlayerVisual`. The knobs below are `[SerializeField]` on that component (the `TouchMarks` pattern), not fields of the profile. Pixels are at the 1080p target, where one world unit is 90 px.
+
+| Knob | Value | What it is | Too high | Too low |
+|---|---|---|---|---|
+| `spritePixelsPerUnit` (importer) | `640` | The 632 px-tall drawing becomes `0.99` world units = **89 px** on screen — the same footprint the 16 px placeholder dot had at PPU 16, so no room, camera or readability number in this file had to be re-read | The player towers over the furniture it is hiding behind | The character is a sticker and the poses stop being legible |
+| `breatheAmplitude` | `0.012` | Idle vertical scale swing: ±1 px. Deliberately under rule 4's 4-pixel floor — the breath is there so a still frame is not frozen, and it must never compete with the wave for the eye | The body pumps, and the player watches themselves instead of the room | Indistinguishable from a static sprite, so the knob is a lie |
+| `breatheHz` | `0.4` | One breath every 2.5 s | Hyperventilating | Reads as a slow slide rather than a breath |
+| `bobHeight` | `0.03` | Hop at the top of a stride: 2.7 px | The player bounces, which reads as cartoon and hides the lean | The step is only audible, not visible |
+| `landSquash` | `0.02` | How far the body dips on the frame a footstep lands (1.8 px), so the hop has a bottom to it | The character collapses | The step lands silently in the picture |
+| `leanDegrees` | `3` | Tip into the direction of travel, at `walkSpeed` | The player is skiing | No direction of travel in the silhouette |
+| `leanReferenceSpeed` | `2.5` | The `walkSpeed` this lean was tuned against; it saturates there, so a future speed change cannot tip the character further. Re-tune if `walkSpeed` moves | — | — |
+| `calmSeconds` | `0.2` | Seconds of holding Shift for **all four** motion terms to reach zero together. This is the animation saying "you are being quiet", which is the thing the game teaches, so it is locked by `PlayerVisualTests.HoldingShift_FlattensEveryMotionWithinTheCalmWindow` rather than by taste | The character keeps bouncing while silent, and Shift has no visual meaning | It snaps, and reads as a glitch rather than a decision |
+| `MoveDeadzoneSqr` | `0.01` (0.1 m/s) | Below this the pose comes from the mouse aim, not the velocity. Same threshold `Player.UpdateFootsteps` uses to decide whether the step timer runs at all; `PlayerFacingTests.TheMoveDeadzone_IsTheFootstepThreshold` pins the two | Walking repositions the camera-facing pose too eagerly | The character flickers between poses on a key release |
+
+What the assets themselves are, measured rather than assumed: the drawn figure occupies `572 × 632` px of a 1024 px canvas whose centre lands at pixel `(512, 503)`, so a **centre pivot needs no transform offset**; `Player_side_left` and `Player_side` are **exact pixel mirrors** (a flop-compare returns 0 differing pixels), so facing left is one `flipX` rather than a second texture (2.67 MB each at runtime: 1024² DXT5, 11 mip levels); and `Player_34_front` / `Player_34_back` differ from `front`/`back` by ~22% of their content, which is why they are imported with the correct settings but **unwired** — they belong to a 3/4 camera the game does not have yet.
+
+The pose rule and the step phase are pure (`PlayerFacing`), which is what makes them testable at all: 12 EditMode cases cover the four sectors, every degree of the sweep, the ±45°/±135° edges, the `Atan2` wrap and the four `StepPhase` states; 14 PlayMode cases cover sprite selection, the mirror convention, the Shift flattening, the bounce being locked to `Player`'s own footstep clock, and the guarantee that a player with no `PlayerVisual` at all still runs a clean frame.
+
+The motion was verified in `Level02_Corridor` in Play mode rather than only in the suite: walking right holds `localRotation.z = -0.0262` (the 3° lean) with `localScale = (1.010, 0.980)` (the landing dip), and the same frame with Shift held reads exactly `(0, 0, 0)` / identity / `(1, 1, 1)` while the pose still tracks the walk. The arcs draw over the body — `Visuals` is on `Default` (id 0) and `EchoField` on `Echo` (id 1).
+
+**Open, and only a playtest closes it:** the dot was a flat teal disc at alpha 0.35; the character is a near-black body with a cyan rim and an eye at full brightness. The silhouette is the same size by construction, but the bright area is far smaller and the dark body is a different class of object from the faint cyan geometry the room is drawn with. "Is the player now too readable, or not readable enough?" is not answerable from these numbers.
 
