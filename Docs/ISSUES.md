@@ -12,7 +12,7 @@ impression and gets moved back to the report.
 | 2 | Four poses are too coarse: the face can be a quarter-turn off the direction the echo actually travels | Medium-high — it is the aim indicator the player reads direction off | open, **decided 2026-10-29**: eight poses from the six files in the repo, no new art | week 3, after issue 3 |
 | 3 | The pose **flickers** on a sector boundary, with no hysteresis and no dwell anywhere | Medium — cosmetic, but it is the thing a player notices first and it doubles with issue 2 | open | week 3, and it is a *prerequisite* of issue 2 |
 | 4 | The character is **drawn wider than it collides**, so it visibly sinks into walls, and the touch mark and the echo arc disagree about where the surface is | Medium — it is the root cause issue 1 worked around, and it decides whether the alcove pocket and the corridor gaps read honestly | open, needs a decision (art scale, hitbox growth, or accept) | week 3 as a decision, week 4 as a change |
-| 5 | The new 4096 art **is not mirror-symmetric**, so the `flipX` that faces the character left draws it lit from the wrong side | Medium — the left-facing pose is visibly inconsistent with the file the art team delivered for it, and issue 2's eight-pose plan was priced on the old symmetry | open, found 2026-10-29 by measurement | week 3, one slot and one load |
+| 5 | The new 4096 art **is not mirror-symmetric**, so the `flipX` that faces the character left draws it lit from the wrong side | Medium — the left-facing pose is visibly inconsistent with the file the art team delivered for it, and issue 2's eight-pose plan was priced on the old symmetry | **closed** — the delivered left profile is wired and drawn unflipped, `Captures/issue5_left_profile.png` | week 3, done 2026-10-29 |
 
 ---
 
@@ -223,11 +223,13 @@ the light where it is in the room and redraws the body, rather than producing a 
 and rim light are on the side the art team decided they are not on. It is one texture load away from correct,
 and the 2.67 MB the mirror was saving is already spent — the file is in the repo and imported either way.
 
-**Fix:** a fourth `Sprite` slot on `PlayerVisual` for the delivered left profile, `flipX` left false for it,
-`SceneKit` wiring it, and the two `PlayerVisualTests` cases that assert the mirror convention rewritten to
-assert the opposite — that each of the four poses shows its own texture and that no pose flips. The
-`Player_side_left` file stops being dead weight and the "if the team ever draws the two sides differently,
-`flipX` becomes a code change" clause in the 2026-10-28 decision entry is now the live case.
+**Fix:** a fourth `Sprite` slot on `PlayerVisual` for the delivered left profile, drawn with `flipX` false,
+`SceneKit` wiring it, and the `PlayerVisualTests` mirror case rewritten to assert the opposite — that facing
+left shows its own texture and does not flip. The slot is optional rather than required: a scene built
+without the file falls back to the flip, because losing the character is worse than a wrongly-lit one, and
+that fallback is itself a test case. The `Player_side_left` file stops being dead weight and the "if the team
+ever draws the two sides differently, `flipX` becomes a code change" clause in the 2026-10-28 decision entry
+is now the live case.
 
 **What this does *not* fix:** issue 2's diagonals still ship on `flipX`, because there is no other way to get
 eight poses from six files. That is accepted with its eyes open in issue 2's text, and the honest ask to the
@@ -236,6 +238,15 @@ than in shape.
 
 **Acceptance:** one capture of the character walking left, next to a capture of the delivered
 `Player_side_left.png`, in which the eye is on the same side in both.
+
+**Closed 2026-10-29.** `PlayerVisual` gained a `sideLeftSprite` slot, `SceneKit` wires
+`Assets/Art/Sprites/Player/Player_side_left.png` into it, and both blockouts serialise the reference. The
+left-facing pose now draws the delivered texture with `flipX = false` — verified in Play mode in
+`Level02_Corridor` (`pose=ProfileLeft sprite=Player_side_left flipX=False`) and in
+`Captures/issue5_left_profile.png`, where the in-game body and the source file agree on which side the eye
+and the rim light are on. The slot is **optional**: a scene wired without the file falls back to the old
+flip rather than losing its character, which is the same rule that keeps the placeholder dot alive, and
+`WithoutTheLeftProfile_FacingLeft_FallsBackToTheFlippedSide` is the case for it.
 
 ---
 
