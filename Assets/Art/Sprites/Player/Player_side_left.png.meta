@@ -5,6 +5,12 @@ TextureImporter:
   - first:
       213: 269710500230702167
     second: Player_side_left_0
+  - first:
+      213: 6032231497828944047
+    second: Player_side_left_1
+  - first:
+      213: -8978117369178993944
+    second: Player_side_left_2
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -51,7 +57,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 640
+  spritePixelsToUnits: 2560
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -105,10 +111,10 @@ TextureImporter:
       name: Player_side_left_0
       rect:
         serializedVersion: 2
-        x: 322
-        y: 183
-        width: 381
-        height: 655
+        x: 0
+        y: 0
+        width: 4096
+        height: 4096
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -119,6 +125,50 @@ TextureImporter:
       bones: []
       spriteID: 754a17e55443eb300800000000000000
       internalID: 269710500230702167
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Player_side_left_1
+      rect:
+        serializedVersion: 2
+        x: 1279
+        y: 2349
+        width: 22
+        height: 288
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fa8440f469ac6b350800000000000000
+      internalID: 6032231497828944047
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Player_side_left_2
+      rect:
+        serializedVersion: 2
+        x: 1279
+        y: 1894
+        width: 6
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8ea425222d1576380800000000000000
+      internalID: -8978117369178993944
       vertices: []
       indices: 
       edges: []
@@ -138,6 +188,8 @@ TextureImporter:
       entries: []
     nameFileIdTable:
       Player_side_left_0: 269710500230702167
+      Player_side_left_1: 6032231497828944047
+      Player_side_left_2: -8978117369178993944
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

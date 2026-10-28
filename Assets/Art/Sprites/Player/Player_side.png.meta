@@ -5,6 +5,12 @@ TextureImporter:
   - first:
       213: 3177559528023588408
     second: Player_side_0
+  - first:
+      213: -8016399727596174324
+    second: Player_side_1
+  - first:
+      213: -422196145686132937
+    second: Player_side_2
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -51,7 +57,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 640
+  spritePixelsToUnits: 2560
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -105,10 +111,10 @@ TextureImporter:
       name: Player_side_0
       rect:
         serializedVersion: 2
-        x: 321
-        y: 183
-        width: 381
-        height: 655
+        x: 0
+        y: 0
+        width: 4096
+        height: 4096
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -119,6 +125,50 @@ TextureImporter:
       bones: []
       spriteID: 83ef0882e85f81c20800000000000000
       internalID: 3177559528023588408
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Player_side_1
+      rect:
+        serializedVersion: 2
+        x: 1279
+        y: 2349
+        width: 22
+        height: 288
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c048713abe600c090800000000000000
+      internalID: -8016399727596174324
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Player_side_2
+      rect:
+        serializedVersion: 2
+        x: 1279
+        y: 1894
+        width: 6
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 737c6d6a7de042af0800000000000000
+      internalID: -422196145686132937
       vertices: []
       indices: 
       edges: []
@@ -138,6 +188,8 @@ TextureImporter:
       entries: []
     nameFileIdTable:
       Player_side_0: 3177559528023588408
+      Player_side_1: -8016399727596174324
+      Player_side_2: -422196145686132937
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

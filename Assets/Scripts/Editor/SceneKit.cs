@@ -29,12 +29,14 @@ namespace EchoMaze.EditorTools
         const string PoseFolder = "Assets/Art/Sprites/Player";
 
         /// <summary>
-        /// The pose sheet. The first three are the character; the rest are imported and configured on
-        /// purpose even though nothing references them: an unimported PNG under Assets/ gets whatever
-        /// defaults whoever refreshes first leaves behind, and the day the 3/4 camera lands the team
-        /// inherits stale PPU-100 settings instead of correct ones. <c>Player_side_left</c> is the same
-        /// reason the profiles exist at all — it is a pixel-exact mirror of <c>Player_side</c>, so the
-        /// runtime flips one texture rather than carrying 2.7 MB of memory to redraw nothing.
+        /// The pose sheet. The first three are the character as it walks; the rest are imported and
+        /// configured on purpose even where nothing references them yet: an unimported PNG under Assets/
+        /// gets whatever defaults whoever refreshes first leaves behind, and the day the wiring lands the
+        /// team inherits stale PPU-100 settings instead of correct ones. <c>Player_side_left</c> is the
+        /// delivered left profile, which <c>PlayerVisual</c> has to draw rather than flip the right one to
+        /// get (see <c>Docs/ISSUES.md</c> #5); <c>Player_34_*</c> are the diagonals issue 2 builds on. Note
+        /// that the 4096 re-delivery is <b>not</b> mirror-symmetric, so a file is a file here and not a
+        /// spare copy of its mirror.
         /// </summary>
         static readonly string[] PosePaths =
         {
@@ -47,11 +49,19 @@ namespace EchoMaze.EditorTools
         };
 
         /// <summary>
-        /// 632 drawn pixels at this PPU is 0.99 world units, which is 89 screen pixels at the 1080p
-        /// target and deliberately the same footprint the placeholder dot already had (16 px at PPU 16),
-        /// so no camera framing or readability number has to be re-read because of the art.
+        /// The canvas is 4096 source pixels and must land at 1.6 world units, so 2560. A drawn figure of
+        /// 2528 px at this PPU is 0.99 world units, which is 89 screen pixels at the 1080p target and
+        /// deliberately the same footprint the placeholder dot already had (16 px at PPU 16), so no camera
+        /// framing or readability number has to be re-read because of the art.
+        ///
+        /// The number is tied to the *source* resolution, not to what is uploaded: <c>maxTextureSize</c>
+        /// does not change a sprite's world size, Unity rescales the effective PPU instead (measured on the
+        /// 4096 originals — imported at max 1024 the sprite still reports 6.4 units at PPU 640, because its
+        /// live pixelsPerUnit became 160). So re-deriving this constant is the first thing to do if the art
+        /// is ever delivered at another canvas size, and <c>PlayerPoseImportTests</c> is what fails when
+        /// someone forgets.
         /// </summary>
-        const float PosePixelsPerUnit = 640f;
+        const float PosePixelsPerUnit = 2560f;
 
         public static EchoTuningProfile EnsureTuning()
         {
@@ -177,9 +187,9 @@ namespace EchoMaze.EditorTools
         /// textures and rewrite six .meta files to set values they already have.
         ///
         /// Mipmaps are the one place this deliberately diverges from <see cref="EnsurePlayerDot"/>:
-        /// the dot is 16 source pixels drawn 1:1, this art is 632 drawn pixels squeezed into 89 on
-        /// screen, and a 7x downscale without a mip chain shimmers as the character walks and breaks
-        /// the rim light into noise.
+        /// the dot is 16 source pixels drawn 1:1, this art is 2528 drawn pixels uploaded as 1024 and
+        /// squeezed into 89 on screen, and a downscale that deep without a mip chain shimmers as the
+        /// character walks and breaks the rim light into noise.
         /// </summary>
         static bool ConfigurePoseImporter(TextureImporter importer)
         {
@@ -210,8 +220,8 @@ namespace EchoMaze.EditorTools
                 changed = true;
             }
 
-            // The drawn figure sits at canvas pixel (512, 503) of 1024 in every file, so a centre pivot
-            // is the character standing where the transform is, off by 1.2 screen pixels.
+            // The drawn figure sits within 36 canvas pixels of (2048, 2048) in every file, which at this PPU
+            // is 1.3 screen pixels: a centre pivot is the character standing where the transform is.
             if (importer.spritePivot != new Vector2(0.5f, 0.5f))
             {
                 importer.spritePivot = new Vector2(0.5f, 0.5f);
@@ -230,8 +240,8 @@ namespace EchoMaze.EditorTools
                 changed = true;
             }
 
-            // The source is already 1024, so this is lossless and keeps the editor from holding a
-            // 2048 chain for art that will never be zoomed past its own resolution.
+            // A 4x downscale of a 4096 canvas. The world size is unaffected (see PosePixelsPerUnit), so
+            // this buys texture memory against art that is drawn 89 pixels tall and will never be zoomed.
             if (importer.maxTextureSize != 1024)
             {
                 importer.maxTextureSize = 1024;
