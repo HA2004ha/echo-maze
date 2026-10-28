@@ -383,10 +383,11 @@ namespace EchoMaze.EditorTools
             Sprite front = EnsurePoseSprite(PosePaths[0]);
             Sprite back = EnsurePoseSprite(PosePaths[1]);
             Sprite side = EnsurePoseSprite(PosePaths[2]);
+            Sprite sideLeft = EnsurePoseSprite(PosePaths[3]);
 
             // Configure every pose file, wired or not, so the deferred ones cannot be committed with
             // someone else's defaults.
-            for (int i = 3; i < PosePaths.Length; i++)
+            for (int i = 4; i < PosePaths.Length; i++)
             {
                 EnsurePoseSprite(PosePaths[i]);
             }
@@ -408,6 +409,14 @@ namespace EchoMaze.EditorTools
                 SetReference(visual, "frontSprite", front);
                 SetReference(visual, "backSprite", back);
                 SetReference(visual, "sideSprite", side);
+
+                // Optional on purpose: without it PlayerVisual falls back to flipping the right profile,
+                // which is how the character was drawn before the art team delivered a left one that is
+                // not a mirror. A scene missing this file must still show the character.
+                if (sideLeft != null)
+                {
+                    SetReference(visual, "sideLeftSprite", sideLeft);
+                }
             }
             else
             {

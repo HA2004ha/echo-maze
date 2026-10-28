@@ -25,10 +25,13 @@ namespace EchoMaze.Gameplay
         [SerializeField] Sprite frontSprite;
         [Tooltip("Facing away, walking up the screen. The pose a retreating player sees.")]
         [SerializeField] Sprite backSprite;
-        [Tooltip("The canonical side view, drawn facing screen right. Facing left is the same texture " +
-                 "flipped: the two profile files the art came in as are exact pixel mirrors, so a second " +
-                 "sprite would be 2.7 MB of memory (1024 squared, DXT5, with mip levels) to redraw nothing.")]
+        [Tooltip("The canonical side view, drawn facing screen right.")]
         [SerializeField] Sprite sideSprite;
+        [Tooltip("The delivered left profile. Not a mirror of the right one: the 4096 art keeps its rim " +
+                 "light and eye on a fixed side, so flipping the right profile draws the character lit the " +
+                 "wrong way (Docs/ISSUES.md #5). Optional — a scene wired without it falls back to the " +
+                 "flip, which is the old behaviour and still better than showing nothing.")]
+        [SerializeField] Sprite sideLeftSprite;
 
         [Header("Idle breath")]
         [Tooltip("Fractional vertical scale swing while standing still. 0.012 of an 89 pixel body is about " +
@@ -131,9 +134,10 @@ namespace EchoMaze.Gameplay
                     sprite.sprite = sideSprite;
                     sprite.flipX = false;
                     break;
-                default:
-                    sprite.sprite = sideSprite;
-                    sprite.flipX = true;
+                case PlayerPose.ProfileLeft:
+                    // The delivered file if the scene has it; the mirror of the right profile if not.
+                    sprite.sprite = sideLeftSprite != null ? sideLeftSprite : sideSprite;
+                    sprite.flipX = sideLeftSprite == null;
                     break;
             }
         }
