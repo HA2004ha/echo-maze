@@ -10,7 +10,7 @@ impression and gets moved back to the report.
 |---|---|---|---|---|
 | 1 | A touch mark is drawn **inside the character** instead of where the body meets the wall | High — it is the game's primary "you touched something" cue and it currently points at the player | **closed** — mark flashes 0.486 m from the body centre, `Captures/markfix_wall_west.png` | week 3, done 2026-10-28 |
 | 2 | Four poses are too coarse: the face can be a quarter-turn off the direction the echo actually travels | Medium-high — it is the aim indicator the player reads direction off | open, **decided 2026-10-29**: eight poses from the five files in the repo (three of them flipped), no new art | week 3, after issue 3 |
-| 3 | The pose **flickers** on a sector boundary, with no hysteresis and no dwell anywhere | Medium — cosmetic, but it is the thing a player notices first and it doubles with issue 2 | open | week 3, and it is a *prerequisite* of issue 2 |
+| 3 | The pose **flickers** on a sector boundary, with no hysteresis and no dwell anywhere | Medium — cosmetic, but it is the thing a player notices first and it doubles with issue 2 | **closed** — three gates in `PlayerVisual`: a 10° band, a 0.1 s dwell and a 0.27 m cursor radius, each with its own case | week 3, done 2026-10-29, and it unblocks issue 2 |
 | 4 | The character is **drawn wider than it collides**, so it visibly sinks into walls, and the touch mark and the echo arc disagree about where the surface is | Medium — it is the root cause issue 1 worked around, and it decides whether the alcove pocket and the corridor gaps read honestly | open, needs a decision (art scale, hitbox growth, or accept) | week 3 as a decision, week 4 as a change |
 | 5 | The new 4096 art **is not mirror-symmetric**, so the `flipX` that faces the character left draws it lit from the wrong side | Medium — the left-facing pose is visibly inconsistent with the file the art team delivered for it, and issue 2's eight-pose plan was priced on the old symmetry | **closed** — turned out to be an export mistake, not a design decision: the lead re-exported the left profile and the pair is **bit-exact again (0 differing pixels)**, so the slot that had shipped for a day is reverted, `Player_side_left.png` is deleted, and `flipX` stands | week 3, done 2026-10-29 |
 
@@ -161,6 +161,35 @@ mip-chained textures, ~2.67 MB each, three of them carrying a flipped half.
 frames and asserts the pose changed **at most once**; and a case that walks a perfect WASD diagonal for 2 s
 and asserts the pose is **stable after the first frame**. Until both exist, "eight poses" (issue 2) stays
 blocked — it doubles the boundary count, and shipping it first makes the visible defect worse.
+
+**Closed 2026-10-29, with a, b and c shipped as written and d still rejected.** Three `[SerializeField]`
+knobs on `PlayerVisual` — `boundaryDegrees = 10`, `dwellSeconds = 0.1`, `aimNoiseRadius = 0.27` m — applied in
+the order the causes demand: the cursor radius is checked before anything is resolved (a heading read off a
+pointer sitting on the character is not a measurement), the dwell before the band (it is the cheaper test, and
+it also has to gate the handover, where the *source* of the heading changes without crossing anybody's
+boundary). The pure resolver did not move: `PlayerFacing` gained `ResolveDirection` and `PoseCentre` so the
+sticky layer can ask the same question about a heading it has already chosen and measure the band as an angle
+between two vectors rather than as arithmetic on an `Atan2` result that has to handle the ±π wrap by hand.
+`Player.AimDistance` is the second read-only getter on that file for the same reason the step clock ones are:
+the visual needs a number, not a copy of the logic that made it.
+
+Both acceptance cases exist, named for what they promise:
+`ParkedOnASectorBoundary_CursorJitterForThirtyFrames_ChangesThePoseAtMostOnce` (±5.7° of jitter — the one
+pixel the cause-3 measurement describes — held to at most one change in 30 frames) and
+`WalkingASteadyDiagonal_ForTwoSeconds_HoldsOnePose` (120 frames, zero changes after the first). Two more
+guard the gates from over-correcting: `AHeadingThatReallyLeftItsSector_TakesTheNewPose` proves a half-turn is
+still drawn, so none of this is a character that has stopped turning, and `Dwell_BlocksASecondPoseInsideItsWindow`
+proves the window is a real gate rather than a coincidence of frame rate. `PlayerFacingTests` pins the two new
+helpers against the sector map they are measured from, so moving a boundary moves the band with it instead of
+quietly desynchronising the two.
+
+**The consequence, said out loud because it is a change of behaviour and not only a fix:** a held WASD diagonal
+now shows **the pose you were already in** when you entered it, because the tie is exactly 45° off — inside the
+band by construction. `PlayerFacing` still answers the tie with the vertical, and the drawing layer declines to
+act on that answer until the heading has clearly committed. That is the whole point of hysteresis, but it does
+mean the character disagrees with the pure rule for a quarter-rotation of input. Issue 2 retires the
+disagreement rather than tuning it: eight poses put a real drawing at 45°, which moves the boundary to 22.5°
+and this band to 5°, and the diagonal stops being a tie at all.
 
 ---
 
