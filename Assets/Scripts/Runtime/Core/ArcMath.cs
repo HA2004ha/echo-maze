@@ -34,6 +34,23 @@ namespace EchoMaze.Core
         public static bool IsAlive(float baseRadius, float rKill) => baseRadius > rKill;
 
         /// <summary>
+        /// Age of arc k in a train. The carrier leaves at age 0 and every following arc is born
+        /// arcInterval later, which is what turns one ring into a wave with a front.
+        /// </summary>
+        public static float ArcAge(float age, int arcIndex, float arcInterval) => age - arcIndex * arcInterval;
+
+        /// <summary>Seconds a single arc lives, from emission to its radius falling to rKill.</summary>
+        public static float ArcLife(float radius0, float waveSpeed, float rKill) =>
+            waveSpeed > 0f ? Mathf.Max(0f, (radius0 - rKill) / waveSpeed) : 0f;
+
+        /// <summary>
+        /// Seconds the whole train is on screen. Longer than one arc by the stagger of the later arcs,
+        /// otherwise the ping is retired while its innermost arc is still travelling.
+        /// </summary>
+        public static float TrainLife(float radius0, float waveSpeed, float rKill, int arcsPerPing, float arcInterval) =>
+            ArcLife(radius0, waveSpeed, rKill) + Mathf.Max(0, arcsPerPing - 1) * Mathf.Max(0f, arcInterval);
+
+        /// <summary>
         /// Radius of the outward cue emitted with a ping. It grows at the same rate the returning
         /// carrier shrinks and is clamped below that carrier, so the two rings never cross and the
         /// eye always reads one wave leaving and one coming back.
@@ -67,6 +84,23 @@ namespace EchoMaze.Core
         public static float SampleRadius(float baseRadius, float gain, float hitDistance, float dMin) =>
             baseRadius + gain * (hitDistance - dMin);
 
+        /// <summary>
+        /// Angular spacing of a fan's rays. A cone puts its first and last ray exactly on the edges, so
+        /// it divides the span by rays-1; a full circle must not sample the same bearing twice, or the
+        /// closing segment degenerates and the ring shows a seam.
+        /// </summary>
+        public static float AngleStep(PingRecord ping)
+        {
+            if (ping.rayCount <= 1)
+            {
+                return 0f;
+            }
+
+            return ping.fullCircle
+                ? Mathf.PI * 2f / ping.rayCount
+                : 2f * ping.coneHalfRad / (ping.rayCount - 1);
+        }
+
         public static float SampleAngle(PingRecord ping, int i)
         {
             if (ping.rayCount <= 1)
@@ -74,8 +108,8 @@ namespace EchoMaze.Core
                 return ping.aimAngleRad;
             }
 
-            float span = 2f * ping.coneHalfRad;
-            return ping.aimAngleRad - ping.coneHalfRad + span * (i / (float)(ping.rayCount - 1));
+            float start = ping.fullCircle ? ping.aimAngleRad - Mathf.PI : ping.aimAngleRad - ping.coneHalfRad;
+            return start + AngleStep(ping) * i;
         }
 
         public static Vector2 Polar(Vector2 origin, float angleRad, float radius) =>

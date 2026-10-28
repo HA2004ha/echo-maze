@@ -149,7 +149,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: EchoMaze.Runtime::EchoMaze.Core.EchoDirector
   profile: {fileID: 11400000, guid: 21d7f1554ac65ff56a6f0283d9b72939, type: 2}
-  sourceMode: 0
+  sourceMode: 2
   echoLayerMask:
     serializedVersion: 2
     m_Bits: 704
@@ -729,7 +729,6 @@ MonoBehaviour:
   director: {fileID: 0}
   speed: 3.2
   quietMultiplier: 0.42
-  manualLoudness: 0.6
   aimSmoothing: 18
 --- !u!58 &1601936610
 CircleCollider2D:

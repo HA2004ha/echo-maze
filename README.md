@@ -2,7 +2,7 @@
 
 A 2D top-down stealth/horror game where the screen is completely black and you see the world through **the echo of your own sound**: you make a noise, a cone-shaped wave travels forward, hits walls and creatures, and comes back as a train of returning arcs; you have to read the shape of each arc. Every sound you make is also heard by the things in the dark — they cannot be killed, only escaped, and one touch kills. This is a project for the Game Theory course at Iran University of Science and Technology.
 
-Three levels: an enemy-free maze that teaches the language, The Corridor, The Sump. English only, Windows PC with a microphone and headphones.
+Three levels: an enemy-free maze that teaches the language, The Corridor, The Sump. English only, **Linux PC** with a microphone and headphones.
 
 - Design document: [GDD.md](GDD.md) (version 3.0, at the repo root)
 - 5-week plan and current status: [Docs/PLAN.md](Docs/PLAN.md)
@@ -22,11 +22,13 @@ Unity Hub ▸ Add project from disk ▸ this folder
 Assets/Scenes/Sandbox.unity ▸ Play
 ```
 
-`Sandbox` is the mechanical test scene for the echo mechanic (move with WASD, aim with the mouse, ping with Space). Once week 2 lands, `Assets/Scenes/Level02_Corridor.unity` is the first real room: geometry, a patrolling Crawler, and death. The Windows build is produced with the platform set to **Windows ▸ Mono**.
+`Sandbox` is the mechanical test scene for the echo mechanic (move with WASD, aim with the mouse, ping with Space). Once week 2 lands, `Assets/Scenes/Level02_Corridor.unity` is the first real room: geometry, a patrolling Crawler, and death. The build is produced with the platform set to **Linux64**.
 
 ## Sound input and platform limits
 
-All sound input sits behind one abstraction layer called `IEchoSource`. **Right now** the `Sandbox` scene runs with `sourceMode = ManualOnly`: no sound source is created at all, and `Space` is the only way to ping. Set `sourceMode` to `Simulated` if you want to see the automatic loudness gate without a microphone — it then reads a constant level from `simulatedLoudness`. A real microphone is a **week 2** deliverable: `MicrophoneEchoSource` (the `Microphone.Start` path with the noise gate, one ping per vocal event) is measured per machine with `Tools ▸ Echo ▸ Mic Probe`. `Microphone` support in the Unity editor on Linux has never been verified here, so the microphone is developed and tested on Windows, and the Linux path keeps `Simulated` / `ManualOnly` as its fallback — `Space` must stay a complete way to play. The matrix is in [Docs/MIC_TEST_MATRIX.md](Docs/MIC_TEST_MATRIX.md). Details in [Docs/DESIGN_DECISIONS.md](Docs/DESIGN_DECISIONS.md).
+All sound input sits behind one abstraction layer called `IEchoSource`. **`Sandbox` now runs with `sourceMode = Microphone`**: the scene opens the capture device and pings on your voice. Measured on Linux (`6000.6.3f1`, PipeWire) on 2026-10-28: `Microphone.devices` returns the real inputs, `Microphone.Start` records, and the room's noise floor sits at ~0.003 RMS against a `gateOpenRms` of 0.02. Two things the first run taught us: the ring buffer is uninitialised for its first window (so the source discards 0.25 s of capture before it trusts the level), and `GetPosition` advances in blocks, so a frame with no new audio must not be read as silence.
+
+If a machine has no usable input, the director logs one warning and falls back to `Simulated` (a constant `simulatedLoudness` on a timer), and `ManualOnly` + Space remain available everywhere — nobody is blocked by a missing microphone. Pin a device with `EchoTuningProfile.microphoneDevice`; left empty it takes the first device whose name is not a `Monitor of …`, because a monitor is your own speaker output and the game would answer its own sound effects. What is **not** yet measured is the Linux **player build** — the editor path works, the standalone binary has its own row in [Docs/MIC_TEST_MATRIX.md](Docs/MIC_TEST_MATRIX.md). Details in [Docs/DESIGN_DECISIONS.md](Docs/DESIGN_DECISIONS.md).
 
 ## Folder layout
 

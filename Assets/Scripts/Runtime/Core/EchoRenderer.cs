@@ -35,7 +35,25 @@ namespace EchoMaze.Core
 
         void Awake()
         {
-            meshFilter = GetComponent<MeshFilter>();
+            BuildBuffers();
+        }
+
+        /// <summary>
+        /// Buffers are built lazily as well as in Awake: a component added by a script in EditMode never
+        /// receives Awake, and the readability tests draw arcs headless.
+        /// </summary>
+        void BuildBuffers()
+        {
+            if (verts != null)
+            {
+                return;
+            }
+
+            if (meshFilter == null)
+            {
+                meshFilter = GetComponent<MeshFilter>();
+            }
+
             var meshRenderer = GetComponent<MeshRenderer>();
 
             vertCount = MaxQuads * VertsPerQuad;
@@ -80,6 +98,7 @@ namespace EchoMaze.Core
 
         public void BeginFrame()
         {
+            BuildBuffers();
             cursor = 0;
             OverflowCount = 0;
 
@@ -95,7 +114,8 @@ namespace EchoMaze.Core
             }
         }
 
-        public void AddArc(PingRecord ping, int arcIndex, float baseRadius, float alpha, EchoTuningProfile profile)
+        public void AddArc(PingRecord ping, int arcIndex, float baseRadius, float alpha, float time,
+                          EchoTuningProfile profile)
         {
             if (ping == null || alpha <= 0f)
             {
@@ -104,34 +124,51 @@ namespace EchoMaze.Core
 
             float gain = ArcMath.Deformation(arcIndex, profile);
             float half = profile.baseThickness * 0.5f;
+            float gainSpan = Mathf.Max(1e-5f, profile.brightnessGain);
+            int n = ping.rayCount;
+
+            // A closed ring is drawn as one extra segment back to the first sample; a cone is not, so
+            // the fan's edges stay edges and the eye can tell "I am surrounded" from "ahead of me".
+            int limit = ping.fullCircle ? n + 1 : n;
+
             bool hasPrevious = false;
             Vector2 previous = Vector2.zero;
-            float previousAmp = 0f;
+            int previousIndex = -1;
 
-            for (int i = 0; i < ping.rayCount; i++)
+            for (int i = 0; i < limit; i++)
             {
+                int index = ping.fullCircle && i == n ? 0 : i;
+
                 // A missing reflection is a hole in the arc, never a long line to nowhere.
-                if (!ArcMath.HasReflection(ping, i))
+                if (!ArcMath.HasReflection(ping, index))
                 {
                     hasPrevious = false;
                     continue;
                 }
 
-                float r = ArcMath.SampleRadius(baseRadius, gain, ping.d[i], ping.dMin);
+                float r = ArcMath.SampleRadius(baseRadius, gain, ping.d[index], ping.dMin);
                 if (r <= 0f || float.IsNaN(r))
                 {
                     hasPrevious = false;
                     continue;
                 }
 
-                Vector2 current = ArcMath.Polar(ping.origin, ArcMath.SampleAngle(ping, i), r);
-                if (hasPrevious)
+                Vector2 current = ArcMath.Polar(ping.origin, ArcMath.SampleAngle(ping, index), r);
+                if (hasPrevious && !ping.broken[previousIndex])
                 {
-                    AddSegment(previous, current, half, profile.arcColor, previousAmp * alpha);
+                    float brightness = ping.brightness[previousIndex];
+                    if (SurfaceRead.IsCreature(ping.kind[previousIndex]))
+                    {
+                        brightness *= SurfaceRead.Shimmer(previousIndex, time, profile);
+                    }
+
+                    float bend = Mathf.Clamp01((brightness - profile.brightnessBase) / gainSpan);
+                    AddSegment(previous, current, half * Mathf.Lerp(0.7f, 1.5f, bend), profile.arcColor,
+                               ping.amp[previousIndex] * brightness * alpha);
                 }
 
                 previous = current;
-                previousAmp = ping.amp[i];
+                previousIndex = index;
                 hasPrevious = true;
             }
         }

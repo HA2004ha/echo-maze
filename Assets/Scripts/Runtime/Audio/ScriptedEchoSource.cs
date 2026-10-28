@@ -1,18 +1,25 @@
+using EchoMaze.Data;
+using UnityEngine;
+
 namespace EchoMaze.Audio
 {
     /// <summary>
-    /// Fixed script of loudness samples, one per Poll. Used by EditMode tests so the gate and
-    /// the ping cadence can be asserted without a clock or a microphone.
+    /// Fixed script of raw levels, one per Poll. The gate and the ping cadence are asserted through it
+    /// without a microphone or a clock, and from week 4 it is the bot's mouth: the same script drives a
+    /// headless route and makes the playtest reproducible.
     /// </summary>
     public sealed class ScriptedEchoSource : IEchoSource
     {
         readonly float[] script;
+        readonly NoiseGate gate;
         int index;
-        float current;
+        bool edge;
 
-        public ScriptedEchoSource(float[] script)
+        public ScriptedEchoSource(float[] script, EchoTuningProfile profile)
         {
             this.script = script ?? new float[0];
+            gate = new NoiseGate(profile.gateOpenRms, profile.gateCloseRms,
+                                 profile.gateFullRms, profile.loudnessHold);
         }
 
         public bool Open(string device, int sampleRate) => true;
@@ -21,20 +28,20 @@ namespace EchoMaze.Audio
 
         public void Poll()
         {
+            float next = index < script.Length ? script[index] : 0f;
             if (index < script.Length)
             {
-                current = script[index];
                 index++;
             }
-            else
-            {
-                current = 0f;
-            }
+
+            edge = gate.Update(next, Time.deltaTime);
         }
 
-        public float RawRms => current;
+        public float RawRms => gate.Raw;
 
-        public float Loudness => current;
+        public float Loudness => gate.Loudness;
+
+        public bool NewVocalEvent => edge;
 
         public string Status => "scripted";
 

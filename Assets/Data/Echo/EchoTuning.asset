@@ -60,7 +60,6 @@ MonoBehaviour:
   baseThickness: 0.05
   arcColor: {r: 0.498, g: 0.914, b: 0.941, a: 1}
   loudnessThreshold: 0.18
-  minPingInterval: 0.35
   manualEchoLoudness: 0.65
   maxLivePings: 3
   simulatedLoudness: 0.7

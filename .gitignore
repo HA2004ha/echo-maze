@@ -50,6 +50,7 @@
 
 # Editor screenshots taken while tuning (QA evidence, re-takeable, never imported by Unity)
 /Captures/
+/Assets/Screenshots/
 
 # Gradle cache directory
 .gradle/

@@ -5,7 +5,7 @@
 The project is pinned to `6000.6.3f1` (`ProjectSettings/ProjectVersion.txt`). This is **a signal, not a coercion**: if you open the project with a newer editor, the editor upgrades the YAML files one way and older versions can no longer open them. So:
 
 - Unity Hub ▸ **Install Unity** ▸ version **6000.6.3f1**
-- Module checkboxes: on Linux **Linux Build Support** + **Windows Build Support (Mono)**; on Windows **Windows Build Support (Mono)** (installed by default)
+- Module checkboxes: on Linux **Linux Build Support** (this is the delivery target — the whole team develops and tests on Linux); **Windows Build Support (Mono)** only if someone outside the team needs to run a build
 - Do **not** use editors 6000.7, a different 6000.6.x patch, or 2022.x for this repo. If you must test with another version, work in a separate scratch clone and **do not push**.
 - After the first open: import takes a few minutes. Do not click anywhere until it finishes, and do not press any button in `Window ▸ Package Manager ▸ Updates`.
 - **Input System (new) is the only active mode** (`activeInputHandler: 1`). Old code written against `Input.GetAxis` or `Input.mousePosition` will not compile/run in this project.
@@ -78,9 +78,9 @@ Three traps we hit on this machine:
 - **PlayMode tests cannot be run in batchmode on this machine** (neither with `-nographics` nor with `DISPLAY=:0`): the process exits immediately with code `1` and writes no result `xml`. PlayMode tests are only runnable inside the editor (Test Runner tab). Whatever needs to be green in CI is written as EditMode.
 - If, after creating an asset with an editor script, some field in the scene ends up as `objectReference: {fileID: 0}`: the asset was probably loaded **before** `EditorSceneManager.OpenScene(...)`. Scene loading flushes asset references that have no scene reference, and your local variable points at a destroyed object. Correct order: `OpenScene` first, then `EnsureX()`. `SandboxSceneSetup` now has an explicit `LogError` if this happens again.
 
-## 5) Windows build from the Linux editor
+## 5) Linux build, from the Linux editor
 
-`File ▸ Build Settings ▸ Platform: Windows ▸ Mono` (not IL2CPP — the Windows IL2CPP module does not exist on Linux). Put the output in `Builds/`, which is ignored. A Windows player is needed from **week 2** (that is where the microphone is finally measured, on real hardware, per [MIC_TEST_MATRIX.md](MIC_TEST_MATRIX.md)); the first *tagged* build ships with week 3.
+`File ▸ Build Settings ▸ Platform: Linux ▸ x86_64`. Put the output in `Builds/`, which is ignored. **This is the platform the team runs and tests on**: the whole team is on Linux, so the microphone is measured on Linux per [MIC_TEST_MATRIX.md](MIC_TEST_MATRIX.md) — the editor path is proven (row 1, 2026-10-28) and the player build is the open row (row 2). A Windows build is only worth making if someone outside the team needs to play it; the module for it is **Windows Build Support (Mono)**, which does not exist as IL2CPP on Linux.
 
 ## 6) Team roles
 

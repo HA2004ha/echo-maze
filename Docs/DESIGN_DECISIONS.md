@@ -5,8 +5,8 @@ Every choice that closes one path and leaves another open is recorded here, so t
 ## 2026-10-17 — Sound input behind an `IEchoSource` interface
 
 **Decision:** three implementations for the sound source: `MicrophoneEchoSource`, `SimulatedEchoSource`, `ScriptedEchoSource`. The rest of the game only ever deals with `Loudness` and `RawRms`.
-**Reason:** Unity editor microphone support on Linux cannot be relied on and the lead programmer works on Linux; also the math tests need deterministic input.
-**Cost:** one extra layer that must always stay in sync; the real microphone path does not run until week 2, on Windows. *(Amended 2026-10-27: GDD 3.0 puts the microphone in week 2, because "ambient noise and microphone hiss ruin the game" is the design's first listed risk and a Linux-only core would mean building six weeks of gameplay against a signal nobody has measured.)*
+**Reason:** the plan assumed Unity editor microphone support on Linux could not be relied on, and the math tests need deterministic input.
+**Cost:** one extra layer that must always stay in sync; the real microphone path does not run until week 2, on Windows. *(Amended 2026-10-27: GDD 3.0 puts the microphone in week 2, because "ambient noise and microphone hiss ruin the game" is the design's first listed risk and a Linux-only core would mean building six weeks of gameplay against a signal nobody has measured.)* *(Amended 2026-10-28, after measuring: the premise was wrong. The Linux editor exposes the real capture devices, records live audio and releases them on exit, so `MicrophoneEchoSource` is the primary path on the platform the whole team actually uses and `Sandbox` now ships with `sourceMode = Microphone`. The interface earns its keep anyway — `NoiseGate` is unit-tested through `ScriptedEchoSource`, which no microphone-based test could be deterministic about.)*
 
 ## 2026-10-17 — The arc fracture mask is computed once per ping
 
@@ -129,7 +129,19 @@ Every choice that closes one path and leaves another open is recorded here, so t
 **Reason:** materials are gone, and the enum's remaining job is tagging a collider with the **signature** it casts, which is geometry. Unity serialises enums as ints, and `Sandbox.unity` already stores `kind: 1` on three objects — renaming the member is free, renumbering the others would silently re-tag every collider in the scene and in every prefab built later.
 **Cost:** the fossil names `Pillar_Concrete` and `Wall_Concrete` stay in the scene, because `GitSetupValidator`'s scene-merge probe matches the literal `m_Name: Pillar_Concrete` and would report `SKIP` (a silent loss of the check) if it disappeared. Renaming them is an in-editor job that must land in the same commit as the probe update.
 
+## 2026-10-28 — Brightness comes from the curvature of the distance profile
+
+**Decision:** `SurfaceRead.NormalisedCurvature` is `|d[i+1] − 2·d[i] + d[i−1]| / (d[i] · Δθ²)` and `b = brightnessBase + brightnessGain · clamp01((curv − curvatureFloor) / curvatureRange)`. Nothing about an object's *material* affects how bright its arc is; only how bent the measured surface is.
+**Reason:** GDD 3.0 deleted materials, and this form has the property the old per-ping normalisation did not: **a flat plane measures exactly 1.0** at normal incidence whatever its distance and whatever the ray count, so the thresholds are absolute (`curvatureFloor = 2` means "flat things stay dim", `curvatureRange = 6` means "a 0.6 m pillar at 3 m is mid-bright, a corner saturates"). Normalising by each ping's own maximum would have amplified a flat wall's floating-point noise into full contrast and made two pings incomparable.
+**Cost:** three numbers to tune instead of one per material, and a hot-spot now has to *be earned* by geometry rather than assigned — a large flat wall at a grazing angle measures ~1.8 and stays dim, which may or may not be what the player should see. Also: peak curvature is not a fair way to compare shapes (a cylinder's tangent silhouette saturates it), so the tests measure brightness **at the nearest surface**, which is also what the player's eye does.
+
+## 2026-10-28 — Linux is the microphone platform
+
+**Decision:** the microphone is developed and measured on Linux, and the Linux x86_64 player is the delivery build. `Sandbox.unity` saves `sourceMode = Microphone`. Windows is dropped as a test target.
+**Reason:** nobody on the team has a Windows machine, and the assumption that Unity cannot capture audio on Linux turned out to be wrong: on 2026-10-28 the editor listed three devices, recorded real samples at the requested rate, held a 0.002–0.003 RMS floor in a quiet room, and released the device on Play Mode exit. Keeping the Windows plan would have meant the only people who could ever test the game's primary input were not the people building it.
+**Cost:** the Unity **Linux player's** microphone path is unverified (row 2 of `MIC_TEST_MATRIX.md`) and cannot be verified from the editor; PipeWire/PulseAudio device naming is unpredictable across distros, so `AutoSelect` can only skip a monitor it can *recognise by name*, and a user whose system default input is a loopback still has to pin the device themselves.
+
 ## Under decision
 
 - The sign of `gainSign` in the formula: default `+1`; it will be set with a slider in the editor against the three test objects and recorded in `Docs/PLAYTEST_REPORT.md` (week 2).
-- Is the corner hot-spot emergent enough from the breakup rule alone, or does it need an explicit vertex-proximity boost? Week 2 answers this with the curvature term (`brightnessBase`, `brightnessGain`, `distanceCurvature`) at the same time as the readability test — the material lookup that used to be the fallback answer no longer exists.
+- Is the corner hot-spot emergent enough from the curvature term alone, or does it need an explicit vertex-proximity boost? The code landed (`brightnessBase`, `brightnessGain`, `curvatureFloor`, `curvatureRange`) and `SurfaceReadTests` proves the *ordering* wall < pillar < corner in model values — what is still unmeasured is whether a human sees it, which is the day-5 readability session.

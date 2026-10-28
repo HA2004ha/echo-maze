@@ -26,10 +26,19 @@ namespace EchoMaze.Core
         public float[] d;
         public float[] amp;
         public SurfaceKind[] kind;
+        public float[] brightness;
+        public float[] curvature;
+        public bool[] broken;
 
         public float dMin;
         public float dMax;
         public int seed;
+
+        /// <summary>
+        /// True when the fan wraps all the way around instead of spanning a cone, which is how the weak
+        /// pulse closes its ring instead of leaving a wedge at the aim line.
+        /// </summary>
+        public bool fullCircle;
 
         public int ValidSampleCount { get; private set; }
 
@@ -45,10 +54,13 @@ namespace EchoMaze.Core
             d = new float[maxRays];
             amp = new float[maxRays];
             kind = new SurfaceKind[maxRays];
+            brightness = new float[maxRays];
+            curvature = new float[maxRays];
+            broken = new bool[maxRays];
         }
 
         public void Begin(Vector2 pingOrigin, float pingLoudness, float pingAim, float pingConeHalf,
-                          float pingRadius, float time, int rays, int pingSeed)
+                          float pingRadius, float time, int rays, int pingSeed, bool closedRing = false)
         {
             Allocate(rays);
             origin = pingOrigin;
@@ -59,15 +71,16 @@ namespace EchoMaze.Core
             emitTime = time;
             rayCount = rays;
             seed = pingSeed;
+            fullCircle = closedRing;
             alive = true;
             ValidSampleCount = 0;
             dMin = float.PositiveInfinity;
             dMax = 0f;
         }
 
-        /// <summary>Time at which the first arc of this ping dies.</summary>
-        public float LifeSeconds(float waveSpeed, float rKill) =>
-            waveSpeed > 0f ? Mathf.Max(0f, (radius - rKill) / waveSpeed) : 0f;
+        /// <summary>Time at which the last arc of this ping's train dies.</summary>
+        public float TrainSeconds(EchoTuningProfile profile) =>
+            ArcMath.TrainLife(radius, profile.waveSpeed, profile.rKill, profile.arcsPerPing, profile.arcInterval);
 
         public void WriteSample(int i, float distance, float reflectivity, SurfaceKind surfaceKind, bool valid)
         {

@@ -10,9 +10,12 @@ GDD 3.0 is a stealth game with one hit and a suspicion meter, and this profile o
 
 | Group | Parameters | Week |
 |---|---|---|
-| Arc train | `arcsPerPing`, `arcInterval`, `fractureGapThreshold`, `flatDropChance` | 2 |
-| Brightness (replaces the deleted material lookup) | `brightnessBase`, `brightnessGain`, `distanceCurvature` | 2 |
-| Microphone | gate threshold with hysteresis, `minPingInterval` per vocal event, cooldown `0.6 + 1.4·L` | 2 |
+| Arc train | `arcsPerPing`, `arcInterval`, `fractureFlatBelow`, `flatDropChance` | 2 — **landed**, rows below |
+| Brightness (replaces the deleted material lookup) | `brightnessBase`, `brightnessGain`, `curvatureFloor`, `curvatureRange` | 2 — **landed**, rows below |
+| Microphone | `gateOpenRms`, `gateCloseRms`, `gateFullRms`, `loudnessHold`, `microphoneDevice` | 2 — **landed**, rows below |
+| Echo cost | `cooldownBase`, `cooldownPerLoudness` (they replace `minPingInterval`) | 2 — **landed**, rows below |
+| Silent fallbacks | `weakPulseRadius`, `weakPulseRays`, `weakPulseCooldown` | 2 — **landed**, rows below |
+| Living things | `heartbeatHz`, `shimmer` | 2 — **landed**, needs the Crawler in the scene to tune by eye |
 | Movement and `ρ` | walk `2.5` / Shift `1.0` / Listen `1.0` m/s, enemy speeds (`0.65×`, `1.3×`, `0.4×`), `rho` | 2–3 |
 | Hearing | suspicion thresholds `0.3 / 0.6 / 1.0`, drain `≈0.25/s`, alert freeze `0.5 s`, give-up search time | 3 |
 | Safety | listen radius `4 m`, weak pulse reach `1.5 m`, touch-mark fade `0.5 s`, memory trace `10–15 s`, hollow `×0.15`, noise zone `reach ×0.5 / hearing ×0.3` | 3 |
@@ -56,15 +59,35 @@ The player said in Play "the wave just arrives, nothing comes back from the obje
 | `emissionPulseSeconds` | `0.16` | Lifetime of the outbound ring in the same cone as the ping; it carries no geometry information | `0..0.5` | The two rings collapse into each other and cause and effect are lost | At `0` it is removed and the player only sees the returning wave |
 | `gain0` | `1` | `A_0` in the formula: how much the hit distance deforms the arc | `0..2` | Object shapes are exaggerated and read faster, the ring is no longer a circle | The arc stays nearly circular and the shape is lost |
 | `gainSign` | `+1` | Sign of the deformation | `+1 / -1` | `-1` makes the wave look like emission rather than return; only for a 5-second test | — |
-| `innerDecay` | `1` | Damping of `A_k` in the arc train (`A_k = gain0 * innerDecay^k`) | `0.1..1` | Inner arcs lose the shape | All arcs have the same shape and the train looks flat |
 | `alphaCurve` | `1 → 0.75 → 0` | Opacity against normalised arc age | — | Long tail, cluttered | Early fade, the next ping feels lonely |
 | `baseThickness` | `0.05` | Ribbon width in world units | `0.002..0.3` | Lines merge into each other, shapes are lost | Below `0.04` it disappears at the 1080p target |
 | `arcColor` | `#7fe9f0` | Base cyan colour, before `_Hdr` | — | — | The HUD uses the same colour; tune wave-vs-interface contrast here |
-| `loudnessThreshold` | `0.18` | Noise-gate threshold for an automatic ping | `0..1` | Every cough makes a ping | The player has to shout |
-| `minPingInterval` | `0.35` | Minimum seconds between automatic pings | `>=0.05` | Shouting = a ping barrage and a blinded field | Shouting only makes one ping |
-| `manualEchoLoudness` | `0.65` | Loudness of the manual `Space` echo (the only ping input until the microphone lands) | `0..1` | `Space` makes the microphone pointless | A player without a microphone loses |
+| `loudnessThreshold` | `0.18` | Gated loudness an automatic ping needs; it sits **on top of** the microphone gate, so raising it makes the player be clearly loud, not merely audible | `0..1` | Every cough makes a ping | The player has to shout |
+| `cooldownBase` | `0.6` | Seconds of recovery every ping pays | `0..3` | Silence feels expensive, the pace drops | The signal is nearly free and the game becomes a shout fest |
+| `cooldownPerLoudness` | `1.4` | Extra seconds per unit of loudness: a shout costs `0.6 + 1.4 = 2.0 s`, a whisper `~0.7 s` | `0..4` | Being loud is a real risk, which is the game theory | Loud and quiet pings cost the same, so nobody whispers |
+| `manualEchoLoudness` | `0.65` | Loudness of the `Space` echo — the fallback that must stay playable on a machine with no microphone | `0..1` | `Space` makes the microphone pointless | A player without a microphone loses |
 | `maxLivePings` | `3` | Simultaneous pings in the pool | `1..4` | Stacked arcs, unreadable shapes | A large room cannot be gathered in one ping |
-| `simulatedLoudness` | `0.7` | Constant loudness of the `Simulated` mode; only has an effect when `EchoDirector.sourceMode` is `Simulated`. The scene default is `ManualOnly`, where no sound source is created at all | `0..1` | — | — |
+| `arcsPerPing` | `3` | Arcs in one train; one is a pulse, three is a wave with a front | `1..4` | More to read, more clutter, more quads | The wave stops looking like it is travelling |
+| `arcInterval` | `0.12` | Seconds between the arcs of one train | `0..0.5` | The arcs separate and read as three objects | They merge into one thick band |
+| `innerDecay` | `0.72` | Damping of `A_k` in the arc train (`A_k = gain0 * innerDecay^k`). Was `1`, which made all three arcs identical and the train read as one wide line | `0.1..1` | Inner arcs lose the shape | All arcs have the same shape and the train looks flat |
+| `brightnessBase` | `0.4` | Opacity of a locally flat run — a plane measures curvature 1.0 and sits under `curvatureFloor`, so walls stay dim by construction | `0..1` | Everything glows and the features stop standing out | The room is invisible and only the features exist |
+| `brightnessGain` | `0.6` | Extra opacity a sample can earn from curvature (`brightnessBase + gain` is the ceiling; `OnValidate` clamps the sum to 1) | `0..1−base` | Corners flare | Features and walls look the same |
+| `curvatureFloor` | `2` | Normalised curvature that counts as flat. A plane is exactly 1.0 head-on and ~1.8 at the edge of a 32° cone, so 2 leaves the whole flat band below it | `0..8` | Only sharp corners light up | A wall at an angle starts glowing |
+| `curvatureRange` | `6` | How much curvature saturates a sample to full brightness. A 0.6 m pillar at 3 m is ~5; a convex corner is in the tens | `0.5..40` | Everything below a corner is dim | The whole cone lights up and the corner stops being special |
+| `flatDropChance` | `0.18` | Probability that a segment of a locally flat run is dropped from the fracture mask | `0..0.6` | The wall dissolves into dashes | A wall reads as a perfect sheet, which is what the GDD calls too clean |
+| `fractureFlatBelow` | `2.4` | Curvature under this counts as "flat" for the fracture mask, so gaps never eat a feature | `0..8` | Features start losing segments | Only the flattest runs break |
+| `heartbeatHz` | `1.1` | Rate at which a creature's arc samples pulse | `0..4` | A creature strobes and reads as a fault | The pulse is invisible |
+| `shimmer` | `0.35` | Amplitude of that pulse on brightness | `0..1` | Living things are obvious — which may be too obvious | The creature is indistinguishable from a wall |
+| `microphoneDevice` | `""` | Exact `Microphone.devices` string to open; empty takes the first device that is not a `Monitor of …` | — | — | — |
+| `gateOpenRms` | `0.02` | RMS that opens the microphone gate. Measured floor of a quiet room on Linux: **0.002–0.003**, so this is ~7× the hiss | `0.001..0.2` | Breathing and hiss make pings | The player must shout to be believed |
+| `gateCloseRms` | `0.012` | RMS that closes it again; the band between the two is the hysteresis that stops one syllable becoming three pings | `0.001..0.2` | The gate chatters open and shut | A two-syllable word becomes two vocal events |
+| `gateFullRms` | `0.12` | RMS that maps to loudness 1.0 | `0.01..1` | Everything is a shout | Normal speech maxes the meter and reach stops discriminating |
+| `loudnessHold` | `0.25` | Seconds of level held after the voice drops below `gateCloseRms` | `0..2` | One long word blurs into the next | Brief dips inside one word close the gate |
+| `weakPulseRadius` | `1.5` | Reach of the 360° `F` pulse — the "is something standing behind me" move | `0.25..4` | It replaces a real ping and the voice becomes pointless | It cannot reach past your own feet |
+| `weakPulseRays` | `96` | Rays in that ring (odd; `| 1` keeps it odd) | `24..512` | Smoother circle, more cost | A close creature reads as a few dots |
+| `weakPulseCooldown` | `1.2` | Its own cooldown, independent of the loud one — that separation is the whole reason to press `F` | `0.1..5` | Spamming a pulse stops being safe | Spamming a pulse costs nothing |
+| `simulatedLoudness` | `0.7` | Constant loudness of `Simulated` mode; only has an effect when `EchoDirector.sourceMode` is `Simulated`, which is the **fallback** after a microphone fails to open. The scene default is `Microphone` | `0..1` | — | — |
+| `simulatedEventInterval` | `1.6` | Seconds between invented vocal events in `Simulated` mode, so the fallback still respects "one event, one ping" | `0.2..8` | — | — |
 
 ## `_Hdr` and Bloom
 

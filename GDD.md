@@ -3,7 +3,7 @@
 **Project name:** Echo — **code name:** `echo-maze`
 **Document version:** 3.0 (complete rewrite; supersedes 1.0, 1.1 and 2.0)
 **Engine:** Unity 2D (pinned version: `6000.6.3f1` — see [TEAM_SETUP.md](TEAM_SETUP.md))
-**Target platform:** Windows (PC) with a microphone and headphones
+**Target platform:** Linux (PC) with a microphone and headphones *(amended 2026-10-28: the team has no Windows machine, and the microphone was measured working in the Linux editor — see [Docs/MIC_TEST_MATRIX.md](Docs/MIC_TEST_MATRIX.md) row 1)*
 **Language:** English only
 
 > This file is the open-source version of the document the team wrote initially. The reference images of the original document are not in the repo and have been dropped. Technical decisions are in [DESIGN_DECISIONS.md](DESIGN_DECISIONS.md), balancing parameters in [TUNING.md](TUNING.md), the schedule in [PLAN.md](PLAN.md), and the list of things deliberately not built in [SCOPE_CUTS.md](SCOPE_CUTS.md).
@@ -422,7 +422,7 @@ All values are guesses to be replaced by playtest and simulation data.
 | Landmark sounds from the speakers feed back into the microphone | Headphones required, quiet landmark volume, calibration measures with the loops playing, gate hysteresis |
 | Stereo landmarks do not work on poor speakers | Steady Listen-mode ripples give landmarks a visual backup |
 | Microphone latency | Small buffer, and testing across several microphones |
-| The lead programmer works on Linux, where microphone support in the editor is unreliable | `IEchoSource` with simulated and scripted sources; a real Windows machine with several microphones is needed early |
+| The microphone has to be measured on Linux, where Unity's player build is unverified | `IEchoSource` with simulated and scripted sources keeps every path playable without a device; the Linux **editor** path is measured (2026-10-28: real devices, live samples, 0.003 RMS room floor), the Linux **player build** is the open row in `Docs/MIC_TEST_MATRIX.md` |
 | One-hit death is frustrating | Sanctuary checkpoints, the alert telegraph, the give-up cue, and the escape rules |
 | A chase has no answer | The escape rules, the level design checklist, and a bot-verified escape route per chase space |
 | Hearing feels unfair | Suspicion meter, the Curious warning state, and the single tuning knob `ρ` |
@@ -446,7 +446,7 @@ These are the decisions taken during planning, layered on this document, and liv
 4. **Sound input comes from an abstract layer, `IEchoSource`**, with three implementations: real microphone, simulated, and scripted (for tests and the bot). Reason: Unity editor microphone support on Linux cannot be relied on.
 5. **Arcs are drawn with a fixed-capacity Mesh and one hand-written shader**, not LineRenderer: per-sample thickness and colour are required, and each sample must be able to break the line.
 6. **The fracture mask is computed once per ping** and every arc of that same ping reads from it, so the pattern of segments stays coherent while it collapses toward the player.
-7. **The Windows build is a Mono build from the Linux editor** (the Windows Build Support (Mono) module is installed; Windows IL2CPP is not available on Linux).
+7. **The build is a Linux x86_64 build from the Linux editor** (Linux Build Support module; the whole team develops and tests on Linux). A Windows Mono build remains possible from the same editor if an external tester needs one.
 8. **Audio arrives incrementally**: placeholder sounds early, a full pass in the last week.
 9. **Surface materials were removed** and brightness comes from geometry.
 10. **Pitch detection is not used anywhere in this term's scope**: it is unreliable across people and microphones. Any pitch-based idea is limited to a coarse low/high split and stays in "later".
