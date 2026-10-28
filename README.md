@@ -8,6 +8,7 @@ Three levels: an enemy-free maze that teaches the language, The Corridor, The Su
 - 5-week plan and current status: [Docs/PLAN.md](Docs/PLAN.md)
 - Balancing parameters: [Docs/TUNING.md](Docs/TUNING.md) · technical decisions: [Docs/DESIGN_DECISIONS.md](Docs/DESIGN_DECISIONS.md)
 - Things deliberately not being built: [Docs/SCOPE_CUTS.md](Docs/SCOPE_CUTS.md)
+- Seen in play, not yet fixed: [Docs/ISSUES.md](Docs/ISSUES.md)
 - Working with git/LFS: [Docs/GIT.md](Docs/GIT.md) · setting up your machine: [Docs/TEAM_SETUP.md](Docs/TEAM_SETUP.md)
 - [`Docs/GDD.md`](Docs/GDD.md) is the superseded v1.1 design — history only, not a requirement
 
