@@ -634,7 +634,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1340743058
+--- !u!1 &875884075
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -642,26 +642,38 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1340743063}
-  - component: {fileID: 1340743062}
-  - component: {fileID: 1340743061}
-  - component: {fileID: 1340743060}
-  - component: {fileID: 1340743059}
+  - component: {fileID: 875884076}
+  - component: {fileID: 875884077}
   m_Layer: 0
-  m_Name: Player
+  m_Name: Visuals
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!212 &1340743059
+--- !u!4 &875884076
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 875884075}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1340743063}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!212 &875884077
 SpriteRenderer:
   serializedVersion: 3
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1340743058}
+  m_GameObject: {fileID: 875884075}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
@@ -703,17 +715,37 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 2967096727726193163, guid: c8407e1c6c7efea8c95e3a673593d348, type: 3}
-  m_Color: {r: 0.25, g: 0.45, b: 0.47, a: 0.35}
+  m_Sprite: {fileID: 21300000, guid: 71c5edee1a59d552db627ba5a6102381, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 1.6, y: 1.6}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
+--- !u!1 &1340743058
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1340743063}
+  - component: {fileID: 1340743062}
+  - component: {fileID: 1340743061}
+  - component: {fileID: 1340743060}
+  - component: {fileID: 1340743064}
+  m_Layer: 10
+  m_Name: Player
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!114 &1340743060
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -803,9 +835,32 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 875884076}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1340743064
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1340743058}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30cdb32326d1ebad5969ba70277ea89d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: EchoMaze.Runtime::EchoMaze.Gameplay.PlayerVisual
+  frontSprite: {fileID: 21300000, guid: 71c5edee1a59d552db627ba5a6102381, type: 3}
+  backSprite: {fileID: 21300000, guid: 6b8dc5fb1f41fe3b59a83c36a2bbe17b, type: 3}
+  sideSprite: {fileID: 21300000, guid: f98d0140125b92dc7b2ea4e254f8bf6a, type: 3}
+  breatheAmplitude: 0.012
+  breatheHz: 0.4
+  bobHeight: 0.03
+  landSquash: 0.02
+  leanDegrees: 3
+  leanReferenceSpeed: 2.5
+  calmSeconds: 0.2
 --- !u!1 &1729051258
 GameObject:
   m_ObjectHideFlags: 0
