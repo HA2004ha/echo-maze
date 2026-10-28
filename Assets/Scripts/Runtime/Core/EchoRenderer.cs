@@ -157,13 +157,18 @@ namespace EchoMaze.Core
                 if (hasPrevious && !ping.broken[previousIndex])
                 {
                     float brightness = ping.brightness[previousIndex];
+                    Color tint = profile.arcColor;
                     if (SurfaceRead.IsCreature(ping.kind[previousIndex]))
                     {
                         brightness *= SurfaceRead.Shimmer(previousIndex, time, profile);
+
+                        // The GDD's second tone: a segment that bounced off something alive is warm, so a
+                        // player never has to decode a shape to know part of the wave came back alive.
+                        tint = profile.creatureArcColor;
                     }
 
                     float bend = Mathf.Clamp01((brightness - profile.brightnessBase) / gainSpan);
-                    AddSegment(previous, current, half * Mathf.Lerp(0.7f, 1.5f, bend), profile.arcColor,
+                    AddSegment(previous, current, half * Mathf.Lerp(0.7f, 1.5f, bend), tint,
                                ping.amp[previousIndex] * brightness * alpha);
                 }
 

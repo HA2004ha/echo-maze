@@ -59,6 +59,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   baseThickness: 0.05
   arcColor: {r: 0.498, g: 0.914, b: 0.941, a: 1}
+  creatureArcColor: {r: 1, g: 0.71, b: 0.42, a: 1}
   loudnessThreshold: 0.18
   cooldownBase: 0.6
   cooldownPerLoudness: 1.4

@@ -60,6 +60,8 @@ namespace EchoMaze.Data
         [Range(0.002f, 0.3f)] public float baseThickness = 0.05f;
         [Tooltip("Base line colour, before alpha and HDR.")]
         public Color arcColor = new Color(0.498f, 0.914f, 0.941f, 1f);
+        [Tooltip("Colour of the arc segments that came back from a living thing (GDD: about #ffb56b). A different tone from arcColor on purpose — 'their sound' must never look like 'your echo'. Only segments whose sample kind is a creature read this; the shimmer still decides how bright they pulse.")]
+        public Color creatureArcColor = new Color(1f, 0.71f, 0.42f, 1f);
 
         [Header("Echo trigger")]
         [Tooltip("Gated loudness needed to emit a ping automatically.")]
