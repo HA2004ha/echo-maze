@@ -26,6 +26,33 @@ namespace EchoMaze.EditorTools
         const string MaterialPath = "Assets/Art/Materials/Arc_Cyan.mat";
         const string PlayerDotPath = "Assets/Art/Sprites/Player_dot.png";
 
+        const string PoseFolder = "Assets/Art/Sprites/Player";
+
+        /// <summary>
+        /// The pose sheet. The first three are the character; the rest are imported and configured on
+        /// purpose even though nothing references them: an unimported PNG under Assets/ gets whatever
+        /// defaults whoever refreshes first leaves behind, and the day the 3/4 camera lands the team
+        /// inherits stale PPU-100 settings instead of correct ones. <c>Player_side_left</c> is the same
+        /// reason the profiles exist at all — it is a pixel-exact mirror of <c>Player_side</c>, so the
+        /// runtime flips one texture rather than carrying 7 MB of memory to redraw nothing.
+        /// </summary>
+        static readonly string[] PosePaths =
+        {
+            PoseFolder + "/Player_front.png",
+            PoseFolder + "/Player_back.png",
+            PoseFolder + "/Player_side.png",
+            PoseFolder + "/Player_side_left.png",
+            PoseFolder + "/Player_34_front.png",
+            PoseFolder + "/Player_34_back.png"
+        };
+
+        /// <summary>
+        /// 632 drawn pixels at this PPU is 0.99 world units, which is 89 screen pixels at the 1080p
+        /// target and deliberately the same footprint the placeholder dot already had (16 px at PPU 16),
+        /// so no camera framing or readability number has to be re-read because of the art.
+        /// </summary>
+        const float PosePixelsPerUnit = 640f;
+
         public static EchoTuningProfile EnsureTuning()
         {
             var existing = AssetDatabase.LoadAssetAtPath<EchoTuningProfile>(TuningPath);
@@ -121,6 +148,97 @@ namespace EchoMaze.EditorTools
             importer.SaveAndReimport();
 
             return AssetDatabase.LoadAssetAtPath<Sprite>(PlayerDotPath);
+        }
+
+        /// <summary>
+        /// A pose sprite from disk, imported the way the game assumes, or null if the file is not there.
+        /// Null is a warning and never an error: a bootstrap that shouts in the console every time the
+        /// art team renames a file trains people to ignore the console.
+        /// </summary>
+        public static Sprite EnsurePoseSprite(string path)
+        {
+            if (AssetDatabase.LoadAssetAtPath<Texture2D>(path) == null)
+            {
+                return null;
+            }
+
+            var importer = (TextureImporter)AssetImporter.GetAtPath(path);
+            if (importer != null && ConfigurePoseImporter(importer))
+            {
+                importer.SaveAndReimport();
+            }
+
+            // Reload: a reimport destroys the object this call may have returned a moment ago.
+            return AssetDatabase.LoadAssetAtPath<Sprite>(path);
+        }
+
+        /// <summary>
+        /// Returns whether anything actually changed, so a bootstrap re-run does not reimport six
+        /// textures and rewrite six .meta files to set values they already have.
+        ///
+        /// Mipmaps are the one place this deliberately diverges from <see cref="EnsurePlayerDot"/>:
+        /// the dot is 16 source pixels drawn 1:1, this art is 632 drawn pixels squeezed into 89 on
+        /// screen, and a 7x downscale without a mip chain shimmers as the character walks and breaks
+        /// the rim light into noise.
+        /// </summary>
+        static bool ConfigurePoseImporter(TextureImporter importer)
+        {
+            bool changed = false;
+
+            void Set(bool current, bool value, System.Action apply)
+            {
+                if (current != value)
+                {
+                    apply();
+                    changed = true;
+                }
+            }
+
+            Set(importer.textureType == TextureImporterType.Sprite, true,
+                () => importer.textureType = TextureImporterType.Sprite);
+            Set(importer.spriteImportMode == SpriteImportMode.Single, true,
+                () => importer.spriteImportMode = SpriteImportMode.Single);
+            Set(importer.sRGBTexture, true, () => importer.sRGBTexture = true);
+            Set(importer.alphaSource == TextureImporterAlphaSource.FromInput, true,
+                () => importer.alphaSource = TextureImporterAlphaSource.FromInput);
+            Set(importer.alphaIsTransparency, true, () => importer.alphaIsTransparency = true);
+            Set(importer.mipmapEnabled, true, () => importer.mipmapEnabled = true);
+
+            if (!Mathf.Approximately(importer.spritePixelsPerUnit, PosePixelsPerUnit))
+            {
+                importer.spritePixelsPerUnit = PosePixelsPerUnit;
+                changed = true;
+            }
+
+            // The drawn figure sits at canvas pixel (512, 503) of 1024 in every file, so a centre pivot
+            // is the character standing where the transform is, off by 1.2 screen pixels.
+            if (importer.spritePivot != new Vector2(0.5f, 0.5f))
+            {
+                importer.spritePivot = new Vector2(0.5f, 0.5f);
+                changed = true;
+            }
+
+            if (importer.filterMode != FilterMode.Trilinear)
+            {
+                importer.filterMode = FilterMode.Trilinear;
+                changed = true;
+            }
+
+            if (importer.wrapMode != TextureWrapMode.Clamp)
+            {
+                importer.wrapMode = TextureWrapMode.Clamp;
+                changed = true;
+            }
+
+            // The source is already 1024, so this is lossless and keeps the editor from holding a
+            // 2048 chain for art that will never be zoomed past its own resolution.
+            if (importer.maxTextureSize != 1024)
+            {
+                importer.maxTextureSize = 1024;
+                changed = true;
+            }
+
+            return changed;
         }
 
         /// <summary>
@@ -252,19 +370,78 @@ namespace EchoMaze.EditorTools
 
             EnsureComponent<Player>(player);
 
-            var sprite = EnsureComponent<SpriteRenderer>(player);
-            Sprite dot = EnsurePlayerDot();
-            if (dot != null)
+            Sprite front = EnsurePoseSprite(PosePaths[0]);
+            Sprite back = EnsurePoseSprite(PosePaths[1]);
+            Sprite side = EnsurePoseSprite(PosePaths[2]);
+
+            // Configure every pose file, wired or not, so the deferred ones cannot be committed with
+            // someone else's defaults.
+            for (int i = 3; i < PosePaths.Length; i++)
             {
-                sprite.sprite = dot;
+                EnsurePoseSprite(PosePaths[i]);
             }
 
-            // A faint disc only so the origin of the wave is findable while tuning; the player is meant to
-            // be effectively invisible, and this is not the final look. It has to be a real asset: a runtime
-            // Sprite.Create reference cannot survive a scene save.
-            sprite.color = new Color(0.25f, 0.45f, 0.47f, 0.35f);
+            Transform visuals = EnsureVisualsChild(player);
+            var sprite = EnsureComponent<SpriteRenderer>(visuals.gameObject);
             sprite.sortingLayerName = "Default";
+
+            if (front != null && back != null && side != null)
+            {
+                // Full opacity, no tint: the art is a near-black body with a cyan rim and glowing eyes, so
+                // in a black room only the outline and the eyes read anyway. The old faint disc was a
+                // placeholder, not a look. It has to be a real asset either way — a runtime Sprite.Create
+                // reference cannot survive a scene save.
+                sprite.sprite = front;
+                sprite.color = Color.white;
+
+                var visual = EnsureComponent<PlayerVisual>(player);
+                SetReference(visual, "frontSprite", front);
+                SetReference(visual, "backSprite", back);
+                SetReference(visual, "sideSprite", side);
+            }
+            else
+            {
+                Debug.LogWarning("Player pose art missing under " + PoseFolder +
+                                 " (need " + PosePaths[0] + ", " + PosePaths[1] + ", " + PosePaths[2] +
+                                 "); falling back to the placeholder dot.", player);
+
+                Sprite dot = EnsurePlayerDot();
+                if (dot != null)
+                {
+                    sprite.sprite = dot;
+                }
+
+                sprite.color = new Color(0.25f, 0.45f, 0.47f, 0.35f);
+            }
+
             return player;
+        }
+
+        /// <summary>
+        /// The sprite lives on a child, not on the player. The root carries the Rigidbody2D and the
+        /// collider, so squash, bob and lean written there would resize what collides with walls and
+        /// fight the body's interpolation. Resetting the local transform also un-does any animation
+        /// pose that happened to be baked into the scene when it was saved.
+        /// </summary>
+        static Transform EnsureVisualsChild(GameObject player)
+        {
+            foreach (SpriteRenderer stray in player.GetComponents<SpriteRenderer>())
+            {
+                Object.DestroyImmediate(stray);
+            }
+
+            Transform child = player.transform.Find("Visuals");
+            if (child == null)
+            {
+                var go = new GameObject("Visuals");
+                go.transform.SetParent(player.transform, false);
+                child = go.transform;
+            }
+
+            child.localPosition = Vector3.zero;
+            child.localRotation = Quaternion.identity;
+            child.localScale = Vector3.one;
+            return child;
         }
 
         public static TouchMarks EnsureTouchMarks()

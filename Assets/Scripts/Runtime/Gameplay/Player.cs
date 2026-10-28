@@ -35,6 +35,19 @@ namespace EchoMaze.Gameplay
 
         public float AimRadians => aimRad;
 
+        /// <summary>
+        /// When the next footstep is due. Read-only and dumb on purpose: the step animation is the only
+        /// consumer and it needs the clock, not a copy of it. <c>Player</c> never looks at the visual, so
+        /// the dependency runs one way.
+        /// </summary>
+        public float NextStepTime => nextStepTime;
+
+        /// <summary>
+        /// The stride the bounce is measured against. Zero when the profile is missing, which parks the
+        /// animation instead of inventing a rhythm the footsteps do not keep.
+        /// </summary>
+        public float FootstepPeriod => DirectorProfile != null ? DirectorProfile.footstepInterval : 0f;
+
         public event Action Died;
 
         EchoTuningProfile DirectorProfile => director != null ? director.Profile : null;
