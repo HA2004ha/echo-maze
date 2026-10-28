@@ -25,8 +25,16 @@ namespace EchoMaze.EditorTools
         // inside, and orthographicSize 6 keeps the whole room on one screen (the camera starts following the
         // player when the maze does, in week 3).
         static readonly Vector2 PlayerSpawn = new Vector2(2f, -3.15f);
-        static readonly Vector2 CrawlerStart = new Vector2(0f, -0.6f);
-        static readonly Vector2[] Patrol = { new Vector2(-2.2f, -0.6f), new Vector2(2.2f, -0.6f) };
+
+        // The creature walks a vertical leg through the north middle band, and the run starts at its far end:
+        // 5.4 m from the player at spawn, 4.0 m at the closest point of the leg. The first route anyone played
+        // was a horizontal leg at y = -0.6 straight over the alcove mouth 2.55 m above the spawn, which made
+        // the room unsurvivable — a shout is heard across a room this small by design (rho * R covers it), so
+        // the distance is the only thing between the first ping and a hunt arriving. The leg is placed by the
+        // furniture, not near it: at x = 0.2 its two bumps (r 0.32 at +-0.42) clear Pillar by 0.36 m and
+        // Box_Corner by 0.86 m, and 0.28 m below Wall_North.
+        static readonly Vector2 CrawlerStart = new Vector2(0.2f, 1.9f);
+        static readonly Vector2[] Patrol = { new Vector2(0.2f, 0.4f), new Vector2(0.2f, 1.9f) };
 
         [MenuItem("Tools/Echo Maze/Week 2 Bootstrap")]
         public static void Bootstrap()
