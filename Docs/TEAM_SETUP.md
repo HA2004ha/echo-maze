@@ -74,6 +74,8 @@ Exit code `0` means every test is green; the per-test result is in `Logs/editmod
 
 Three traps we hit on this machine:
 
+- **Close the GUI editor first.** A project can only be open in one Unity process; `batchmode` on a project another editor instance holds either fails or silently works on stale assets, and it re-imports the whole library while it runs. The command-line suite is therefore a *headless* step: quit the editor, run it, reopen. That is also why the week's "all tests green from the command line" evidence is taken at the freeze and not continuously.
+
 - The editor finishes its work and writes the "done" message to the log, but **does not exit itself** and keeps eating CPU. The result has already been written; invoke it with `timeout 400` and `kill -TERM` the process once you see the success message. Note that whatever the editor would flush to disk on exit (such as `ProjectSettings/EditorSettings.asset`) does not get written in that state; edit that file by hand with the editor closed.
 - **PlayMode tests cannot be run in batchmode on this machine** (neither with `-nographics` nor with `DISPLAY=:0`): the process exits immediately with code `1` and writes no result `xml`. PlayMode tests are only runnable inside the editor (Test Runner tab). Whatever needs to be green in CI is written as EditMode.
 - If, after creating an asset with an editor script, some field in the scene ends up as `objectReference: {fileID: 0}`: the asset was probably loaded **before** `EditorSceneManager.OpenScene(...)`. Scene loading flushes asset references that have no scene reference, and your local variable points at a destroyed object. Correct order: `OpenScene` first, then `EnsureX()`. `SandboxSceneSetup` now has an explicit `LogError` if this happens again.
@@ -88,7 +90,7 @@ The build scenes list is `Level02_Corridor` first, then `Sandbox` (committed in 
 cd Builds/Linux && ./EchoMaze.x86_64
 ```
 
-Logs land next to the binary, in `~/.config/unity3d/<company>/<product>/Logs/` and in `Player.log` under the same folder. What to take from that run is written as rows 2, 3, 6, 7, 9 and 13 of the matrix: does `Microphone.devices` list anything at all in the player, does the gate open on a real voice, does a whisper and a shout differ on screen, how long from speaking to arc, and does the mic light go off when the window closes. One of those can fail in the player while working perfectly in the editor — that is the reason the row exists.
+Logs land next to the binary, in `~/.config/unity3d/<company>/<product>/Logs/` and in `Player.log` under the same folder; pass `-logFile <path>` to put one where you can read it back. The first line to look for is `Microphone open in the player: mic:<device>. N capture device(s): …` — `EchoDirector` prints it once at startup, and it is row 2 of the matrix: on 2026-10-28 the player on this machine listed four devices and opened one, so the Linux *player* audio path works. What that run cannot answer is everything that needs a voice: rows 3, 6, 7, 9 and 11's player half — does the gate open on real speech, do a whisper and a shout differ on screen, how long from speaking to arc, and does the mic light go off when the window closes. One of those can fail in the player while working perfectly in the editor — that is the reason the rows exist.
 
 ## 6) Team roles
 
