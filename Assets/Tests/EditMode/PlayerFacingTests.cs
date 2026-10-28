@@ -167,6 +167,57 @@ namespace EchoMaze.Tests
                 "question; change one and you must change this too, deliberately");
         }
 
+        /// <summary>
+        /// The two helpers the sticky layer in <c>PlayerVisual</c> is built on. <c>ResolveDirection</c> is the
+        /// sector map with the movement/aim choice taken out of it, so the visual can ask about a heading it
+        /// has already picked; <c>PoseCentre</c> is the heading each pose is most correct for, which is what
+        /// "cleared the boundary by the band" gets measured from. They are pinned against the map they come
+        /// from rather than against literals, so moving a sector edge moves the hysteresis with it instead of
+        /// quietly desynchronising the two.
+        /// </summary>
+        [Test]
+        public void EveryPose_SitsFortyFiveDegreesEitherSideOfItsOwnCentre()
+        {
+            foreach (PlayerPose pose in AllPoses)
+            {
+                Vector2 centre = PlayerFacing.PoseCentre(pose);
+
+                Assert.AreEqual(pose, PlayerFacing.ResolveDirection(centre),
+                    pose + " must be the heading its own pose is most right for, or the band is measured " +
+                    "from somewhere else");
+                Assert.AreEqual(pose, PlayerFacing.ResolveDirection(centre * 3.7f),
+                    "a heading is a direction: scaling it cannot change the answer");
+                Assert.AreEqual(pose, PlayerFacing.ResolveDirection(Rotate(centre, 44f)),
+                    pose + " still owns 44 degrees off its own centre");
+                Assert.AreEqual(pose, PlayerFacing.ResolveDirection(Rotate(centre, -44f)));
+                Assert.AreNotEqual(pose, PlayerFacing.ResolveDirection(Rotate(centre, 46f)),
+                    pose + " has to hand over at 46, which is SectorHalfWidthDegrees plus a degree");
+                Assert.AreNotEqual(pose, PlayerFacing.ResolveDirection(Rotate(centre, -46f)));
+            }
+        }
+
+        static readonly PlayerPose[] AllPoses =
+        {
+            PlayerPose.Front, PlayerPose.Back, PlayerPose.ProfileRight, PlayerPose.ProfileLeft
+        };
+
+        static Vector2 Rotate(Vector2 vector, float degrees)
+        {
+            return Quaternion.Euler(0f, 0f, degrees) * vector;
+        }
+
+        /// <summary>
+        /// The band is expressed against <c>PoseCentre</c>, so the width it is added to has to be the real
+        /// half-width of the sectors and not a number that happens to work while there are four poses.
+        /// </summary>
+        [Test]
+        public void TheSectorHalfWidth_IsWhatTheSectorsAreActuallyWorth()
+        {
+            Assert.AreEqual(360f / AllPoses.Length, PlayerFacing.SectorHalfWidthDegrees * 2f, 1e-4f,
+                "four poses, four equal quarters. Issue 2 in Docs/ISSUES.md doubles the pose count, which " +
+                "halves this to 22.5 and halves the hysteresis band that sits on top of it");
+        }
+
         [Test]
         public void AStepThatJustFired_HasZeroPhase()
         {

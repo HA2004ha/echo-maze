@@ -178,10 +178,156 @@ namespace EchoMaze.Tests.PlayMode
                 "a player that has stopped to listen should be facing its aim, or the mouse means nothing " +
                 "while standing");
 
+            // The dwell gate is 100 ms of wall clock between two pose changes, so the second aim has to be
+            // given its turn. Waiting rather than wiring the dwell to zero keeps this test answering the
+            // question it was written for (does the aim drive the pose) without stepping over a gate that
+            // exists on purpose; Dwell_BlocksASecondPoseInsideItsWindow is the case for the gate itself.
+            yield return new WaitForSecondsRealtime(0.15f);
+
             LookAt(-Mathf.PI * 0.5f);
             yield return null;
 
             Assert.AreEqual(frontPose, sprite.sprite);
+        }
+
+        /// <summary>
+        /// The two acceptance cases Docs/ISSUES.md #3 asks for, in order.
+        ///
+        /// A heading parked exactly on a sector boundary is the worst case the resolver used to have: it is
+        /// 45 degrees off the pose it is drawing, so the raw map wants a neighbour every frame and any shake
+        /// of the aim flips the character a quarter-turn. The band should swallow all of it. The jitter is
+        /// the size of the noise the issue measured — one pixel of cursor at ten pixels of separation is
+        /// ~5.7 degrees — and "at most once" is the wording the issue chose, because a pose that settles onto
+        /// the other side once and then stops is not the defect being described.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator ParkedOnASectorBoundary_CursorJitterForThirtyFrames_ChangesThePoseAtMostOnce()
+        {
+            subjectBody.linearVelocity = Vector2.zero;
+            LookAt(Mathf.PI * 0.25f);
+
+            int changes = 0;
+            PlayerPose previous = visual.CurrentPose;
+
+            for (int frame = 0; frame < 30; frame++)
+            {
+                // Alternating either side of the boundary, which is the case that used to alternate poses.
+                LookAt(Mathf.PI * 0.25f + (frame % 2 == 0 ? 0.1f : -0.1f) * Mathf.Deg2Rad * 5.7f);
+                yield return null;
+
+                if (visual.CurrentPose != previous)
+                {
+                    changes++;
+                    previous = visual.CurrentPose;
+                }
+            }
+
+            Assert.LessOrEqual(changes, 1,
+                "thirty frames of one-pixel cursor noise on a boundary produced " + changes +
+                " quarter-turns. The band is 45 + boundaryDegrees, so anything inside it has to hold still");
+        }
+
+        /// <summary>
+        /// The other half: the band must not have become "never turn". A heading that has properly left its
+        /// pose — here a full half-turn, well past 45 + 10 degrees — is taken on the next frame after the
+        /// dwell window, and without this case the test above would pass for a character that is frozen.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator AHeadingThatReallyLeftItsSector_TakesTheNewPose()
+        {
+            subjectBody.linearVelocity = Vector2.zero;
+            LookAt(0f);
+            yield return null;
+            Assert.AreEqual(PlayerPose.ProfileRight, visual.CurrentPose);
+
+            yield return new WaitForSecondsRealtime(0.15f);
+            LookAt(Mathf.PI);
+            yield return null;
+
+            Assert.AreEqual(PlayerPose.ProfileLeft, visual.CurrentPose,
+                "180 degrees off the pose being drawn is not a boundary case, it is a turn");
+        }
+
+        /// <summary>
+        /// A held WASD diagonal is |vx| = |vy| forever, which is the tie the resolver breaks by hand every
+        /// single frame, and every wobble of the collider damping crosses it. Two seconds of it must show one
+        /// pose. The first frame is exempt because whatever the character was doing before the keys went down
+        /// is allowed to be answered once.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator WalkingASteadyDiagonal_ForTwoSeconds_HoldsOnePose()
+        {
+            WalkIn(new Vector2(1f, 1f).normalized);
+
+            yield return null;
+            PlayerPose settled = visual.CurrentPose;
+
+            for (int frame = 0; frame < 120; frame++)
+            {
+                WalkIn(new Vector2(1f, 1f).normalized);
+                yield return null;
+
+                Assert.AreEqual(settled, visual.CurrentPose,
+                    "a perfect diagonal changed the pose on frame " + frame + ": the tie is the common case " +
+                    "of this input, not an edge of the number line");
+            }
+        }
+
+        /// <summary>
+        /// The dwell is the gate that covers what hysteresis cannot see: a movement/aim handover, where the
+        /// velocity crosses the deadzone and the *source* changes without any heading crossing a boundary.
+        /// Two poses requested inside one window get one draw.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator Dwell_BlocksASecondPoseInsideItsWindow()
+        {
+            subjectBody.linearVelocity = Vector2.zero;
+            LookAt(0f);
+            yield return null;
+            Assert.AreEqual(PlayerPose.ProfileRight, visual.CurrentPose);
+
+            // Half-turn out of the band, so the only thing that can be refusing the next change is the dwell.
+            LookAt(Mathf.PI);
+            yield return null;
+            Assert.AreEqual(PlayerPose.ProfileLeft, visual.CurrentPose,
+                "the first turn is allowed, or the gate would be a freeze");
+
+            // The window is widened rather than the frame duration being trusted: two frames on a loaded
+            // runner can be further apart than 100 ms, and a case that only fails on a slow machine is worse
+            // than the flicker it is here to catch. What 0.1 s is the number TUNING.md prices.
+            Wire(visual, "dwellSeconds", 5f);
+
+            LookAt(0f);
+            yield return null;
+
+            Assert.AreEqual(PlayerPose.ProfileLeft, visual.CurrentPose,
+                "inside its window the second pose is not drawn, even though the band is cleared twice over");
+        }
+
+        /// <summary>
+        /// Cause 3 of the issue: standing still with the pointer resting on the character. The angle from
+        /// body to cursor is real and it is meaningless, and before this gate the pose was driven by
+        /// sub-pixel noise. Inside the radius the aim stops being an input at all.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator CursorParkedOnTheBody_StopsDraggingThePose()
+        {
+            subjectBody.linearVelocity = Vector2.zero;
+            LookAt(Mathf.PI * 0.5f);
+            yield return null;
+            Assert.AreEqual(PlayerPose.Back, visual.CurrentPose);
+
+            Wire(subject, "aimDistance", 0.1f);
+            LookAt(-Mathf.PI * 0.5f);
+
+            for (int frame = 0; frame < 10; frame++)
+            {
+                yield return null;
+            }
+
+            Assert.AreEqual(PlayerPose.Back, visual.CurrentPose,
+                "the pointer is 0.1 m off the body, inside aimNoiseRadius, so a half-turn of aim is noise " +
+                "and the character keeps facing where it last meant something");
         }
 
         /// <summary>
