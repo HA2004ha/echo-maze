@@ -19,7 +19,11 @@
 /[Oo]bj/
 /[Bb]uild/
 /[Bb]uilds/
-/[Ll]ogs/
+# Logs/ is ignored, but not as a directory: the test-result XMLs a week's exit
+# criterion commits as evidence have to survive the rule.
+/[Ll]ogs/*
+!/Logs/editmode.xml
+!/Logs/playmode.xml
 /[Uu]ser[Ss]ettings/
 *.log
 

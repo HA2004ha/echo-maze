@@ -7,13 +7,13 @@ This file is the git contract for the Echo project. Three things have to be done
 **Always committed:**
 
 - `Assets/**` together with **every `.meta` file** (without `.meta` files the GUIDs are lost and references break inside scenes)
-- `Packages/manifest.json` and `Packages/packages-lock.json`
+- `Packages/manifest.json` and `Packages/packages-lock.json` — **with one deliberate exception:** the lead's machine carries `com.coplaydev.unity-mcp` (an editor-only tool that drives Unity from an external agent) as a git-URL dependency, and it is **never committed**. It is not part of the game, it points at a moving `#main` ref, and a fresh clone should not need a third-party GitHub repo to resolve. So those two files are permanently dirty on the lead's machine; a teammate's clone of `main` will not show them modified, and if yours does, you have the package in your local `manifest.json` too.
 - `ProjectSettings/**` (including `ProjectSettings/Packages/**`)
 - `.gitignore`, `.gitattributes`, `Docs/**`
 
 **Never committed** (all of these are already in `.gitignore`; just check that nothing was force-added with `git add -f`):
 
-`Library/`, `Temp/`, `Obj/`, `Logs/`, `UserSettings/`, `Builds/`, `MemoryCaptures/`, `Recordings/`, `*.csproj`, `*.sln`, `*.slnx`, `*.user`, `sysinfo.txt`, `InitTestScene*.unity*`
+`Library/`, `Temp/`, `Obj/`, `Logs/` (except `Logs/editmode.xml` and `Logs/playmode.xml`, which a week's exit criterion commits as evidence that the suites were run from the command line and not only inside the editor), `UserSettings/`, `Builds/`, `MemoryCaptures/`, `Recordings/`, `*.csproj`, `*.sln`, `*.slnx`, `*.user`, `sysinfo.txt`, `InitTestScene*.unity*`
 
 The final game build does **not** go into the repo; the delivery zip is sent separately.
 

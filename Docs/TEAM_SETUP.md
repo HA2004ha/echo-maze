@@ -55,9 +55,9 @@ Verification — `git config --get-regexp 'merge\.'` only proves three lines exi
 ## 4) Opening and running
 
 1. Unity Hub ▸ Add project from disk ▸ the repo root folder (the one containing `Assets/` and `ProjectSettings/`).
-2. Open the scene `Assets/Scenes/Sandbox.unity` (the mechanic test level), or `Assets/Scenes/Boot.unity` once it exists (menu and settings).
-3. Play. Controls: WASD to move, mouse for aim direction, Space for the manual echo. From week 2 the same scene also answers your voice: `Shift` for silent movement, `F` for the 360° weak pulse.
-4. **Do not expect a working microphone on Linux.** It is the goal, and `MicrophoneEchoSource` is a week 2 deliverable, but `Microphone` support in the Unity editor on Linux has never been verified on this project; that is why sound input sits behind the `IEchoSource` layer. Today `Sandbox` runs with `sourceMode = ManualOnly` (no source at all, Space only); switching to `Simulated` feeds a constant `simulatedLoudness` through the automatic gate so the mic path can be developed and demoed without a mic. Measure your machine with **`Tools ▸ Echo ▸ Mic Probe`** and record the result in [MIC_TEST_MATRIX.md](MIC_TEST_MATRIX.md) — real microphone testing happens on a Windows build, so the Windows machine is needed from week 2, not week 3.
+2. Open the scene `Assets/Scenes/Level02_Corridor.unity` — from week 2 that is the room the game is actually about: an enclosed `7 × 5` blockout with a patrolling Crawler in it, and it is the scene a build boots into. `Assets/Scenes/Sandbox.unity` stays as the math playground (three test objects, no gameplay), and `Assets/Scenes/Boot.unity` comes when the menu and options land in week 3.
+3. Play. Controls: WASD to move, mouse for aim direction, `Space` for the manual echo (hold it to charge), `Shift` for silent movement, `F` for the 360° weak pulse. Touch a wall and it marks; the Crawler kills on contact and the room restarts in about a second.
+4. **The microphone works on Linux, in the editor.** `Level02_Corridor` and `Sandbox` both save `sourceMode = Microphone`, and on 2026-10-28 the editor on this team's machine listed three devices, captured real samples and opened the gate on voice — the result is row 1 of [MIC_TEST_MATRIX.md](MIC_TEST_MATRIX.md). If your machine has no usable input, or its default input is a `Monitor of …` alias the code cannot recognise, `EchoDirector` falls back to the simulated source with a Console warning and the game stays playable on `Space`. Measure your own machine with **`Tools ▸ Echo ▸ Mic Probe`** and record it in the matrix. What is *not* yet proven is the **player build's** audio backend (row 2), which no editor session can answer.
 
 ## 4a) The editor from the command line (without opening a window)
 
@@ -81,6 +81,14 @@ Three traps we hit on this machine:
 ## 5) Linux build, from the Linux editor
 
 `File ▸ Build Settings ▸ Platform: Linux ▸ x86_64`. Put the output in `Builds/`, which is ignored. **This is the platform the team runs and tests on**: the whole team is on Linux, so the microphone is measured on Linux per [MIC_TEST_MATRIX.md](MIC_TEST_MATRIX.md) — the editor path is proven (row 1, 2026-10-28) and the player build is the open row (row 2). A Windows build is only worth making if someone outside the team needs to play it; the module for it is **Windows Build Support (Mono)**, which does not exist as IL2CPP on Linux.
+
+The build scenes list is `Level02_Corridor` first, then `Sandbox` (committed in `ProjectSettings/EditorBuildSettings.asset`), so a built player boots into the walkable room and not into the math playground. Build it as a **Development** build: the mic and framerate questions in row 2 and row 9 are answered from the log file, and a release build does not write one. Then:
+
+```
+cd Builds/Linux && ./EchoMaze.x86_64
+```
+
+Logs land next to the binary, in `~/.config/unity3d/<company>/<product>/Logs/` and in `Player.log` under the same folder. What to take from that run is written as rows 2, 3, 6, 7, 9 and 13 of the matrix: does `Microphone.devices` list anything at all in the player, does the gate open on a real voice, does a whisper and a shout differ on screen, how long from speaking to arc, and does the mic light go off when the window closes. One of those can fail in the player while working perfectly in the editor — that is the reason the row exists.
 
 ## 6) Team roles
 
