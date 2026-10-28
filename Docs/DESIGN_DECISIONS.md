@@ -162,6 +162,16 @@ Every choice that closes one path and leaves another open is recorded here, so t
 - `+inf` (a miss) is already a break by rule 3 of `TUNING.md`; `IsSurfaceJump` only speaks about pairs that both reflect.
 - This entry is the reason `curvatureRange` is no longer justified by "a corner is in the tens": after the split, the tens belong to corners alone.
 
+## 2026-10-28 — The player chooses the microphone in-game; nothing ships a pinned device
+
+**Decision:** input selection is a UI feature, not a project setting. The week-3 calibration page lists `Microphone.devices` at run time and lets the player pick, with `Auto` (first device that is not a `Monitor of …`) as the default; the choice is stored as a **saved preference** and `EchoTuningProfile.microphoneDevice` becomes the field that preference is written to, not the field a designer is expected to fill in. A saved name that is no longer present falls back to `Auto` rather than failing to open. We do **not** ship a build pinned to a specific device string.
+**Reason:** measured on 2026-10-28 in the Linux player: the machine exposes `Default Input Device`, `Family 17h/19h HD Audio Controller Analog Stereo`, and two `Monitor of …` loopbacks, and `AutoSelect` takes the first name that is not a monitor — which is the alias. Nothing that reads a *name* can tell what a PipeWire alias currently points at, so on a machine whose system default input is a monitor the game would answer its own sound effects forever, and the only current escape is editing a ScriptableObject in an editor the player does not have. Device names also differ per distro, per audio server and per headset, so a string pinned by one teammate is wrong on every other machine by construction.
+**Cost:** a dropdown, a re-scan, and a live device swap (`Close` the clip, `Open` the next one) that has to leave the gate, the warmup discard and the ring position in a coherent state — plus one more thing that can fail in front of a tester. `Auto` also stays as a behaviour, so the alias problem is *reachable* in the default configuration and cannot be fixed by the picker alone; what the picker buys is the ability to get out of it. The fallback-to-`Simulated` warning in `EchoDirector` still names `EchoTuningProfile.microphoneDevice` until week 3 lands, because up to then it is the only mechanism that exists.
+**Rules:**
+- The selection logic is a pure function over a supplied device list (`list, savedName → device | auto | none`) and is unit-tested; no test has to plug a microphone in to prove it.
+- The picker never writes a device name into a *committed* asset. It writes a user setting; the tuning asset's committed value stays `""`.
+- Applying a choice needs no restart, and a device that disappears mid-session is reported in `Status` and re-selected, not thrown.
+
 ## Under decision
 
 - **Does a human read wall / pillar / corner / hollow / Crawler from the arcs alone, at these thresholds?** Everything above is counted in samples; none of it is seen in eyes. This is the week-2 go/no-go and only the readability session on Linux can close it.

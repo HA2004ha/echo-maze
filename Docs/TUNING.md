@@ -87,7 +87,7 @@ The player said in Play "the wave just arrives, nothing comes back from the obje
 | `fractureFlatBelow` | `2.4` | Curvature under this counts as "flat" for the fracture mask, so gaps never eat a feature | `0..8` | Features start losing segments | Only the flattest runs break |
 | `heartbeatHz` | `1.1` | Rate at which a creature's arc samples pulse | `0..4` | A creature strobes and reads as a fault | The pulse is invisible |
 | `shimmer` | `0.35` | Amplitude of that pulse on brightness | `0..1` | Living things are obvious — which may be too obvious | The creature is indistinguishable from a wall |
-| `microphoneDevice` | `""` | Exact `Microphone.devices` string to open; empty takes the first device that is not a `Monitor of …` | — | — | — |
+| `microphoneDevice` | `""` | Exact `Microphone.devices` string to open; empty takes the first device that is not a `Monitor of …`. Keep it empty in the committed asset: from week 3 the player chooses the device **in-game** and this field is only where that choice is stored, so a pinned name here is wrong on every other machine by construction (2026-10-28 decision entry) | — | — | — |
 | `gateOpenRms` | `0.02` | RMS that opens the microphone gate. Measured floor of a quiet room on Linux: **0.002–0.003**, so this is ~7× the hiss | `0.001..0.2` | Breathing and hiss make pings | The player must shout to be believed |
 | `gateCloseRms` | `0.012` | RMS that closes it again; the band between the two is the hysteresis that stops one syllable becoming three pings | `0.001..0.2` | The gate chatters open and shut | A two-syllable word becomes two vocal events |
 | `gateFullRms` | `0.12` | RMS that maps to loudness 1.0 | `0.01..1` | Everything is a shout | Normal speech maxes the meter and reach stops discriminating |
