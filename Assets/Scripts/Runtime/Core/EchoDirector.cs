@@ -98,6 +98,10 @@ namespace EchoMaze.Core
             {
                 ReportSourceFailure(source);
             }
+            else if (sourceMode == SourceMode.Microphone && source != null)
+            {
+                ReportSourceOpened(source);
+            }
 
             if (fieldRenderer == null)
             {
@@ -361,6 +365,20 @@ namespace EchoMaze.Core
                 default:
                     return null;
             }
+        }
+
+        /// <summary>
+        /// A player build's audio backend is a different question from the editor's, and the only evidence
+        /// for it is this line in `Player.log`: an absence of warnings cannot be told apart from a mic that
+        /// was never asked for. It names every device the process can see, because device names differ per
+        /// distro, per audio server and per headset, and a teammate has to be able to paste it back.
+        /// </summary>
+        void ReportSourceOpened(IEchoSource opened)
+        {
+            string[] devices = Microphone.devices ?? Array.Empty<string>();
+            Debug.Log("Microphone open in " + (Application.isEditor ? "the editor" : "the player") + ": " +
+                      opened.Status + ". " + devices.Length + " capture device(s): " +
+                      string.Join(", ", devices) + ".", this);
         }
 
         void ReportSourceFailure(IEchoSource opened)
