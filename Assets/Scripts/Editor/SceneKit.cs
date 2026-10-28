@@ -1,5 +1,6 @@
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
@@ -552,7 +553,7 @@ namespace EchoMaze.EditorTools
         /// </summary>
         public static GameObject EnsureDeathNotice()
         {
-            GameObject existing = GameObject.Find("Death Notice");
+            GameObject existing = FindIncludingInactive("Death Notice");
             if (existing != null)
             {
                 return existing;
@@ -691,6 +692,45 @@ namespace EchoMaze.EditorTools
         {
             GameObject existing = GameObject.Find(name);
             return existing != null ? existing : new GameObject(name);
+        }
+
+        /// <summary>
+        /// <see cref="GameObject.Find"/> only returns <b>active</b> objects, so an Ensure whose target is
+        /// switched off before it is saved can never find what it made last time and appends a second copy
+        /// on every run. The death notice is exactly that — it starts hidden, and the lose screen reads its
+        /// canvas from an inactive GameObject — so it is looked up here instead.
+        /// </summary>
+        static GameObject FindIncludingInactive(string name)
+        {
+            foreach (GameObject root in SceneManager.GetActiveScene().GetRootGameObjects())
+            {
+                Transform found = FindInHierarchy(root.transform, name);
+                if (found != null)
+                {
+                    return found.gameObject;
+                }
+            }
+
+            return null;
+        }
+
+        static Transform FindInHierarchy(Transform candidate, string name)
+        {
+            if (candidate.name == name)
+            {
+                return candidate;
+            }
+
+            for (int i = 0; i < candidate.childCount; i++)
+            {
+                Transform found = FindInHierarchy(candidate.GetChild(i), name);
+                if (found != null)
+                {
+                    return found;
+                }
+            }
+
+            return null;
         }
 
         static T EnsureComponent<T>(GameObject go) where T : Component
