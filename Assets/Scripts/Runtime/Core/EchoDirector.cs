@@ -14,6 +14,18 @@ namespace EchoMaze.Core
     [DisallowMultipleComponent]
     public sealed class EchoDirector : MonoBehaviour
     {
+        /// <summary>Where a calibrated gate survives, per machine and per install.</summary>
+        const string GateOpenKey = "echo.gate.open";
+        const string GateCloseKey = "echo.gate.close";
+        const string GateFullKey = "echo.gate.full";
+
+        /// <summary>
+        /// Where the chosen microphone survives. A preference and not a scene value for the same reason the
+        /// gate is: the headset belongs to the machine, and a scene that remembers it would be wrong on
+        /// every other laptop the team opens the project with.
+        /// </summary>
+        const string DeviceKey = "echo.mic.device";
+
         /// <summary>
         /// Where the loudness that drives the automatic gate comes from. The numbers below are the
         /// values stored in scenes, so ManualOnly keeps 0 and the shipped Sandbox saves 2.
@@ -76,11 +88,31 @@ namespace EchoMaze.Core
         /// </summary>
         public float ManualEchoLoudness => profile.manualEchoLoudness;
 
-        /// <summary>False while the recovery from the last ping is still being paid.</summary>
-        public bool CanPing => Time.time >= nextReadyTime;
+        /// <summary>False while the last ping's recovery is still being paid.</summary>
+        public bool CanPing => EmitEnabled && Time.time >= nextReadyTime;
+
+        /// <summary>
+        /// Off while a screen is paused and while the calibration page is listening. The pause is not
+        /// cosmetic: <c>Time.time</c> stands still at timeScale 0, so a charge released during a pause would
+        /// pay a cooldown that can never expire and leave the next room silent. The source keeps polling
+        /// with this off — the meter has to read the room — only the emission stops.
+        /// </summary>
+        public bool EmitEnabled { get; set; } = true;
 
         /// <summary>Seconds of recovery left, for the HUD cooldown ring.</summary>
         public float CooldownRemaining => Mathf.Max(0f, nextReadyTime - Time.time);
+
+        /// <summary>
+        /// The cooldown the last ping actually cost. The ring is a fraction of the player's own debt, so it
+        /// has to be divided by the number that was paid and not by the one a whisper would pay — otherwise a
+        /// shout empties the ring in a fifth of its sweep and the interface lies about the loudest thing in
+        /// the game.
+        /// </summary>
+        public float LastCooldownSeconds { get; private set; }
+
+        /// <summary>0 when ready, 1 at the moment of the ping, and the sweep between them for the ring.</summary>
+        public float CooldownFraction =>
+            LastCooldownSeconds <= 0f ? 0f : Mathf.Clamp01(CooldownRemaining / LastCooldownSeconds);
 
         void Awake()
         {
@@ -93,8 +125,9 @@ namespace EchoMaze.Core
 
             BuildRuntimeState();
 
+            ApplyStoredGate();
             source = CreateSource();
-            if (source != null && !source.Open(null, 0))
+            if (source != null && !source.Open(StoredDeviceName, 0))
             {
                 ReportSourceFailure(source);
             }
@@ -186,6 +219,11 @@ namespace EchoMaze.Core
 
         public void ForcePing(float loudness, Vector2 origin, float aim)
         {
+            if (!EmitEnabled)
+            {
+                return;
+            }
+
             EmitPing(Mathf.Clamp01(loudness), origin, aim);
         }
 
@@ -212,7 +250,7 @@ namespace EchoMaze.Core
         /// </summary>
         public bool TryWeakPulse()
         {
-            if (Time.time - lastWeakPulseTime < profile.weakPulseCooldown)
+            if (!EmitEnabled || Time.time - lastWeakPulseTime < profile.weakPulseCooldown)
             {
                 return false;
             }
@@ -244,7 +282,12 @@ namespace EchoMaze.Core
 
             // Every loud ping pays for itself, and the cost scales with the loudness: that is what makes
             // the signal costly, which is the whole game theory of being heard.
-            nextReadyTime = Mathf.Max(nextReadyTime, Time.time + cooldown);
+            float until = Mathf.Max(nextReadyTime, Time.time + cooldown);
+
+            // Measured against the debt that is actually in force, which is the longer of the new one and
+            // whatever the previous ping was still paying.
+            LastCooldownSeconds = Mathf.Max(0.0001f, until - Time.time);
+            nextReadyTime = until;
 
             PingEmitted?.Invoke(record);
 
@@ -352,6 +395,105 @@ namespace EchoMaze.Core
             }
 
             renderer?.EndFrame();
+        }
+
+        /// <summary>
+        /// A gate is a property of the machine and the headset, not of the level, so the calibration the
+        /// player did once is read back before the capture opens. Applied to the profile rather than kept
+        /// beside it, because the profile is the only place the source and the debug window read these
+        /// numbers from and a second copy would be a second truth.
+        /// </summary>
+        void ApplyStoredGate()
+        {
+            if (sourceMode != SourceMode.Microphone || !PlayerPrefs.HasKey(GateOpenKey))
+            {
+                return;
+            }
+
+            profile.gateOpenRms = PlayerPrefs.GetFloat(GateOpenKey, profile.gateOpenRms);
+            profile.gateCloseRms = PlayerPrefs.GetFloat(GateCloseKey, profile.gateCloseRms);
+            profile.gateFullRms = PlayerPrefs.GetFloat(GateFullKey, profile.gateFullRms);
+        }
+
+        /// <summary>
+        /// Re-thresholds a live capture without closing and reopening it. The scene is rebuilt from a menu
+        /// after calibration, and a mic that restarts mid-session is a mic that drops a word; replacing the
+        /// gate keeps the ring.
+        ///
+        /// Returns false when there is no gate to move — ManualOnly and the simulated source have no
+        /// threshold at all — so the calibration page can say "no microphone here, the game runs on Space"
+        /// instead of reporting a threshold nobody listens to.
+        /// </summary>
+        public bool ApplyGateThresholds(float openRms, float closeRms, float fullRms)
+        {
+            profile.gateOpenRms = openRms;
+            profile.gateCloseRms = closeRms;
+            profile.gateFullRms = fullRms;
+            PlayerPrefs.SetFloat(GateOpenKey, openRms);
+            PlayerPrefs.SetFloat(GateCloseKey, closeRms);
+            PlayerPrefs.SetFloat(GateFullKey, fullRms);
+            PlayerPrefs.Save();
+
+            if (source is MicrophoneEchoSource mic)
+            {
+                mic.ApplyGate(openRms, closeRms, fullRms);
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// The captures this process can see right now. Read on every call rather than cached: the page that
+        /// offers them is the page a player opens after plugging a headset in, and a stale list would be a
+        /// reason to restart the game for no reason.
+        /// </summary>
+        public static string[] AvailableDevices() => Microphone.devices ?? Array.Empty<string>();
+
+        /// <summary>The saved choice; <see cref="MicDeviceChoice.Auto"/> when nobody ever picked one.</summary>
+        public static string StoredDeviceName => PlayerPrefs.GetString(DeviceKey, MicDeviceChoice.Auto);
+
+        /// <summary>The capture the game is actually listening to, or null when none is open.</summary>
+        public string ActiveDeviceName => source is MicrophoneEchoSource mic ? mic.DeviceName : null;
+
+        /// <summary>
+        /// Change the input without restarting the game: store the name, close the old clip, open the new
+        /// one. Empty means Auto — the first input that is not a monitor.
+        ///
+        /// A machine whose microphone failed to open at all is exactly the machine this button is for, so
+        /// the attempt rebuilds the real source rather than refusing because the director is currently
+        /// holding the simulated one. It returns false when the capture still will not open, which is the
+        /// page's cue to say so and point at <c>Space</c>.
+        /// </summary>
+        public bool UseDevice(string name)
+        {
+            string choice = name ?? MicDeviceChoice.Auto;
+            if (choice.Length == 0)
+            {
+                PlayerPrefs.DeleteKey(DeviceKey);
+            }
+            else
+            {
+                PlayerPrefs.SetString(DeviceKey, choice);
+            }
+
+            PlayerPrefs.Save();
+
+            if (sourceMode != SourceMode.Microphone)
+            {
+                return false;
+            }
+
+            source?.Close();
+            source = new MicrophoneEchoSource(profile);
+            if (!source.Open(choice, 0))
+            {
+                ReportSourceFailure(source);
+                return false;
+            }
+
+            ReportSourceOpened(source);
+            return true;
         }
 
         IEchoSource CreateSource()

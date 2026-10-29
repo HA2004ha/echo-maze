@@ -544,12 +544,26 @@ namespace EchoMaze.Tests.PlayMode
         [UnityTest]
         public IEnumerator NothingTheVisualDoes_TouchesTheBodyThatCollides()
         {
+            // This case is about the visual and the collider layout, not about input. On a headless runner
+            // there is no Keyboard.current, so Player.FixedUpdate would zero the velocity the test just
+            // wrote and the body would never move. The visual does not need Player.Update to be running:
+            // it reads the body, which is still simulated.
+            subject.enabled = false;
+
+            // A paused clock from an earlier scene would also stop the solver; the headless runner is the
+            // place where that is easy to inherit and hard to see.
+            Time.timeScale = 1f;
+            subjectBody.simulated = true;
+            subjectBody.WakeUp();
+
             Vector2 start = subjectBody.position;
             WalkIn(Vector2.right);
 
             for (int frame = 0; frame < 5; frame++)
             {
-                yield return null;
+                // WaitForFixedUpdate rather than one rendered frame: in batchmode a frame can pass without
+                // the physics tick this test is measuring, and then "did not move" means "was not stepped".
+                yield return new WaitForFixedUpdate();
             }
 
             Assert.AreNotEqual(start, subjectBody.position,

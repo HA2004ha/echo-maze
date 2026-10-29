@@ -27,12 +27,36 @@ namespace EchoMaze.Gameplay
         bool hasAim;
         float chargeStart = -1f;
         float nextStepTime;
+        readonly Collider2D[] interactHits = new Collider2D[16];
+        ContactFilter2D interactFilter;
+        IInteractable nearby;
 
         /// <summary>False after the Crawler touched us and before the retry put us back at the room start.</summary>
         public bool IsAlive { get; private set; } = true;
 
         /// <summary>True while Shift is held: the silent step, which is the only cheap move the game offers.</summary>
         public bool IsQuiet { get; private set; }
+
+        /// <summary>
+        /// Where the body is, on the physics clock rather than the transform's. The noise zones and the
+        /// sanctuaries ask this instead of reading <c>transform.position</c> so that a query made from
+        /// <c>Update</c> cannot disagree with where the collider actually is.
+        /// </summary>
+        public Vector2 Position => body != null ? body.position : (Vector2)transform.position;
+
+        /// <summary>
+        /// True while a movement key is held. Not "while the position changes": walking into a wall is a
+        /// footstep, and a floor of glass has to hear it, because the GDD's cost is for the noise you make
+        /// rather than the distance you cover.
+        /// </summary>
+        public bool IsMoving => lastInput.sqrMagnitude >= 0.01f;
+
+        /// <summary>
+        /// The thing E would act on right now — the nearest door or exit within the profile's interaction
+        /// range — or null when there is nothing to touch. The HUD reads it for the prompt line; nobody
+        /// else decides what E does.
+        /// </summary>
+        public IInteractable Nearby => nearby;
 
         public float AimRadians => aimRad;
 
@@ -93,11 +117,24 @@ namespace EchoMaze.Gameplay
                 Debug.LogError(name + " has no TouchMarks reference: bumping into walls will be silent and " +
                                "invisible. Rebuild the scene with Tools/Echo Maze.", this);
             }
+
+            // The door and exit probes are triggers on the Trigger layer, which is what an interaction is
+            // allowed to reach: asking for that layer rather than "everything" keeps the per-frame query to
+            // the handful of volumes that can answer E, and useTriggers is set explicitly rather than left
+            // to the project-wide query default, which the echo fan's settings also read.
+            interactFilter = new ContactFilter2D { useTriggers = true };
+            interactFilter.SetLayerMask(LayerMask.GetMask("Trigger"));
         }
 
         void Update()
         {
-            if (!IsAlive || director == null)
+            if (!IsAlive)
+            {
+                nearby = null;
+                return;
+            }
+
+            if (director == null)
             {
                 return;
             }
@@ -106,6 +143,7 @@ namespace EchoMaze.Gameplay
             UpdateAim();
             director.SetPose(transform.position, aimRad);
             UpdateEchoControls();
+            UpdateInteraction();
             UpdateFootsteps();
         }
 
@@ -176,6 +214,55 @@ namespace EchoMaze.Gameplay
             }
         }
 
+        /// <summary>
+        /// E on the thing the body is standing next to. The probe is a circle query around the body rather
+        /// than a trigger callback: the same reason the noise zones use containment — no collision-matrix
+        /// entry and no execution order can make a door that is right there unreachable, and the HUD needs
+        /// "what is near me" every frame anyway, which a trigger enter/exit pair cannot answer.
+        /// </summary>
+        void UpdateInteraction()
+        {
+            EchoTuningProfile profile = DirectorProfile;
+            Keyboard keyboard = Keyboard.current;
+            if (profile == null || keyboard == null)
+            {
+                return;
+            }
+
+            nearby = FindNearby(profile.interactionRange);
+
+            if (keyboard.eKey.wasPressedThisFrame && nearby != null && nearby.CanInteract(this))
+            {
+                nearby.Interact(this);
+            }
+        }
+
+        IInteractable FindNearby(float range)
+        {
+            int count = Physics2D.OverlapCircle(Position, range, interactFilter, interactHits);
+            IInteractable best = null;
+            float bestSqr = float.PositiveInfinity;
+
+            for (int i = 0; i < count; i++)
+            {
+                Collider2D hit = interactHits[i];
+                IInteractable candidate = hit.GetComponent<IInteractable>();
+                if (candidate == null)
+                {
+                    continue;
+                }
+
+                float sqr = (hit.ClosestPoint(Position) - Position).sqrMagnitude;
+                if (sqr < bestSqr)
+                {
+                    bestSqr = sqr;
+                    best = candidate;
+                }
+            }
+
+            return best;
+        }
+
         void UpdateFootsteps()
         {
             EchoTuningProfile profile = DirectorProfile;
@@ -185,7 +272,7 @@ namespace EchoMaze.Gameplay
             }
 
             nextStepTime = Time.time + profile.footstepInterval;
-            director.ReportNoise(transform.position, profile.footstepLoudness);
+            director.ReportNoise(Position, profile.footstepLoudness);
         }
 
         void FixedUpdate()
@@ -273,10 +360,26 @@ namespace EchoMaze.Gameplay
             Died?.Invoke();
         }
 
+        /// <summary>
+        /// Moves the body and its physics position together, so a placement is true on the same frame and
+        /// not after the next step. The level builder puts the player on the spawn cell and the checkpoint
+        /// restart puts them back in the sanctuary; either way the containment queries read
+        /// <see cref="Position"/> immediately, and a transform that has not been picked up by the body yet
+        /// would put the player one step behind where they are standing.
+        /// </summary>
+        public void PlaceAt(Vector2 position)
+        {
+            transform.position = position;
+            if (body != null)
+            {
+                body.position = position;
+                body.linearVelocity = Vector2.zero;
+            }
+        }
+
         public void Revive(Vector2 roomStart)
         {
-            transform.position = roomStart;
-            body.linearVelocity = Vector2.zero;
+            PlaceAt(roomStart);
             nextStepTime = 0f;
             IsAlive = true;
         }

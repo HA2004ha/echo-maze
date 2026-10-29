@@ -142,6 +142,47 @@ namespace EchoMaze.Data
         [Tooltip("Seconds between the simulated source's vocal events. Without a microphone the gate would otherwise fire exactly once and the development path would look broken.")]
         [Range(0.2f, 8f)] public float simulatedEventInterval = 1.6f;
 
+        [Header("Voice calibration")]
+        [Tooltip("Seconds the calibration page listens while you make the sound you intend to play with. " +
+                 "Long enough to say one word slowly, short enough that a miss is not a wait.")]
+        [Range(1f, 8f)] public float calibrationSeconds = 3f;
+        [Tooltip("Fraction of the measured peak that the open threshold lands at. Below 0.5 so the call " +
+                 "that was calibrated still opens the gate, above 0 so room hiss does not.")]
+        [Range(0.05f, 0.9f)] public float calibrationOpenFraction = 0.45f;
+        [Tooltip("The loudness the calibrated call should read afterwards. The scale above it is then set " +
+                 "so this call sits here and a shout lands near 1: 0.6 means the voice you calibrate with " +
+                 "gives about three fifths of the reach, and raising your voice is what buys the rest.")]
+        [Range(0.2f, 0.95f)] public float calibrationTargetLoudness = 0.6f;
+        [Tooltip("Never open below this, however quiet the room is: a gate tuned to an empty silent " +
+                 "apartment hears a fridge as a shout.")]
+        [Range(0.001f, 0.2f)] public float calibrationMinOpenRms = 0.008f;
+        [Tooltip("Never open above this, however loud the room is — a gate that needs a scream is a gate " +
+                 "the player will not use.")]
+        [Range(0.001f, 0.2f)] public float calibrationMaxOpenRms = 0.09f;
+        [Tooltip("The close threshold as a fraction of the open one: the hysteresis band, kept as a ratio " +
+                 "so a calibration that lands low still gets a proportionally low band.")]
+        [Range(0.05f, 0.95f)] public float calibrationCloseRatio = 0.6f;
+        [Tooltip("A peak under this is not a voice, it is a room. Calibration refuses rather than " +
+                 "shipping a gate that will never open.")]
+        [Range(0.001f, 0.05f)] public float calibrationFloorRms = 0.004f;
+
+        [Header("Interaction")]
+        [Tooltip("How close the body must be to a door or an exit for E to reach it, in world units. " +
+                 "A little over one cell of the maze grid (1 m), so standing in a doorway is enough and " +
+                 "shouting at a door from the next room is not.")]
+        [Range(0.25f, 4f)] public float interactionRange = 1f;
+        [Tooltip("Loudness of opening a door. GDD calls it low: it is the sound that wakes a hunt space.")]
+        [Range(0f, 1f)] public float doorOpenLoudness = 0.22f;
+        [Tooltip("Loudness of closing a door, deliberately above the open: dragging a shut door against " +
+                 "its frame is the louder act, and closing is the move made while being chased.")]
+        [Range(0f, 1f)] public float doorCloseLoudness = 0.34f;
+        [Tooltip("Loudness of one step on glass or gravel. Above footstepLoudness and below a shout: the " +
+                 "zone is a route you pay for, not an alarm.")]
+        [Range(0f, 1f)] public float noisyFloorLoudness = 0.16f;
+        [Tooltip("Seconds between the reports a noisy floor makes while the player crosses it at a normal " +
+                 "walk. Kept under footstepInterval so the zone is continuous rather than one lump.")]
+        [Range(0.1f, 2f)] public float noisyFloorStepInterval = 0.45f;
+
         [Header("Silent fallbacks")]
         [Tooltip("Reach of the F weak pulse: a 360 degree ring measured from the player, short enough to cost almost nothing to make.")]
         [Range(0.25f, 4f)] public float weakPulseRadius = 1.5f;
@@ -174,6 +215,11 @@ namespace EchoMaze.Data
             weakPulseCooldown = Mathf.Max(0.1f, weakPulseCooldown);
             walkSpeed = Mathf.Max(0.5f, walkSpeed);
             silentSpeed = Mathf.Clamp(silentSpeed, 0.1f, walkSpeed);
+            interactionRange = Mathf.Clamp(interactionRange, 0.25f, 4f);
+            noisyFloorStepInterval = Mathf.Clamp(noisyFloorStepInterval, 0.1f, 2f);
+            calibrationSeconds = Mathf.Clamp(calibrationSeconds, 1f, 8f);
+            calibrationMinOpenRms = Mathf.Max(0.001f, calibrationMinOpenRms);
+            calibrationMaxOpenRms = Mathf.Max(calibrationMinOpenRms, calibrationMaxOpenRms);
             rho = Mathf.Max(0.05f, rho);
             crawlerSpeedMultiplier = Mathf.Clamp(crawlerSpeedMultiplier, 0.1f, 2f);
             // TUNING.md rule 1, enforced here so a designer raising walk speed cannot silently break

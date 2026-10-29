@@ -1,0 +1,27 @@
+; Echo Maze — Level 01 "The Maze" (the GDD's enemy-free tutorial).
+; One character per cell, 2.0 m per cell, row 0 of this file is the TOP of the map.
+; Lines starting with ';' and blank lines are ignored by MazeGrid.Parse.
+;
+;   #  wall            .  floor           P  player spawn     E  level exit
+;   D  door (closed at the start; the only way through the wall band)
+;   S  sanctuary (checkpoint)
+;   G  glass shards (a noisy floor)      o  pillar (round signature)
+;   b  box (the bright corner)
+;
+; Every cell that is not '#' must be reachable from P with the door open, and E must be
+; unreachable with it closed — Docs/PLAN.md, week 3, and locked by MazeGridTests.
+#####################
+#.......#..........E#
+#.#.#.###.#.#######.#
+#...#.#...#.....#...#
+#.#.###.#.#####.#.###
+#.#.........#...#.#.#
+#.###########.#.#.#.#
+#......S#..D#.#.....#
+#########.#.#.###.###
+#.......#.#.....#b..#
+#.#####.#.#.#.#.#.#.#
+#.#...#...#..o....#.#
+#.#.#.#######.###.#.#
+#P#.#GGG............#
+#####################

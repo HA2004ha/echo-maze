@@ -37,7 +37,14 @@ namespace EchoMaze.Tests.PlayMode
         [UnityTest]
         public IEnumerator TheCrawlerTouchingYou_EndsTheRun()
         {
+            // Move the physics body, not only the transform: autoSyncTransforms is off, so a transform
+            // moved in one frame is not the collider the solver sees until the next sync. Without this
+            // the two bodies are in the same place on screen and never touch in physics.
+            Rigidbody2D crawlerBody = crawler.GetComponent<Rigidbody2D>();
+            crawlerBody.position = player.transform.position;
+            crawlerBody.linearVelocity = Vector2.zero;
             crawler.transform.position = player.transform.position;
+            Physics2D.SyncTransforms();
 
             for (int frame = 0; frame < 120 && player.IsAlive; frame++)
             {

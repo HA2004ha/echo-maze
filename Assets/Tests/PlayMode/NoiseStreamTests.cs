@@ -99,18 +99,25 @@ namespace EchoMaze.Tests.PlayMode
         }
 
         /// <summary>
-        /// The order the whole stealth loop rests on: walking is quieter than the tap that shows you the
-        /// room, and the tap is quieter than the shout. Pinned on the tuning asset rather than on a play
-        /// session, because a designer inverting these two numbers cannot be caught by any amount of
-        /// looking at the wave.
+        /// The order the whole stealth loop rests on: the accidental sounds are quieter than the floor you
+        /// choose to walk on, which is quieter than the door you choose to open, which is quieter than the
+        /// tap that shows you the room, which is quieter than the shout. Pinned on the tuning asset rather
+        /// than on a play session, because a designer inverting these numbers cannot be caught by any amount
+        /// of looking at the wave.
         /// </summary>
         [Test]
         public void TheNoisesThePlayerMakes_AreOrderedFromQuietToLoud()
         {
             Assert.Less(profile.bumpLoudness, profile.footstepLoudness,
                         "a wall bump has to be the smaller of the two accidental sounds");
-            Assert.Less(profile.footstepLoudness, profile.manualEchoLoudness,
-                        "walking has to be quieter than a tap, or the silent step is pointless");
+            Assert.Less(profile.footstepLoudness, profile.noisyFloorLoudness,
+                        "glass has to be louder than the floor it is a route across");
+            Assert.Less(profile.noisyFloorLoudness, profile.doorOpenLoudness,
+                        "opening a door is the deliberate act, so it is paid for above the floor");
+            Assert.Less(profile.doorOpenLoudness, profile.doorCloseLoudness,
+                        "closing is the move made while being chased, and a frame is a louder act than a hinge");
+            Assert.Less(profile.doorCloseLoudness, profile.manualEchoLoudness,
+                        "the loudest thing a door does is still quieter than the tap that reads the room");
             Assert.Less(profile.manualEchoLoudness, 1f, "a tap must not already be a shout");
         }
     }

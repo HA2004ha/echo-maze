@@ -9,12 +9,13 @@ namespace EchoMaze.EditorTools
 {
     /// <summary>
     /// The first screen that is supposed to look like the game: one enclosed room you can walk through,
-    /// with a patrolling Crawler in it and a death. Built with editor APIs like every other scene here, so
-    /// the geometry, the references and the layers are produced by Unity and can be regenerated on a fresh
-    /// clone with one menu item.
+    /// with a patrolling Crawler in it, a death, and a way out. Built with editor APIs like every other
+    /// scene here, so the geometry, the references and the layers are produced by Unity and can be
+    /// regenerated on a fresh clone with one menu item.
     ///
-    /// The room is a blockout, not a level: flat invisible walls whose only job is to be measurable. The
-    /// Corridor proper (doors, hollows, a sanctuary, landmark audio) is week 4.
+    /// The room is still a blockout — flat invisible walls whose only job is to be measurable — but it is a
+    /// chapter now: it has the HUD, pause and exit the maze has, so the two rooms can be played back to back
+    /// and the build is a game rather than a demo reel.
     /// </summary>
     public static class Level02SceneSetup
     {
@@ -22,8 +23,9 @@ namespace EchoMaze.EditorTools
 
         // Interior 7 x 5, which is the GDD's 4-8 m room at the top of the range, with an alcove hanging off
         // the south wall. The wave's shout reach is 6.5, so the far wall is still measurable from anywhere
-        // inside, and orthographicSize 6 keeps the whole room on one screen (the camera starts following the
-        // player when the maze does, in week 3).
+        // inside, and orthographicSize 6 keeps the whole room on one screen — which is also why the camera
+        // rig's clamp below is the room itself: the follow has nowhere to go, and the blockout framing is
+        // preserved by the same numbers that let the maze move.
         static readonly Vector2 PlayerSpawn = new Vector2(2f, -3.15f);
 
         // The creature walks a vertical leg through the north middle band, and the run starts at its far end:
@@ -75,7 +77,7 @@ namespace EchoMaze.EditorTools
             SceneKit.EnsureVolume(SceneKit.EnsureVolumeProfile());
             EchoRenderer field = SceneKit.EnsureEchoField(arcMaterial);
 
-            BuildRoom();
+            GameObject exit = BuildRoom();
 
             GameObject playerObject = SceneKit.EnsurePlayer(PlayerSpawn);
             TouchMarks marks = SceneKit.EnsureTouchMarks();
@@ -86,7 +88,13 @@ namespace EchoMaze.EditorTools
             SceneKit.EnsureAimCursor(playerObject);
 
             SceneKit.EnsureCrawler(CrawlerStart, Patrol, director, player);
-            SceneKit.EnsureRunController(player, SceneKit.EnsureDeathNotice());
+
+            // The interior half-extents, not the wall rectangle: at this camera size the clamp range inverts
+            // and the rig pins itself to the room centre, which is the fixed framing the blockout was built
+            // with. The rig exists anyway so that both chapters run the same camera code.
+            LevelSession session = LevelSceneKit.BuildChrome(director, player, new Vector2(3.5f, 2.5f),
+                                                             6f, "chapter two  ·  the corridor");
+            SceneKit.EnsureLevelExit(exit, session);
 
             EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
             EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene(), LevelPath);
@@ -94,11 +102,11 @@ namespace EchoMaze.EditorTools
         }
 
         /// <summary>
-        /// Four walls, one pillar, one box corner, one alcove and one exit. Every number here is chosen so
-        /// the Crawler's patrol legs miss the furniture by more than its own body width: a patrolling thing
-        /// that jams on a blockout prop teaches the tester nothing.
+        /// Four walls, one pillar, one box corner, one alcove and the exit tile it returns. Every number here
+        /// is chosen so the Crawler's patrol legs miss the furniture by more than its own body width: a
+        /// patrolling thing that jams on a blockout prop teaches the tester nothing.
         /// </summary>
-        static void BuildRoom()
+        static GameObject BuildRoom()
         {
             SceneKit.EnsureWall("Wall_North", new Vector2(0f, 2.7f), new Vector2(7.8f, 0.4f));
             SceneKit.EnsureWall("Wall_West", new Vector2(-3.7f, 0f), new Vector2(0.4f, 5.8f));
@@ -117,11 +125,12 @@ namespace EchoMaze.EditorTools
             SceneKit.EnsureShape("Box_Corner", new Vector2(2.4f, 1.5f), SceneKit.Shape.Box(1.2f, 1.2f),
                                  SurfaceKind.Plain);
 
-            // The exit is a trigger volume: the wave must not measure it (triggers are excluded from the
-            // fan), and walking into it is the level-complete rule, which lands with the level flow in
-            // week 4. It exists now so the room has a goal the designer can see and move.
-            SceneKit.EnsureShape("Exit_Tile", new Vector2(-3.3f, 0.2f), SceneKit.Shape.TriggerBox(0.7f, 1.8f),
-                                 SurfaceKind.Plain);
+            // The exit is a trigger volume and nothing more: the wave must not measure it (triggers are
+            // excluded from the fan), it draws no glow (the GDD wants the way out found by sound), and the
+            // LevelExit component put on it in BuildLevel is what ends the chapter when the player stands
+            // beside it and presses E.
+            return SceneKit.EnsureShape("Exit_Tile", new Vector2(-3.3f, 0.2f),
+                                        SceneKit.Shape.TriggerBox(0.7f, 1.8f), SurfaceKind.Plain);
         }
     }
 }

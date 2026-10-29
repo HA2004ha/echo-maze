@@ -30,7 +30,7 @@ namespace EchoMaze.Audio
         const float WarmupSeconds = 0.25f;
 
         readonly EchoTuningProfile profile;
-        readonly NoiseGate gate;
+        NoiseGate gate;
 
         AudioClip clip;
         float[] window;
@@ -49,6 +49,17 @@ namespace EchoMaze.Audio
                                  profile.gateFullRms, profile.loudnessHold);
         }
 
+        /// <summary>
+        /// Rebuild the gate at new thresholds, from the calibration page. Replacing the object rather than
+        /// mutating it keeps <see cref="NoiseGate"/>'s fields read-only and its constructor the one place the
+        /// ordering rules (close below open, full above both) are enforced. The capture itself is untouched,
+        /// so a recalibrated mic does not lose the ring or restart the warmup.
+        /// </summary>
+        public void ApplyGate(float openRms, float closeRms, float fullRms)
+        {
+            gate = new NoiseGate(openRms, closeRms, fullRms, profile.loudnessHold);
+        }
+
         public bool Open(string device, int sampleRate)
         {
             string[] devices = Microphone.devices;
@@ -59,13 +70,15 @@ namespace EchoMaze.Audio
             }
 
             string requested = string.IsNullOrEmpty(device) ? profile.microphoneDevice : device;
-            deviceName = string.IsNullOrEmpty(requested) ? AutoSelect(devices) : FindDevice(devices, requested);
-            if (deviceName == null)
+            deviceName = MicDeviceChoice.Resolve(devices, requested);
+            if (!string.IsNullOrEmpty(requested) && requested != deviceName)
             {
-                // Listing what the machine actually has is the whole message a teammate needs: device
-                // names differ per distro, per audio server and per headset.
-                failure = "device not found: " + requested + " (available: " + string.Join(", ", devices) + ")";
-                return false;
+                // Naming what the machine actually has is the whole message a teammate needs: device names
+                // differ per distro, per audio server and per headset. The saved name has gone away — a
+                // headset that left the room — and the capture opened on the fallback anyway, so this is a
+                // note in the log and not a dead game.
+                Debug.Log("Microphone '" + requested + "' is not on this machine; listening to '" + deviceName +
+                          "' instead. Available: " + string.Join(", ", devices) + ".");
             }
 
             int rate = sampleRate > 0 ? sampleRate : 44100;
@@ -193,40 +206,12 @@ namespace EchoMaze.Audio
             return Mathf.Sqrt(sum / count);
         }
 
-        static string FindDevice(string[] devices, string requested)
-        {
-            foreach (string candidate in devices)
-            {
-                if (candidate == requested)
-                {
-                    return candidate;
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// The first entry that is not a monitor. A monitor is our own speaker output looped back into
-        /// the input, which would make the game answer its own sound effects with waves forever.
-        /// Pin the real device with EchoTuningProfile.microphoneDevice when the audio server routes
-        /// the default input somewhere else.
-        /// </summary>
-        static string AutoSelect(string[] devices)
-        {
-            foreach (string candidate in devices)
-            {
-                if (candidate.IndexOf("Monitor", System.StringComparison.OrdinalIgnoreCase) < 0)
-                {
-                    return candidate;
-                }
-            }
-
-            return devices[0];
-        }
-
         /// <summary>Set once per Poll and read by the director in the same frame.</summary>
         public bool NewVocalEvent => edge;
+
+        /// <summary>The capture this source actually opened, after <see cref="MicDeviceChoice"/> has had its
+        /// say about what the saved name means on this machine. Null while offline.</summary>
+        public string DeviceName => deviceName;
 
         public float RawRms => gate.Raw;
 

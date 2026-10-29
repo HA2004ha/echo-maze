@@ -7,6 +7,7 @@ using UnityEngine.UI;
 using EchoMaze.Core;
 using EchoMaze.Data;
 using EchoMaze.Gameplay;
+using EchoMaze.Levels;
 using EchoMaze.UI;
 
 namespace EchoMaze.EditorTools
@@ -140,16 +141,36 @@ namespace EchoMaze.EditorTools
             return profile;
         }
 
+        /// <summary>
+        /// The Bloom override the whole glow is tuned against, in a profile the *build* can read.
+        ///
+        /// <c>VolumeProfile.Add</c> only appends to the profile's in-memory list. A component created before
+        /// <c>CreateAsset</c> never enters the file, and the serialised list is left holding
+        /// <c>{fileID: 0}</c> — which is invisible in the editor, because the session that built the profile
+        /// still has the live object, and fatal in the player, because URP's build-time stripper loads the
+        /// profile from disk, finds no active Bloom and strips every variant of the Bloom shader
+        /// ("After scriptable stripping: 0" in the build log, then one warning per pass per frame in the
+        /// player). Hence <c>AddObjectToAsset</c>, and hence a repair path instead of an early return: the
+        /// asset this function shipped for weeks is exactly the hole it now fills.
+        /// </summary>
         public static VolumeProfile EnsureVolumeProfile()
         {
-            var existing = AssetDatabase.LoadAssetAtPath<VolumeProfile>(VolumePath);
-            if (existing != null)
+            var profile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(VolumePath);
+            if (profile == null)
             {
-                return existing;
+                profile = ScriptableObject.CreateInstance<VolumeProfile>();
+                AssetDatabase.CreateAsset(profile, VolumePath);
+                Debug.Log("Created " + VolumePath);
             }
 
-            var profile = ScriptableObject.CreateInstance<VolumeProfile>();
-            var bloom = profile.Add<Bloom>(true);
+            profile.components.RemoveAll(c => c == null);
+
+            if (!profile.TryGet<Bloom>(out var bloom))
+            {
+                bloom = profile.Add<Bloom>(true);
+                AssetDatabase.AddObjectToAsset(bloom, profile);
+            }
+
             bloom.active = true;
             bloom.threshold.Override(0.55f);
             bloom.intensity.Override(0.9f);
@@ -157,8 +178,10 @@ namespace EchoMaze.EditorTools
             bloom.clamp.Override(20f);
             bloom.tint.Override(new Color(0.498f, 0.914f, 0.941f, 1f));
             bloom.filter.Override(BloomFilterMode.Gaussian);
-            AssetDatabase.CreateAsset(profile, VolumePath);
-            Debug.Log("Created " + VolumePath);
+
+            EditorUtility.SetDirty(bloom);
+            EditorUtility.SetDirty(profile);
+            AssetDatabase.SaveAssets();
             return profile;
         }
 
@@ -919,6 +942,97 @@ namespace EchoMaze.EditorTools
             return director;
         }
 
+        /// <summary>
+        /// The chapter's own record: checkpoint, counters, pause. One per level scene, and the only object
+        /// the level's zones and the HUD both talk to.
+        /// </summary>
+        public static LevelSession EnsureLevelSession(Player player, RunController runner,
+                                                     EchoDirector director, string chapterTitle)
+        {
+            GameObject go = FindOrCreate("Level Session");
+            var session = EnsureComponent<LevelSession>(go);
+            SetReference(session, "player", player);
+            SetReference(session, "runner", runner);
+            SetReference(session, "director", director);
+            SetString(session, "chapterTitle", chapterTitle);
+            return session;
+        }
+
+        /// <summary>
+        /// The room drawn from <c>Assets/Data/Levels</c>. The text asset is loaded after the scene is opened,
+        /// like every other asset here, or the scene load would unload it and the reference would be saved as
+        /// a hole.
+        /// </summary>
+        public static MazeLevel EnsureMazeLevel(string levelPath, float cellSize, EchoDirector director,
+                                                Player player, LevelSession session, PlayerCameraRig rig)
+        {
+            var file = AssetDatabase.LoadAssetAtPath<TextAsset>(levelPath);
+            if (file == null)
+            {
+                Debug.LogError("Level file " + levelPath + " is not imported: the room would be empty.");
+            }
+
+            GameObject go = FindOrCreate("Maze Level");
+            var level = EnsureComponent<MazeLevel>(go);
+            SetReference(level, "levelFile", file);
+            SetFloat(level, "cellSize", cellSize);
+            SetReference(level, "director", director);
+            SetReference(level, "player", player);
+            SetReference(level, "session", session);
+            SetReference(level, "cameraRig", rig);
+            return level;
+        }
+
+        /// <summary>
+        /// Puts the level's camera on the player. Without this the blockout framing (one fixed camera on a
+        /// 7x5 room) is kept, and a 42 x 30 maze is a black rectangle with a dot in it.
+        /// </summary>
+        public static PlayerCameraRig EnsureCameraRig(Player player, Vector2 boundsHalf, float size)
+        {
+            ConfigureCamera(size);
+            Camera camera = Object.FindAnyObjectByType<Camera>();
+            var rig = EnsureComponent<PlayerCameraRig>(camera.gameObject);
+            SetReference(rig, "player", player);
+            SetVector2(rig, "boundsHalf", boundsHalf);
+            return rig;
+        }
+
+        /// <summary>
+        /// The flow object, which only ever lives in the boot scene: it is the one thing that has to survive
+        /// the load of the first chapter, so it is created before any level exists and reaches the levels
+        /// through its own static.
+        /// </summary>
+        public static GameFlow EnsureGameFlow(string[] chapters, string menuScene)
+        {
+            GameObject go = FindOrCreate("Game Flow");
+            var flow = EnsureComponent<GameFlow>(go);
+            SetStringArray(flow, "chapterScenes", chapters);
+            SetString(flow, "menuScene", menuScene);
+            return flow;
+        }
+
+        public static VoiceCalibration EnsureVoiceCalibration(EchoDirector director)
+        {
+            // On the director's own object: it is a listener, and a listener that is switched off with the
+            // menu would stop measuring in the middle of a calibration.
+            var component = director.GetComponent<VoiceCalibration>() ??
+                            director.gameObject.AddComponent<VoiceCalibration>();
+            SetReference(component, "director", director);
+            return component;
+        }
+
+        /// <summary>
+        /// Puts the way-out rule on a probe volume a level already has. <c>MazeLevel</c> builds its exit from
+        /// the grid; a hand-placed room like the corridor has the collider in the scene and needs only the
+        /// component, and both go through here so the wiring is one line wherever the exit lives.
+        /// </summary>
+        public static LevelExit EnsureLevelExit(GameObject probe, LevelSession session)
+        {
+            LevelExit exit = probe.GetComponent<LevelExit>() ?? probe.AddComponent<LevelExit>();
+            exit.Build(session);
+            return exit;
+        }
+
         public static RunController EnsureRunController(Player player, GameObject deathNotice)
         {
             GameObject go = FindOrCreate("Run Controller");
@@ -1027,6 +1141,49 @@ namespace EchoMaze.EditorTools
             }
 
             property.floatValue = value;
+            property.serializedObject.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        /// <summary>A serialized string, so a chapter title lives in the code that builds the scene.</summary>
+        public static void SetString(UnityEngine.Object target, string field, string value)
+        {
+            SerializedProperty property = SerializedPropertyOf(target, field);
+            if (property == null)
+            {
+                return;
+            }
+
+            property.stringValue = value;
+            property.serializedObject.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        public static void SetVector2(UnityEngine.Object target, string field, Vector2 value)
+        {
+            SerializedProperty property = SerializedPropertyOf(target, field);
+            if (property == null)
+            {
+                return;
+            }
+
+            property.vector2Value = value;
+            property.serializedObject.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        public static void SetStringArray(UnityEngine.Object target, string field, string[] values)
+        {
+            SerializedProperty property = SerializedPropertyOf(target, field);
+            if (property == null)
+            {
+                return;
+            }
+
+            property.ClearArray();
+            for (int i = 0; i < values.Length; i++)
+            {
+                property.InsertArrayElementAtIndex(i);
+                property.GetArrayElementAtIndex(i).stringValue = values[i];
+            }
+
             property.serializedObject.ApplyModifiedPropertiesWithoutUndo();
         }
 
