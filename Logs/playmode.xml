@@ -1,0 +1,425 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="44" result="Passed" total="44" passed="44" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-10-29 19:45:48Z" end-time="2026-10-29 19:45:52Z" duration="4.7877189">
+  <test-suite type="TestSuite" id="1059" name="echo-maze" fullname="echo-maze" runstate="Runnable" testcasecount="44" result="Passed" start-time="2026-10-29 19:45:48Z" end-time="2026-10-29 19:45:52Z" duration="4.787719" total="44" passed="44" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="PlayMode" />
+    </properties>
+    <test-suite type="Assembly" id="1052" name="EchoMaze.Tests.PlayMode.dll" fullname="/home/ha/ha/IUST/game/project/echo-maze/Library/ScriptAssemblies/EchoMaze.Tests.PlayMode.dll" runstate="Runnable" testcasecount="44" result="Passed" start-time="2026-10-29 19:45:48Z" end-time="2026-10-29 19:45:52Z" duration="4.776362" total="44" passed="44" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="1156002" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+        <property name="EditorOnly" value="False" />
+      </properties>
+      <test-suite type="TestSuite" id="1053" name="EchoMaze" fullname="EchoMaze" runstate="Runnable" testcasecount="44" result="Passed" start-time="2026-10-29 19:45:48Z" end-time="2026-10-29 19:45:52Z" duration="4.775574" total="44" passed="44" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1054" name="Tests" fullname="EchoMaze.Tests" runstate="Runnable" testcasecount="44" result="Passed" start-time="2026-10-29 19:45:48Z" end-time="2026-10-29 19:45:52Z" duration="4.775076" total="44" passed="44" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestSuite" id="1055" name="PlayMode" fullname="EchoMaze.Tests.PlayMode" runstate="Runnable" testcasecount="44" result="Passed" start-time="2026-10-29 19:45:48Z" end-time="2026-10-29 19:45:52Z" duration="4.774574" total="44" passed="44" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-suite type="TestFixture" id="1001" name="CrawlerHearingTests" fullname="EchoMaze.Tests.PlayMode.CrawlerHearingTests" classname="EchoMaze.Tests.PlayMode.CrawlerHearingTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-10-29 19:45:48Z" end-time="2026-10-29 19:45:48Z" duration="0.650831" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1005" name="AHunt_IsGivenUpWhenNothingWasFound" fullname="EchoMaze.Tests.PlayMode.CrawlerHearingTests.AHunt_IsGivenUpWhenNothingWasFound" methodname="AHunt_IsGivenUpWhenNothingWasFound" classname="EchoMaze.Tests.PlayMode.CrawlerHearingTests" runstate="Runnable" seed="10582464" result="Passed" start-time="2026-10-29 19:45:48Z" end-time="2026-10-29 19:45:48Z" duration="0.631952" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+              <test-case id="1003" name="ANoiseBeyondItsHearingRadius_IsIgnored" fullname="EchoMaze.Tests.PlayMode.CrawlerHearingTests.ANoiseBeyondItsHearingRadius_IsIgnored" methodname="ANoiseBeyondItsHearingRadius_IsIgnored" classname="EchoMaze.Tests.PlayMode.CrawlerHearingTests" runstate="Runnable" seed="1854805229" result="Passed" start-time="2026-10-29 19:45:48Z" end-time="2026-10-29 19:45:48Z" duration="0.005079" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+              <test-case id="1002" name="ANoiseWithinItsHearingRadius_IsWalkedTowards" fullname="EchoMaze.Tests.PlayMode.CrawlerHearingTests.ANoiseWithinItsHearingRadius_IsWalkedTowards" methodname="ANoiseWithinItsHearingRadius_IsWalkedTowards" classname="EchoMaze.Tests.PlayMode.CrawlerHearingTests" runstate="Runnable" seed="2024167596" result="Passed" start-time="2026-10-29 19:45:48Z" end-time="2026-10-29 19:45:48Z" duration="0.001561" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+              <test-case id="1004" name="ItsOwnFootsteps_DoNotStartleIt" fullname="EchoMaze.Tests.PlayMode.CrawlerHearingTests.ItsOwnFootsteps_DoNotStartleIt" methodname="ItsOwnFootsteps_DoNotStartleIt" classname="EchoMaze.Tests.PlayMode.CrawlerHearingTests" runstate="Runnable" seed="1980741710" result="Passed" start-time="2026-10-29 19:45:48Z" end-time="2026-10-29 19:45:48Z" duration="0.001295" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1006" name="NoiseStreamTests" fullname="EchoMaze.Tests.PlayMode.NoiseStreamTests" classname="EchoMaze.Tests.PlayMode.NoiseStreamTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-10-29 19:45:48Z" end-time="2026-10-29 19:45:48Z" duration="0.008622" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1008" name="ABareNoise_IsHeardButDrawsNothingAndCostsNothing" fullname="EchoMaze.Tests.PlayMode.NoiseStreamTests.ABareNoise_IsHeardButDrawsNothingAndCostsNothing" methodname="ABareNoise_IsHeardButDrawsNothingAndCostsNothing" classname="EchoMaze.Tests.PlayMode.NoiseStreamTests" runstate="Runnable" seed="178614420" result="Passed" start-time="2026-10-29 19:45:48Z" end-time="2026-10-29 19:45:48Z" duration="0.002489" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+              <test-case id="1007" name="AVisiblePing_IsAlsoANoiseAtItsOwnOrigin" fullname="EchoMaze.Tests.PlayMode.NoiseStreamTests.AVisiblePing_IsAlsoANoiseAtItsOwnOrigin" methodname="AVisiblePing_IsAlsoANoiseAtItsOwnOrigin" classname="EchoMaze.Tests.PlayMode.NoiseStreamTests" runstate="Runnable" seed="292545469" result="Passed" start-time="2026-10-29 19:45:48Z" end-time="2026-10-29 19:45:48Z" duration="0.002637" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+              <test-case id="1010" name="TheNoisesThePlayerMakes_AreOrderedFromQuietToLoud" fullname="EchoMaze.Tests.PlayMode.NoiseStreamTests.TheNoisesThePlayerMakes_AreOrderedFromQuietToLoud" methodname="TheNoisesThePlayerMakes_AreOrderedFromQuietToLoud" classname="EchoMaze.Tests.PlayMode.NoiseStreamTests" runstate="Runnable" seed="1398033710" result="Passed" start-time="2026-10-29 19:45:48Z" end-time="2026-10-29 19:45:48Z" duration="0.000698" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+              <test-case id="1009" name="TheWeakPulse_IsTheQuietestEventOnTheStream" fullname="EchoMaze.Tests.PlayMode.NoiseStreamTests.TheWeakPulse_IsTheQuietestEventOnTheStream" methodname="TheWeakPulse_IsTheQuietestEventOnTheStream" classname="EchoMaze.Tests.PlayMode.NoiseStreamTests" runstate="Runnable" seed="2122893232" result="Passed" start-time="2026-10-29 19:45:48Z" end-time="2026-10-29 19:45:48Z" duration="0.001354" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1011" name="PlayerVisualTests" fullname="EchoMaze.Tests.PlayMode.PlayerVisualTests" classname="EchoMaze.Tests.PlayMode.PlayerVisualTests" runstate="Runnable" testcasecount="24" result="Passed" start-time="2026-10-29 19:45:48Z" end-time="2026-10-29 19:45:50Z" duration="1.354424" total="24" passed="24" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1022" name="AHeadingThatReallyLeftItsSector_TakesTheNewPose" fullname="EchoMaze.Tests.PlayMode.PlayerVisualTests.AHeadingThatReallyLeftItsSector_TakesTheNewPose" methodname="AHeadingThatReallyLeftItsSector_TakesTheNewPose" classname="EchoMaze.Tests.PlayMode.PlayerVisualTests" runstate="Runnable" seed="727101895" result="Passed" start-time="2026-10-29 19:45:48Z" end-time="2026-10-29 19:45:48Z" duration="0.158114" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+              <test-case id="1035" name="APlayerVisualFromTheFourPoseEra_TurnsItselfOffSilently" fullname="EchoMaze.Tests.PlayMode.PlayerVisualTests.APlayerVisualFromTheFourPoseEra_TurnsItselfOffSilently" methodname="APlayerVisualFromTheFourPoseEra_TurnsItselfOffSilently" classname="EchoMaze.Tests.PlayMode.PlayerVisualTests" runstate="Runnable" seed="1370265609" result="Passed" start-time="2026-10-29 19:45:48Z" end-time="2026-10-29 19:45:48Z" duration="0.003217" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+              <test-case id="1034" name="APlayerVisualWithoutItsSprites_TurnsItselfOffSilently" fullname="EchoMaze.Tests.PlayMode.PlayerVisualTests.APlayerVisualWithoutItsSprites_TurnsItselfOffSilently" methodname="APlayerVisualWithoutItsSprites_TurnsItselfOffSilently" classname="EchoMaze.Tests.PlayMode.PlayerVisualTests" runstate="Runnable" seed="2128965450" result="Passed" start-time="2026-10-29 19:45:48Z" end-time="2026-10-29 19:45:48Z" duration="0.002781" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+              <test-case id="1027" name="AStepMidway_RaisesTheBodyAndLeansItIntoTheWalk" fullname="EchoMaze.Tests.PlayMode.PlayerVisualTests.AStepMidway_RaisesTheBodyAndLeansItIntoTheWalk" methodname="AStepMidway_RaisesTheBodyAndLeansItIntoTheWalk" classname="EchoMaze.Tests.PlayMode.PlayerVisualTests" runstate="Runnable" seed="809018654" result="Passed" start-time="2026-10-29 19:45:48Z" end-time="2026-10-29 19:45:48Z" duration="0.002672" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+              <test-case id="1025" name="CursorParkedOnTheBody_StopsDraggingThePose" fullname="EchoMaze.Tests.PlayMode.PlayerVisualTests.CursorParkedOnTheBody_StopsDraggingThePose" methodname="CursorParkedOnTheBody_StopsDraggingThePose" classname="EchoMaze.Tests.PlayMode.PlayerVisualTests" runstate="Runnable" seed="2038557626" result="Passed" start-time="2026-10-29 19:45:48Z" end-time="2026-10-29 19:45:48Z" duration="0.003361" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+              <test-case id="1024" name="Dwell_BlocksASecondPoseInsideItsWindow" fullname="EchoMaze.Tests.PlayMode.PlayerVisualTests.Dwell_BlocksASecondPoseInsideItsWindow" methodname="Dwell_BlocksASecondPoseInsideItsWindow" classname="EchoMaze.Tests.PlayMode.PlayerVisualTests" runstate="Runnable" seed="2139595391" result="Passed" start-time="2026-10-29 19:45:48Z" end-time="2026-10-29 19:45:48Z" duration="0.002613" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+              <test-case id="1031" name="Dying_HoldsTheLastPoseStandingStraightAndStill" fullname="EchoMaze.Tests.PlayMode.PlayerVisualTests.Dying_HoldsTheLastPoseStandingStraightAndStill" methodname="Dying_HoldsTheLastPoseStandingStraightAndStill" classname="EchoMaze.Tests.PlayMode.PlayerVisualTests" runstate="Runnable" seed="1006039445" result="Passed" start-time="2026-10-29 19:45:48Z" end-time="2026-10-29 19:45:48Z" duration="0.003188" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+              <test-case id="1028" name="HoldingShift_FlattensEveryMotionWithinTheCalmWindow" fullname="EchoMaze.Tests.PlayMode.PlayerVisualTests.HoldingShift_FlattensEveryMotionWithinTheCalmWindow" methodname="HoldingShift_FlattensEveryMotionWithinTheCalmWindow" classname="EchoMaze.Tests.PlayMode.PlayerVisualTests" runstate="Runnable" seed="1729847084" result="Passed" start-time="2026-10-29 19:45:48Z" end-time="2026-10-29 19:45:49Z" duration="0.302802" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+              <test-case id="1032" name="NothingTheVisualDoes_TouchesTheBodyThatCollides" fullname="EchoMaze.Tests.PlayMode.PlayerVisualTests.NothingTheVisualDoes_TouchesTheBodyThatCollides" methodname="NothingTheVisualDoes_TouchesTheBodyThatCollides" classname="EchoMaze.Tests.PlayMode.PlayerVisualTests" runstate="Runnable" seed="825941072" result="Passed" start-time="2026-10-29 19:45:49Z" end-time="2026-10-29 19:45:49Z" duration="0.086897" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+              <test-case id="1029" name="NotHoldingShift_KeepsEveryMotionRunning" fullname="EchoMaze.Tests.PlayMode.PlayerVisualTests.NotHoldingShift_KeepsEveryMotionRunning" methodname="NotHoldingShift_KeepsEveryMotionRunning" classname="EchoMaze.Tests.PlayMode.PlayerVisualTests" runstate="Runnable" seed="235506256" result="Passed" start-time="2026-10-29 19:45:49Z" end-time="2026-10-29 19:45:49Z" duration="0.302671" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+              <test-case id="1021" name="ParkedOnASectorBoundary_CursorJitterForThirtyFrames_ChangesThePoseAtMostOnce" fullname="EchoMaze.Tests.PlayMode.PlayerVisualTests.ParkedOnASectorBoundary_CursorJitterForThirtyFrames_ChangesThePoseAtMostOnce" methodname="ParkedOnASectorBoundary_CursorJitterForThirtyFrames_ChangesThePoseAtMostOnce" classname="EchoMaze.Tests.PlayMode.PlayerVisualTests" runstate="Runnable" seed="1138909268" result="Passed" start-time="2026-10-29 19:45:49Z" end-time="2026-10-29 19:45:49Z" duration="0.006191" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+              <test-case id="1020" name="StandingStill_FacesWhereThePlayerIsLooking" fullname="EchoMaze.Tests.PlayMode.PlayerVisualTests.StandingStill_FacesWhereThePlayerIsLooking" methodname="StandingStill_FacesWhereThePlayerIsLooking" classname="EchoMaze.Tests.PlayMode.PlayerVisualTests" runstate="Runnable" seed="435605457" result="Passed" start-time="2026-10-29 19:45:49Z" end-time="2026-10-29 19:45:49Z" duration="0.152753" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+              <test-case id="1030" name="TheBounce_IsLockedToTheFootstepClock" fullname="EchoMaze.Tests.PlayMode.PlayerVisualTests.TheBounce_IsLockedToTheFootstepClock" methodname="TheBounce_IsLockedToTheFootstepClock" classname="EchoMaze.Tests.PlayMode.PlayerVisualTests" runstate="Runnable" seed="454228672" result="Passed" start-time="2026-10-29 19:45:49Z" end-time="2026-10-29 19:45:50Z" duration="0.278636" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+              <test-case id="1033" name="TheWeek2RigPlayer_NeedsNoArtAtAll" fullname="EchoMaze.Tests.PlayMode.PlayerVisualTests.TheWeek2RigPlayer_NeedsNoArtAtAll" methodname="TheWeek2RigPlayer_NeedsNoArtAtAll" classname="EchoMaze.Tests.PlayMode.PlayerVisualTests" runstate="Runnable" seed="480873020" result="Passed" start-time="2026-10-29 19:45:50Z" end-time="2026-10-29 19:45:50Z" duration="0.002958" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+              <test-case id="1026" name="WalkingAgainstItsOwnAim_FacesWhereTheBodyIsGoing" fullname="EchoMaze.Tests.PlayMode.PlayerVisualTests.WalkingAgainstItsOwnAim_FacesWhereTheBodyIsGoing" methodname="WalkingAgainstItsOwnAim_FacesWhereTheBodyIsGoing" classname="EchoMaze.Tests.PlayMode.PlayerVisualTests" runstate="Runnable" seed="977422174" result="Passed" start-time="2026-10-29 19:45:50Z" end-time="2026-10-29 19:45:50Z" duration="0.002413" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+              <test-case id="1023" name="WalkingASteadyDiagonal_ForTwoSeconds_HoldsOnePose" fullname="EchoMaze.Tests.PlayMode.PlayerVisualTests.WalkingASteadyDiagonal_ForTwoSeconds_HoldsOnePose" methodname="WalkingASteadyDiagonal_ForTwoSeconds_HoldsOnePose" classname="EchoMaze.Tests.PlayMode.PlayerVisualTests" runstate="Runnable" seed="1752455879" result="Passed" start-time="2026-10-29 19:45:50Z" end-time="2026-10-29 19:45:50Z" duration="0.013423" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+              <test-case id="1016" name="WalkingDownAndLeft_ShowsTheAuthoredTurnedFront" fullname="EchoMaze.Tests.PlayMode.PlayerVisualTests.WalkingDownAndLeft_ShowsTheAuthoredTurnedFront" methodname="WalkingDownAndLeft_ShowsTheAuthoredTurnedFront" classname="EchoMaze.Tests.PlayMode.PlayerVisualTests" runstate="Runnable" seed="1081877472" result="Passed" start-time="2026-10-29 19:45:50Z" end-time="2026-10-29 19:45:50Z" duration="0.002794" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+              <test-case id="1017" name="WalkingDownAndRight_TurnsTheSameFrontAround" fullname="EchoMaze.Tests.PlayMode.PlayerVisualTests.WalkingDownAndRight_TurnsTheSameFrontAround" methodname="WalkingDownAndRight_TurnsTheSameFrontAround" classname="EchoMaze.Tests.PlayMode.PlayerVisualTests" runstate="Runnable" seed="1559084347" result="Passed" start-time="2026-10-29 19:45:50Z" end-time="2026-10-29 19:45:50Z" duration="0.009255" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+              <test-case id="1015" name="WalkingDownscreen_ShowsTheFrontPose" fullname="EchoMaze.Tests.PlayMode.PlayerVisualTests.WalkingDownscreen_ShowsTheFrontPose" methodname="WalkingDownscreen_ShowsTheFrontPose" classname="EchoMaze.Tests.PlayMode.PlayerVisualTests" runstate="Runnable" seed="229765114" result="Passed" start-time="2026-10-29 19:45:50Z" end-time="2026-10-29 19:45:50Z" duration="0.002371" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+              <test-case id="1013" name="WalkingLeft_ReusesTheSameTextureFlipped" fullname="EchoMaze.Tests.PlayMode.PlayerVisualTests.WalkingLeft_ReusesTheSameTextureFlipped" methodname="WalkingLeft_ReusesTheSameTextureFlipped" classname="EchoMaze.Tests.PlayMode.PlayerVisualTests" runstate="Runnable" seed="1048575587" result="Passed" start-time="2026-10-29 19:45:50Z" end-time="2026-10-29 19:45:50Z" duration="0.002212" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+              <test-case id="1012" name="WalkingRight_ShowsTheSidePoseUnflipped" fullname="EchoMaze.Tests.PlayMode.PlayerVisualTests.WalkingRight_ShowsTheSidePoseUnflipped" methodname="WalkingRight_ShowsTheSidePoseUnflipped" classname="EchoMaze.Tests.PlayMode.PlayerVisualTests" runstate="Runnable" seed="1575163293" result="Passed" start-time="2026-10-29 19:45:50Z" end-time="2026-10-29 19:45:50Z" duration="0.002225" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+              <test-case id="1018" name="WalkingUpAndLeft_ShowsTheAuthoredTurnedBack" fullname="EchoMaze.Tests.PlayMode.PlayerVisualTests.WalkingUpAndLeft_ShowsTheAuthoredTurnedBack" methodname="WalkingUpAndLeft_ShowsTheAuthoredTurnedBack" classname="EchoMaze.Tests.PlayMode.PlayerVisualTests" runstate="Runnable" seed="1811108505" result="Passed" start-time="2026-10-29 19:45:50Z" end-time="2026-10-29 19:45:50Z" duration="0.002184" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+              <test-case id="1019" name="WalkingUpAndRight_TurnsTheSameBackAround" fullname="EchoMaze.Tests.PlayMode.PlayerVisualTests.WalkingUpAndRight_TurnsTheSameBackAround" methodname="WalkingUpAndRight_TurnsTheSameBackAround" classname="EchoMaze.Tests.PlayMode.PlayerVisualTests" runstate="Runnable" seed="1274350748" result="Passed" start-time="2026-10-29 19:45:50Z" end-time="2026-10-29 19:45:50Z" duration="0.002175" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+              <test-case id="1014" name="WalkingUpscreen_ShowsTheBackPose" fullname="EchoMaze.Tests.PlayMode.PlayerVisualTests.WalkingUpscreen_ShowsTheBackPose" methodname="WalkingUpscreen_ShowsTheBackPose" classname="EchoMaze.Tests.PlayMode.PlayerVisualTests" runstate="Runnable" seed="312268179" result="Passed" start-time="2026-10-29 19:45:50Z" end-time="2026-10-29 19:45:50Z" duration="0.002172" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1036" name="RunControllerTests" fullname="EchoMaze.Tests.PlayMode.RunControllerTests" classname="EchoMaze.Tests.PlayMode.RunControllerTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-10-29 19:45:50Z" end-time="2026-10-29 19:45:51Z" duration="1.013526" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1039" name="DyingTwice_IsOneDeath" fullname="EchoMaze.Tests.PlayMode.RunControllerTests.DyingTwice_IsOneDeath" methodname="DyingTwice_IsOneDeath" classname="EchoMaze.Tests.PlayMode.RunControllerTests" runstate="Runnable" seed="1853737871" result="Passed" start-time="2026-10-29 19:45:50Z" end-time="2026-10-29 19:45:50Z" duration="0.001550" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+              <test-case id="1038" name="OneHit_PutsYouBackAtTheRoomStartUnderTwoSeconds" fullname="EchoMaze.Tests.PlayMode.RunControllerTests.OneHit_PutsYouBackAtTheRoomStartUnderTwoSeconds" methodname="OneHit_PutsYouBackAtTheRoomStartUnderTwoSeconds" classname="EchoMaze.Tests.PlayMode.RunControllerTests" runstate="Runnable" seed="25520196" result="Passed" start-time="2026-10-29 19:45:50Z" end-time="2026-10-29 19:45:51Z" duration="1.002408" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+              <test-case id="1037" name="TheCrawlerTouchingYou_EndsTheRun" fullname="EchoMaze.Tests.PlayMode.RunControllerTests.TheCrawlerTouchingYou_EndsTheRun" methodname="TheCrawlerTouchingYou_EndsTheRun" classname="EchoMaze.Tests.PlayMode.RunControllerTests" runstate="Runnable" seed="1252517226" result="Passed" start-time="2026-10-29 19:45:51Z" end-time="2026-10-29 19:45:51Z" duration="0.008472" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1040" name="TouchMarkPlacementTests" fullname="EchoMaze.Tests.PlayMode.TouchMarkPlacementTests" classname="EchoMaze.Tests.PlayMode.TouchMarkPlacementTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-10-29 19:45:51Z" end-time="2026-10-29 19:45:51Z" duration="0.320210" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1041" name="APlayerTouchingAWall_FlashesClearOfItsOwnBody" fullname="EchoMaze.Tests.PlayMode.TouchMarkPlacementTests.APlayerTouchingAWall_FlashesClearOfItsOwnBody" methodname="APlayerTouchingAWall_FlashesClearOfItsOwnBody" classname="EchoMaze.Tests.PlayMode.TouchMarkPlacementTests" runstate="Runnable" seed="1391649249" result="Passed" start-time="2026-10-29 19:45:51Z" end-time="2026-10-29 19:45:51Z" duration="0.319190" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1042" name="TouchMarkTests" fullname="EchoMaze.Tests.PlayMode.TouchMarkTests" classname="EchoMaze.Tests.PlayMode.TouchMarkTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-10-29 19:45:51Z" end-time="2026-10-29 19:45:52Z" duration="1.409444" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1043" name="AContact_LeavesOneMarkThatFadesAway" fullname="EchoMaze.Tests.PlayMode.TouchMarkTests.AContact_LeavesOneMarkThatFadesAway" methodname="AContact_LeavesOneMarkThatFadesAway" classname="EchoMaze.Tests.PlayMode.TouchMarkTests" runstate="Runnable" seed="507571967" result="Passed" start-time="2026-10-29 19:45:51Z" end-time="2026-10-29 19:45:52Z" duration="0.703239" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1045" name="AMark_LiesAlongTheSurfaceItTouched" fullname="EchoMaze.Tests.PlayMode.TouchMarkTests.AMark_LiesAlongTheSurfaceItTouched" methodname="AMark_LiesAlongTheSurfaceItTouched" classname="EchoMaze.Tests.PlayMode.TouchMarkTests" runstate="Runnable" seed="813589582" result="Passed" start-time="2026-10-29 19:45:52Z" end-time="2026-10-29 19:45:52Z" duration="0.001671" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1046" name="AMark_SitsOutsideTheBodyThatTouchedTheWall" fullname="EchoMaze.Tests.PlayMode.TouchMarkTests.AMark_SitsOutsideTheBodyThatTouchedTheWall" methodname="AMark_SitsOutsideTheBodyThatTouchedTheWall" classname="EchoMaze.Tests.PlayMode.TouchMarkTests" runstate="Runnable" seed="187963875" result="Passed" start-time="2026-10-29 19:45:52Z" end-time="2026-10-29 19:45:52Z" duration="0.001314" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1044" name="MoreContactsThanThePool_RecycleTheOldestMark" fullname="EchoMaze.Tests.PlayMode.TouchMarkTests.MoreContactsThanThePool_RecycleTheOldestMark" methodname="MoreContactsThanThePool_RecycleTheOldestMark" classname="EchoMaze.Tests.PlayMode.TouchMarkTests" runstate="Runnable" seed="1672530630" result="Passed" start-time="2026-10-29 19:45:52Z" end-time="2026-10-29 19:45:52Z" duration="0.702022" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1047" name="VocalEventPingTests" fullname="EchoMaze.Tests.PlayMode.VocalEventPingTests" classname="EchoMaze.Tests.PlayMode.VocalEventPingTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-10-29 19:45:52Z" end-time="2026-10-29 19:45:52Z" duration="0.015714" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1051" name="ASecondEventInsideTheCooldown_MakesNoPing" fullname="EchoMaze.Tests.PlayMode.VocalEventPingTests.ASecondEventInsideTheCooldown_MakesNoPing" methodname="ASecondEventInsideTheCooldown_MakesNoPing" classname="EchoMaze.Tests.PlayMode.VocalEventPingTests" runstate="Runnable" seed="889330696" result="Passed" start-time="2026-10-29 19:45:52Z" end-time="2026-10-29 19:45:52Z" duration="0.004189" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+              <test-case id="1050" name="AWhisperAndAShout_PingWithDifferentReach" fullname="EchoMaze.Tests.PlayMode.VocalEventPingTests.AWhisperAndAShout_PingWithDifferentReach" methodname="AWhisperAndAShout_PingWithDifferentReach" classname="EchoMaze.Tests.PlayMode.VocalEventPingTests" runstate="Runnable" seed="325961880" result="Passed" start-time="2026-10-29 19:45:52Z" end-time="2026-10-29 19:45:52Z" duration="0.002907" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+              <test-case id="1048" name="ContinuousLoudness_MakesExactlyOnePing" fullname="EchoMaze.Tests.PlayMode.VocalEventPingTests.ContinuousLoudness_MakesExactlyOnePing" methodname="ContinuousLoudness_MakesExactlyOnePing" classname="EchoMaze.Tests.PlayMode.VocalEventPingTests" runstate="Runnable" seed="1834407980" result="Passed" start-time="2026-10-29 19:45:52Z" end-time="2026-10-29 19:45:52Z" duration="0.004803" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+]]></output>
+              </test-case>
+              <test-case id="1049" name="TwoSeparateEvents_MakeTwoPings" fullname="EchoMaze.Tests.PlayMode.VocalEventPingTests.TwoSeparateEvents_MakeTwoPings" methodname="TwoSeparateEvents_MakeTwoPings" classname="EchoMaze.Tests.PlayMode.VocalEventPingTests" runstate="Runnable" seed="1184844156" result="Passed" start-time="2026-10-29 19:45:52Z" end-time="2026-10-29 19:45:52Z" duration="0.002839" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[EchoDirector has no EchoTuningProfile assigned; using code defaults. Create Assets/Data/Echo/EchoTuning.asset to tune the wave.
+Saving results to: /home/ha/.config/unity3d/DefaultCompany/echo-maze/TestResults.xml
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

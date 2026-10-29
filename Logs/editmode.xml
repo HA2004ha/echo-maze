@@ -1,0 +1,738 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="111" result="Passed" total="111" passed="111" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:23Z" duration="0.2648652">
+  <test-suite type="TestSuite" id="1000" name="echo-maze" fullname="echo-maze" runstate="Runnable" testcasecount="111" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:23Z" duration="0.264865" total="111" passed="111" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <test-suite type="Assembly" id="1127" name="EchoMaze.Tests.EditMode.dll" fullname="/home/ha/ha/IUST/game/project/echo-maze/Library/ScriptAssemblies/EchoMaze.Tests.EditMode.dll" runstate="Runnable" testcasecount="111" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:23Z" duration="0.258596" total="111" passed="111" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="1171859" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <test-suite type="TestSuite" id="1128" name="EchoMaze" fullname="EchoMaze" runstate="Runnable" testcasecount="111" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:23Z" duration="0.257570" total="111" passed="111" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1129" name="Tests" fullname="EchoMaze.Tests" runstate="Runnable" testcasecount="111" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:23Z" duration="0.256818" total="111" passed="111" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestFixture" id="1001" name="ArcMathTests" fullname="EchoMaze.Tests.ArcMathTests" classname="EchoMaze.Tests.ArcMathTests" runstate="Runnable" testcasecount="12" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.035562" total="12" passed="12" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1006" name="AllMisses_ProduceNoSamples_AndNoNaN" fullname="EchoMaze.Tests.ArcMathTests.AllMisses_ProduceNoSamples_AndNoNaN" methodname="AllMisses_ProduceNoSamples_AndNoNaN" classname="EchoMaze.Tests.ArcMathTests" runstate="Runnable" seed="1734809876" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.012308" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1010" name="AlphaStartsBrightAndEndsInvisible" fullname="EchoMaze.Tests.ArcMathTests.AlphaStartsBrightAndEndsInvisible" methodname="AlphaStartsBrightAndEndsInvisible" classname="EchoMaze.Tests.ArcMathTests" runstate="Runnable" seed="1144982710" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.002834" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1005" name="CollapsesToOrigin_AsAgeGrows" fullname="EchoMaze.Tests.ArcMathTests.CollapsesToOrigin_AsAgeGrows" methodname="CollapsesToOrigin_AsAgeGrows" classname="EchoMaze.Tests.ArcMathTests" runstate="Runnable" seed="1628113585" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000476" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1012" name="EmissionPulse_NeverOvertakesTheReturningCarrier" fullname="EchoMaze.Tests.ArcMathTests.EmissionPulse_NeverOvertakesTheReturningCarrier" methodname="EmissionPulse_NeverOvertakesTheReturningCarrier" classname="EchoMaze.Tests.ArcMathTests" runstate="Runnable" seed="361126356" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000874" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1002" name="Formula_MatchesGdd" fullname="EchoMaze.Tests.ArcMathTests.Formula_MatchesGdd" methodname="Formula_MatchesGdd" classname="EchoMaze.Tests.ArcMathTests" runstate="Runnable" seed="180852987" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000255" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1007" name="GainSign_FlipsDeformation" fullname="EchoMaze.Tests.ArcMathTests.GainSign_FlipsDeformation" methodname="GainSign_FlipsDeformation" classname="EchoMaze.Tests.ArcMathTests" runstate="Runnable" seed="159970415" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000173" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1008" name="InnerArcsDeformLess" fullname="EchoMaze.Tests.ArcMathTests.InnerArcsDeformLess" methodname="InnerArcsDeformLess" classname="EchoMaze.Tests.ArcMathTests" runstate="Runnable" seed="901909648" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000157" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1009" name="LoudnessDrivesReachAndDensity" fullname="EchoMaze.Tests.ArcMathTests.LoudnessDrivesReachAndDensity" methodname="LoudnessDrivesReachAndDensity" classname="EchoMaze.Tests.ArcMathTests" runstate="Runnable" seed="1224866974" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000583" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1003" name="MonotonicInDistance" fullname="EchoMaze.Tests.ArcMathTests.MonotonicInDistance" methodname="MonotonicInDistance" classname="EchoMaze.Tests.ArcMathTests" runstate="Runnable" seed="595534593" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000289" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1004" name="NearestSurfaceSitsOnTheCarrierCircle" fullname="EchoMaze.Tests.ArcMathTests.NearestSurfaceSitsOnTheCarrierCircle" methodname="NearestSurfaceSitsOnTheCarrierCircle" classname="EchoMaze.Tests.ArcMathTests" runstate="Runnable" seed="2146826067" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000205" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1013" name="PingRecordReuseResetsTrackedExtremes" fullname="EchoMaze.Tests.ArcMathTests.PingRecordReuseResetsTrackedExtremes" methodname="PingRecordReuseResetsTrackedExtremes" classname="EchoMaze.Tests.ArcMathTests" runstate="Runnable" seed="136033820" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000275" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1011" name="SampleAnglesSpanTheCone" fullname="EchoMaze.Tests.ArcMathTests.SampleAnglesSpanTheCone" methodname="SampleAnglesSpanTheCone" classname="EchoMaze.Tests.ArcMathTests" runstate="Runnable" seed="25930745" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000268" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1014" name="ArcReadabilityTests" fullname="EchoMaze.Tests.ArcReadabilityTests" classname="EchoMaze.Tests.ArcReadabilityTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.006278" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1015" name="Pillar_DentsItsOwnOutline" fullname="EchoMaze.Tests.ArcReadabilityTests.Pillar_DentsItsOwnOutline" methodname="Pillar_DentsItsOwnOutline" classname="EchoMaze.Tests.ArcReadabilityTests" runstate="Runnable" seed="575731691" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.003406" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1016" name="PillarAndWallBehindIt_ArriveAsTwoDifferentRadii" fullname="EchoMaze.Tests.ArcReadabilityTests.PillarAndWallBehindIt_ArriveAsTwoDifferentRadii" methodname="PillarAndWallBehindIt_ArriveAsTwoDifferentRadii" classname="EchoMaze.Tests.ArcReadabilityTests" runstate="Runnable" seed="1597537359" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000829" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1017" name="PillarCentre_IsTheInnermostPointOfTheArc" fullname="EchoMaze.Tests.ArcReadabilityTests.PillarCentre_IsTheInnermostPointOfTheArc" methodname="PillarCentre_IsTheInnermostPointOfTheArc" classname="EchoMaze.Tests.ArcReadabilityTests" runstate="Runnable" seed="1915276217" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000594" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1018" name="Ribbon_IsAtLeastFourPixelsWide" fullname="EchoMaze.Tests.ArcReadabilityTests.Ribbon_IsAtLeastFourPixelsWide" methodname="Ribbon_IsAtLeastFourPixelsWide" classname="EchoMaze.Tests.ArcReadabilityTests" runstate="Runnable" seed="1727373406" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000184" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1019" name="ArcTrainTests" fullname="EchoMaze.Tests.ArcTrainTests" classname="EchoMaze.Tests.ArcTrainTests" runstate="Runnable" testcasecount="7" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.010101" total="7" passed="7" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1020" name="Arcs_AreBornOneIntervalApart" fullname="EchoMaze.Tests.ArcTrainTests.Arcs_AreBornOneIntervalApart" methodname="Arcs_AreBornOneIntervalApart" classname="EchoMaze.Tests.ArcTrainTests" runstate="Runnable" seed="1013654491" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000827" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1025" name="ClosedRing_BridgesItsOwnSeam" fullname="EchoMaze.Tests.ArcTrainTests.ClosedRing_BridgesItsOwnSeam" methodname="ClosedRing_BridgesItsOwnSeam" classname="EchoMaze.Tests.ArcTrainTests" runstate="Runnable" seed="528501528" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.004875" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1023" name="EveryArcOfOnePing_ShowsTheSameGaps" fullname="EchoMaze.Tests.ArcTrainTests.EveryArcOfOnePing_ShowsTheSameGaps" methodname="EveryArcOfOnePing_ShowsTheSameGaps" classname="EchoMaze.Tests.ArcTrainTests" runstate="Runnable" seed="552171857" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000816" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1024" name="Fracture_ActuallyRemovesSegments" fullname="EchoMaze.Tests.ArcTrainTests.Fracture_ActuallyRemovesSegments" methodname="Fracture_ActuallyRemovesSegments" classname="EchoMaze.Tests.ArcTrainTests" runstate="Runnable" seed="1414046620" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000741" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1022" name="InnerArcs_DeformLessThanTheCarrier" fullname="EchoMaze.Tests.ArcTrainTests.InnerArcs_DeformLessThanTheCarrier" methodname="InnerArcs_DeformLessThanTheCarrier" classname="EchoMaze.Tests.ArcTrainTests" runstate="Runnable" seed="1311636819" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000232" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1026" name="OpenCone_EndsAtItsEdges" fullname="EchoMaze.Tests.ArcTrainTests.OpenCone_EndsAtItsEdges" methodname="OpenCone_EndsAtItsEdges" classname="EchoMaze.Tests.ArcTrainTests" runstate="Runnable" seed="163911145" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000711" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1021" name="Train_OutlivesItsFirstArc" fullname="EchoMaze.Tests.ArcTrainTests.Train_OutlivesItsFirstArc" methodname="Train_OutlivesItsFirstArc" classname="EchoMaze.Tests.ArcTrainTests" runstate="Runnable" seed="143293414" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000342" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1027" name="BootSceneWiringTests" fullname="EchoMaze.Tests.BootSceneWiringTests" classname="EchoMaze.Tests.BootSceneWiringTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.044294" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1028" name="AGeneratedMenuScene_HasExactlyOneCalibrationPanel" fullname="EchoMaze.Tests.BootSceneWiringTests.AGeneratedMenuScene_HasExactlyOneCalibrationPanel" methodname="AGeneratedMenuScene_HasExactlyOneCalibrationPanel" classname="EchoMaze.Tests.BootSceneWiringTests" runstate="Runnable" seed="1325396216" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.003687" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1030" name="AGeneratedMenuScene_KeepsTheCalibrationPageInsideTheMenuCanvas" fullname="EchoMaze.Tests.BootSceneWiringTests.AGeneratedMenuScene_KeepsTheCalibrationPageInsideTheMenuCanvas" methodname="AGeneratedMenuScene_KeepsTheCalibrationPageInsideTheMenuCanvas" classname="EchoMaze.Tests.BootSceneWiringTests" runstate="Runnable" seed="459692053" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000659" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1029" name="AGeneratedMenuScene_SerializesTheInputPickerAsRealReferences" fullname="EchoMaze.Tests.BootSceneWiringTests.AGeneratedMenuScene_SerializesTheInputPickerAsRealReferences" methodname="AGeneratedMenuScene_SerializesTheInputPickerAsRealReferences" classname="EchoMaze.Tests.BootSceneWiringTests" runstate="Runnable" seed="1623029339" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000936" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1031" name="CreatureTintTests" fullname="EchoMaze.Tests.CreatureTintTests" classname="EchoMaze.Tests.CreatureTintTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.008417" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1032" name="ASampleOffACreature_IsDrawnWarm" fullname="EchoMaze.Tests.CreatureTintTests.ASampleOffACreature_IsDrawnWarm" methodname="ASampleOffACreature_IsDrawnWarm" classname="EchoMaze.Tests.CreatureTintTests" runstate="Runnable" seed="1785708486" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.002922" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1033" name="ASampleOffTheRoom_IsDrawnCyan" fullname="EchoMaze.Tests.CreatureTintTests.ASampleOffTheRoom_IsDrawnCyan" methodname="ASampleOffTheRoom_IsDrawnCyan" classname="EchoMaze.Tests.CreatureTintTests" runstate="Runnable" seed="727844791" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.001151" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1034" name="OneConeWithBoth_TintsEachSurfaceOnItsOwn" fullname="EchoMaze.Tests.CreatureTintTests.OneConeWithBoth_TintsEachSurfaceOnItsOwn" methodname="OneConeWithBoth_TintsEachSurfaceOnItsOwn" classname="EchoMaze.Tests.CreatureTintTests" runstate="Runnable" seed="1455732928" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.001081" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1035" name="TheTwoTones_AreActuallyDifferentHues" fullname="EchoMaze.Tests.CreatureTintTests.TheTwoTones_AreActuallyDifferentHues" methodname="TheTwoTones_AreActuallyDifferentHues" classname="EchoMaze.Tests.CreatureTintTests" runstate="Runnable" seed="112193782" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000346" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1036" name="EdgeBreakTests" fullname="EchoMaze.Tests.EdgeBreakTests" classname="EchoMaze.Tests.EdgeBreakTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.005560" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1040" name="AClutteredCone_DoesNotPaintEverythingBright" fullname="EchoMaze.Tests.EdgeBreakTests.AClutteredCone_DoesNotPaintEverythingBright" methodname="AClutteredCone_DoesNotPaintEverythingBright" classname="EchoMaze.Tests.EdgeBreakTests" runstate="Runnable" seed="1635239450" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.001858" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1039" name="ACornerKink_FlaresAndStaysConnected" fullname="EchoMaze.Tests.EdgeBreakTests.ACornerKink_FlaresAndStaysConnected" methodname="ACornerKink_FlaresAndStaysConnected" classname="EchoMaze.Tests.EdgeBreakTests" runstate="Runnable" seed="540606911" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000611" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1037" name="AStepBetweenTwoSurfaces_BreaksTheLine" fullname="EchoMaze.Tests.EdgeBreakTests.AStepBetweenTwoSurfaces_BreaksTheLine" methodname="AStepBetweenTwoSurfaces_BreaksTheLine" classname="EchoMaze.Tests.EdgeBreakTests" runstate="Runnable" seed="1028439569" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000631" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1038" name="AStepBetweenTwoSurfaces_EarnsNoBrightness" fullname="EchoMaze.Tests.EdgeBreakTests.AStepBetweenTwoSurfaces_EarnsNoBrightness" methodname="AStepBetweenTwoSurfaces_EarnsNoBrightness" classname="EchoMaze.Tests.EdgeBreakTests" runstate="Runnable" seed="546720803" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000644" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestSuite" id="1130" name="EditMode" fullname="EchoMaze.Tests.EditMode" runstate="Runnable" testcasecount="7" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.007106" total="7" passed="7" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-suite type="TestFixture" id="1119" name="MicDeviceChoiceTests" fullname="EchoMaze.Tests.EditMode.MicDeviceChoiceTests" classname="EchoMaze.Tests.EditMode.MicDeviceChoiceTests" runstate="Runnable" testcasecount="7" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.005443" total="7" passed="7" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1125" name="AListThatIsAllMonitors_StillOpensSomething" fullname="EchoMaze.Tests.EditMode.MicDeviceChoiceTests.AListThatIsAllMonitors_StillOpensSomething" methodname="AListThatIsAllMonitors_StillOpensSomething" classname="EchoMaze.Tests.EditMode.MicDeviceChoiceTests" runstate="Runnable" seed="1965213804" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000339" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1122" name="AnEmptyMachine_YieldsNoDevice" fullname="EchoMaze.Tests.EditMode.MicDeviceChoiceTests.AnEmptyMachine_YieldsNoDevice" methodname="AnEmptyMachine_YieldsNoDevice" classname="EchoMaze.Tests.EditMode.MicDeviceChoiceTests" runstate="Runnable" seed="69645012" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000367" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1123" name="ASavedNameThatIsStillOnTheMachine_IsUsedExactly" fullname="EchoMaze.Tests.EditMode.MicDeviceChoiceTests.ASavedNameThatIsStillOnTheMachine_IsUsedExactly" methodname="ASavedNameThatIsStillOnTheMachine_IsUsedExactly" classname="EchoMaze.Tests.EditMode.MicDeviceChoiceTests" runstate="Runnable" seed="601321452" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000153" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1124" name="ASavedNameThatLeftTheMachine_FallsBackToAuto" fullname="EchoMaze.Tests.EditMode.MicDeviceChoiceTests.ASavedNameThatLeftTheMachine_FallsBackToAuto" methodname="ASavedNameThatLeftTheMachine_FallsBackToAuto" classname="EchoMaze.Tests.EditMode.MicDeviceChoiceTests" runstate="Runnable" seed="1617425552" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000098" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1121" name="Auto_IsCaseInsensitive" fullname="EchoMaze.Tests.EditMode.MicDeviceChoiceTests.Auto_IsCaseInsensitive" methodname="Auto_IsCaseInsensitive" classname="EchoMaze.Tests.EditMode.MicDeviceChoiceTests" runstate="Runnable" seed="632229203" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000101" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1120" name="Auto_SkipsEveryMonitor" fullname="EchoMaze.Tests.EditMode.MicDeviceChoiceTests.Auto_SkipsEveryMonitor" methodname="Auto_SkipsEveryMonitor" classname="EchoMaze.Tests.EditMode.MicDeviceChoiceTests" runstate="Runnable" seed="1677011449" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000200" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1126" name="ThePickerCycle_VisitsAutoAndEveryDeviceOnce" fullname="EchoMaze.Tests.EditMode.MicDeviceChoiceTests.ThePickerCycle_VisitsAutoAndEveryDeviceOnce" methodname="ThePickerCycle_VisitsAutoAndEveryDeviceOnce" classname="EchoMaze.Tests.EditMode.MicDeviceChoiceTests" runstate="Runnable" seed="742640602" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000325" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+          </test-suite>
+          <test-suite type="TestFixture" id="1041" name="MazeGridTests" fullname="EchoMaze.Tests.MazeGridTests" classname="EchoMaze.Tests.MazeGridTests" runstate="Runnable" testcasecount="12" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.077043" total="12" passed="12" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1047" name="CellOf_IsTheInverseOfWorldOfCell" fullname="EchoMaze.Tests.MazeGridTests.CellOf_IsTheInverseOfWorldOfCell" methodname="CellOf_IsTheInverseOfWorldOfCell" classname="EchoMaze.Tests.MazeGridTests" runstate="Runnable" seed="1102414574" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.009649" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1050" name="Level01_EveryWalkableCellIsReachableWithTheDoorOpen" fullname="EchoMaze.Tests.MazeGridTests.Level01_EveryWalkableCellIsReachableWithTheDoorOpen" methodname="Level01_EveryWalkableCellIsReachableWithTheDoorOpen" classname="EchoMaze.Tests.MazeGridTests" runstate="Runnable" seed="979129452" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.052666" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1048" name="Level01_HasExactlyOneSpawnAndOneExit" fullname="EchoMaze.Tests.MazeGridTests.Level01_HasExactlyOneSpawnAndOneExit" methodname="Level01_HasExactlyOneSpawnAndOneExit" classname="EchoMaze.Tests.MazeGridTests" runstate="Runnable" seed="1003020061" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.001737" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1051" name="Level01_PillarsAndBoxesBlockTheRoute" fullname="EchoMaze.Tests.MazeGridTests.Level01_PillarsAndBoxesBlockTheRoute" methodname="Level01_PillarsAndBoxesBlockTheRoute" classname="EchoMaze.Tests.MazeGridTests" runstate="Runnable" seed="1388587794" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000609" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1049" name="Level01_TheDoorGatesTheExit" fullname="EchoMaze.Tests.MazeGridTests.Level01_TheDoorGatesTheExit" methodname="Level01_TheDoorGatesTheExit" classname="EchoMaze.Tests.MazeGridTests" runstate="Runnable" seed="1406650163" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000361" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1046" name="OutsideTheMapIsWall" fullname="EchoMaze.Tests.MazeGridTests.OutsideTheMapIsWall" methodname="OutsideTheMapIsWall" classname="EchoMaze.Tests.MazeGridTests" runstate="Runnable" seed="266842881" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000384" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1042" name="Parse_IgnoresCommentsAndBlankLines" fullname="EchoMaze.Tests.MazeGridTests.Parse_IgnoresCommentsAndBlankLines" methodname="Parse_IgnoresCommentsAndBlankLines" classname="EchoMaze.Tests.MazeGridTests" runstate="Runnable" seed="105078197" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000211" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1045" name="Parse_RejectsAnEmptyFile" fullname="EchoMaze.Tests.MazeGridTests.Parse_RejectsAnEmptyFile" methodname="Parse_RejectsAnEmptyFile" classname="EchoMaze.Tests.MazeGridTests" runstate="Runnable" seed="1270448994" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.001320" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1044" name="Parse_RejectsAnUnknownCharacter" fullname="EchoMaze.Tests.MazeGridTests.Parse_RejectsAnUnknownCharacter" methodname="Parse_RejectsAnUnknownCharacter" classname="EchoMaze.Tests.MazeGridTests" runstate="Runnable" seed="660593477" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.001222" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1043" name="Parse_RejectsARaggedRow" fullname="EchoMaze.Tests.MazeGridTests.Parse_RejectsARaggedRow" methodname="Parse_RejectsARaggedRow" classname="EchoMaze.Tests.MazeGridTests" runstate="Runnable" seed="1046031791" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000240" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1052" name="WallRects_CoverEveryWallCellExactlyOnce" fullname="EchoMaze.Tests.MazeGridTests.WallRects_CoverEveryWallCellExactlyOnce" methodname="WallRects_CoverEveryWallCellExactlyOnce" classname="EchoMaze.Tests.MazeGridTests" runstate="Runnable" seed="1420592504" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.004839" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1053" name="WallRects_MergeRunsIntoLongSheets" fullname="EchoMaze.Tests.MazeGridTests.WallRects_MergeRunsIntoLongSheets" methodname="WallRects_MergeRunsIntoLongSheets" classname="EchoMaze.Tests.MazeGridTests" runstate="Runnable" seed="436575530" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000470" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1054" name="MovementAndHearingTests" fullname="EchoMaze.Tests.MovementAndHearingTests" classname="EchoMaze.Tests.MovementAndHearingTests" runstate="Runnable" testcasecount="8" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.007109" total="8" passed="8" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1062" name="Defaults_KeepTheCrawlerOutrunnable" fullname="EchoMaze.Tests.MovementAndHearingTests.Defaults_KeepTheCrawlerOutrunnable" methodname="Defaults_KeepTheCrawlerOutrunnable" classname="EchoMaze.Tests.MovementAndHearingTests" runstate="Runnable" seed="688748852" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000498" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1056" name="HearingRadius_GrowsWithLoudness" fullname="EchoMaze.Tests.MovementAndHearingTests.HearingRadius_GrowsWithLoudness" methodname="HearingRadius_GrowsWithLoudness" classname="EchoMaze.Tests.MovementAndHearingTests" runstate="Runnable" seed="539447971" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000238" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1055" name="HearingRadius_IsRhoTimesTheVisibleReach" fullname="EchoMaze.Tests.MovementAndHearingTests.HearingRadius_IsRhoTimesTheVisibleReach" methodname="HearingRadius_IsRhoTimesTheVisibleReach" classname="EchoMaze.Tests.MovementAndHearingTests" runstate="Runnable" seed="345802051" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000183" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1058" name="ManualEcho_AQuickTapIsQuieterThanAFullCharge" fullname="EchoMaze.Tests.MovementAndHearingTests.ManualEcho_AQuickTapIsQuieterThanAFullCharge" methodname="ManualEcho_AQuickTapIsQuieterThanAFullCharge" classname="EchoMaze.Tests.MovementAndHearingTests" runstate="Runnable" seed="644315177" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000240" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1059" name="ManualEcho_ChargeIsMonotonicInHoldTime" fullname="EchoMaze.Tests.MovementAndHearingTests.ManualEcho_ChargeIsMonotonicInHoldTime" methodname="ManualEcho_ChargeIsMonotonicInHoldTime" classname="EchoMaze.Tests.MovementAndHearingTests" runstate="Runnable" seed="350323070" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000745" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1061" name="OnValidate_KeepsTheSilentStepSlowerThanWalking" fullname="EchoMaze.Tests.MovementAndHearingTests.OnValidate_KeepsTheSilentStepSlowerThanWalking" methodname="OnValidate_KeepsTheSilentStepSlowerThanWalking" classname="EchoMaze.Tests.MovementAndHearingTests" runstate="Runnable" seed="931078026" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000596" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1060" name="OnValidate_KeepsTheWaveFasterThanThePlayerCanRun" fullname="EchoMaze.Tests.MovementAndHearingTests.OnValidate_KeepsTheWaveFasterThanThePlayerCanRun" methodname="OnValidate_KeepsTheWaveFasterThanThePlayerCanRun" classname="EchoMaze.Tests.MovementAndHearingTests" runstate="Runnable" seed="586791119" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000746" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1057" name="WhileRhoIsBelowOne_PingingAlwaysRevealsLessThanItShows" fullname="EchoMaze.Tests.MovementAndHearingTests.WhileRhoIsBelowOne_PingingAlwaysRevealsLessThanItShows" methodname="WhileRhoIsBelowOne_PingingAlwaysRevealsLessThanItShows" classname="EchoMaze.Tests.MovementAndHearingTests" runstate="Runnable" seed="1959343239" result="Passed" start-time="2026-10-29 19:48:22Z" end-time="2026-10-29 19:48:22Z" duration="0.000527" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1063" name="NoiseGateTests" fullname="EchoMaze.Tests.NoiseGateTests" classname="EchoMaze.Tests.NoiseGateTests" runstate="Runnable" testcasecount="7" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.003437" total="7" passed="7" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1067" name="ASecondRise_AfterARealPause_IsASecondEvent" fullname="EchoMaze.Tests.NoiseGateTests.ASecondRise_AfterARealPause_IsASecondEvent" methodname="ASecondRise_AfterARealPause_IsASecondEvent" classname="EchoMaze.Tests.NoiseGateTests" runstate="Runnable" seed="1097283205" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000576" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1070" name="Constructor_FixesAnUnsortedThresholdPair" fullname="EchoMaze.Tests.NoiseGateTests.Constructor_FixesAnUnsortedThresholdPair" methodname="Constructor_FixesAnUnsortedThresholdPair" classname="EchoMaze.Tests.NoiseGateTests" runstate="Runnable" seed="1485590446" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000192" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1066" name="DipInsideTheHysteresisBand_KeepsTheSameEvent" fullname="EchoMaze.Tests.NoiseGateTests.DipInsideTheHysteresisBand_KeepsTheSameEvent" methodname="DipInsideTheHysteresisBand_KeepsTheSameEvent" classname="EchoMaze.Tests.NoiseGateTests" runstate="Runnable" seed="1659052754" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000168" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1069" name="LoudnessIsHeldAcrossAShortGap" fullname="EchoMaze.Tests.NoiseGateTests.LoudnessIsHeldAcrossAShortGap" methodname="LoudnessIsHeldAcrossAShortGap" classname="EchoMaze.Tests.NoiseGateTests" runstate="Runnable" seed="463094854" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000225" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1068" name="LoudnessMapsWhisperToShout" fullname="EchoMaze.Tests.NoiseGateTests.LoudnessMapsWhisperToShout" methodname="LoudnessMapsWhisperToShout" classname="EchoMaze.Tests.NoiseGateTests" runstate="Runnable" seed="399075689" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000247" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1065" name="OneRise_MakesExactlyOneEvent" fullname="EchoMaze.Tests.NoiseGateTests.OneRise_MakesExactlyOneEvent" methodname="OneRise_MakesExactlyOneEvent" classname="EchoMaze.Tests.NoiseGateTests" runstate="Runnable" seed="508652784" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000221" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1064" name="Silence_NeverOpens" fullname="EchoMaze.Tests.NoiseGateTests.Silence_NeverOpens" methodname="Silence_NeverOpens" classname="EchoMaze.Tests.NoiseGateTests" runstate="Runnable" seed="2057690303" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000204" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1071" name="PlayerFacingTests" fullname="EchoMaze.Tests.PlayerFacingTests" classname="EchoMaze.Tests.PlayerFacingTests" runstate="Runnable" testcasecount="19" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.009248" total="19" passed="19" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1078" name="ACursorCrossingDueLeft_KeepsFacingLeftAllTheWayAcross" fullname="EchoMaze.Tests.PlayerFacingTests.ACursorCrossingDueLeft_KeepsFacingLeftAllTheWayAcross" methodname="ACursorCrossingDueLeft_KeepsFacingLeftAllTheWayAcross" classname="EchoMaze.Tests.PlayerFacingTests" runstate="Runnable" seed="2133041807" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.001126" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1082" name="AMovementInsideTheDeadzone_KeepsTheAimPose" fullname="EchoMaze.Tests.PlayerFacingTests.AMovementInsideTheDeadzone_KeepsTheAimPose" methodname="AMovementInsideTheDeadzone_KeepsTheAimPose" classname="EchoMaze.Tests.PlayerFacingTests" runstate="Runnable" seed="58278283" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000282" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1075" name="AnEdgeExactlyOnTheSlope_BelongsToTheCardinal" fullname="EchoMaze.Tests.PlayerFacingTests.AnEdgeExactlyOnTheSlope_BelongsToTheCardinal" methodname="AnEdgeExactlyOnTheSlope_BelongsToTheCardinal" classname="EchoMaze.Tests.PlayerFacingTests" runstate="Runnable" seed="1079725691" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000227" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1090" name="AStaleOrMissingStepTimer_ParksTheBounceAtZero" fullname="EchoMaze.Tests.PlayerFacingTests.AStaleOrMissingStepTimer_ParksTheBounceAtZero" methodname="AStaleOrMissingStepTimer_ParksTheBounceAtZero" classname="EchoMaze.Tests.PlayerFacingTests" runstate="Runnable" seed="962332165" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000187" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1088" name="AStepThatJustFired_HasZeroPhase" fullname="EchoMaze.Tests.PlayerFacingTests.AStepThatJustFired_HasZeroPhase" methodname="AStepThatJustFired_HasZeroPhase" classname="EchoMaze.Tests.PlayerFacingTests" runstate="Runnable" seed="798690229" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000094" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1081" name="AStillPlayer_FacesItsAim" fullname="EchoMaze.Tests.PlayerFacingTests.AStillPlayer_FacesItsAim" methodname="AStillPlayer_FacesItsAim" classname="EchoMaze.Tests.PlayerFacingTests" runstate="Runnable" seed="260300542" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000109" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1079" name="ATurnAcrossTheSeam_TakesTheShortWayRound" fullname="EchoMaze.Tests.PlayerFacingTests.ATurnAcrossTheSeam_TakesTheShortWayRound" methodname="ATurnAcrossTheSeam_TakesTheShortWayRound" classname="EchoMaze.Tests.PlayerFacingTests" runstate="Runnable" seed="887433100" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000354" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1080" name="ATurnThatDoesNotCrossTheSeam_EasesLikeAPlainLerp" fullname="EchoMaze.Tests.PlayerFacingTests.ATurnThatDoesNotCrossTheSeam_EasesLikeAPlainLerp" methodname="ATurnThatDoesNotCrossTheSeam_EasesLikeAPlainLerp" classname="EchoMaze.Tests.PlayerFacingTests" runstate="Runnable" seed="869229316" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000133" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1077" name="BothEndsOfTheAtan2Range_AreTheSameHeading" fullname="EchoMaze.Tests.PlayerFacingTests.BothEndsOfTheAtan2Range_AreTheSameHeading" methodname="BothEndsOfTheAtan2Range_AreTheSameHeading" classname="EchoMaze.Tests.PlayerFacingTests" runstate="Runnable" seed="1449085625" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000179" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1076" name="EveryDegree_MatchesTheSectorTable" fullname="EchoMaze.Tests.PlayerFacingTests.EveryDegree_MatchesTheSectorTable" methodname="EveryDegree_MatchesTheSectorTable" classname="EchoMaze.Tests.PlayerFacingTests" runstate="Runnable" seed="1520652600" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.001214" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1085" name="EveryPose_OwnsTwentyTwoDegreesEitherSideOfItsOwnCentre" fullname="EchoMaze.Tests.PlayerFacingTests.EveryPose_OwnsTwentyTwoDegreesEitherSideOfItsOwnCentre" methodname="EveryPose_OwnsTwentyTwoDegreesEitherSideOfItsOwnCentre" classname="EchoMaze.Tests.PlayerFacingTests" runstate="Runnable" seed="1060166026" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000933" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1089" name="Phase_RunsUpToButNeverPastOne" fullname="EchoMaze.Tests.PlayerFacingTests.Phase_RunsUpToButNeverPastOne" methodname="Phase_RunsUpToButNeverPastOne" classname="EchoMaze.Tests.PlayerFacingTests" runstate="Runnable" seed="1640190889" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000224" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1086" name="TheEightCentres_AreFortyFiveDegreesApartAndEachIsItsOwnNeighbour" fullname="EchoMaze.Tests.PlayerFacingTests.TheEightCentres_AreFortyFiveDegreesApartAndEachIsItsOwnNeighbour" methodname="TheEightCentres_AreFortyFiveDegreesApartAndEachIsItsOwnNeighbour" classname="EchoMaze.Tests.PlayerFacingTests" runstate="Runnable" seed="1074676177" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000604" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1072" name="TheFourCardinals_OfTheAimVector_GetTheFourCardinalPoses" fullname="EchoMaze.Tests.PlayerFacingTests.TheFourCardinals_OfTheAimVector_GetTheFourCardinalPoses" methodname="TheFourCardinals_OfTheAimVector_GetTheFourCardinalPoses" classname="EchoMaze.Tests.PlayerFacingTests" runstate="Runnable" seed="1560300997" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000180" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1073" name="TheFourDiagonals_GetTheFourDiagonalPoses" fullname="EchoMaze.Tests.PlayerFacingTests.TheFourDiagonals_GetTheFourDiagonalPoses" methodname="TheFourDiagonals_GetTheFourDiagonalPoses" classname="EchoMaze.Tests.PlayerFacingTests" runstate="Runnable" seed="325721447" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000180" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1084" name="TheMoveDeadzone_IsTheFootstepThreshold" fullname="EchoMaze.Tests.PlayerFacingTests.TheMoveDeadzone_IsTheFootstepThreshold" methodname="TheMoveDeadzone_IsTheFootstepThreshold" classname="EchoMaze.Tests.PlayerFacingTests" runstate="Runnable" seed="976834768" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000089" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1074" name="TheSectorEdges_SitAtTwentyTwoAndSixtySevenDegrees" fullname="EchoMaze.Tests.PlayerFacingTests.TheSectorEdges_SitAtTwentyTwoAndSixtySevenDegrees" methodname="TheSectorEdges_SitAtTwentyTwoAndSixtySevenDegrees" classname="EchoMaze.Tests.PlayerFacingTests" runstate="Runnable" seed="1344316857" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000250" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1087" name="TheSectorHalfWidth_IsWhatTheSectorsAreActuallyWorth" fullname="EchoMaze.Tests.PlayerFacingTests.TheSectorHalfWidth_IsWhatTheSectorsAreActuallyWorth" methodname="TheSectorHalfWidth_IsWhatTheSectorsAreActuallyWorth" classname="EchoMaze.Tests.PlayerFacingTests" runstate="Runnable" seed="1142268178" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000088" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1083" name="WalkingAwayFromItsOwnAim_FacesWhereItIsGoing" fullname="EchoMaze.Tests.PlayerFacingTests.WalkingAwayFromItsOwnAim_FacesWhereItIsGoing" methodname="WalkingAwayFromItsOwnAim_FacesWhereItIsGoing" classname="EchoMaze.Tests.PlayerFacingTests" runstate="Runnable" seed="782685184" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000128" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1091" name="PlayerPoseImportTests" fullname="EchoMaze.Tests.PlayerPoseImportTests" classname="EchoMaze.Tests.PlayerPoseImportTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.013916" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-suite type="ParameterizedMethod" id="1097" name="AWiredPose_LandsAtTheFootprintTheRoomWasTunedFor" fullname="EchoMaze.Tests.PlayerPoseImportTests.AWiredPose_LandsAtTheFootprintTheRoomWasTunedFor" classname="EchoMaze.Tests.PlayerPoseImportTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.012043" total="5" passed="5" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1092" name="AWiredPose_LandsAtTheFootprintTheRoomWasTunedFor(&quot;Assets/Art/Sprites/Player/Player_front.png&quot;)" fullname="EchoMaze.Tests.PlayerPoseImportTests.AWiredPose_LandsAtTheFootprintTheRoomWasTunedFor(&quot;Assets/Art/Sprites/Player/Player_front.png&quot;)" methodname="AWiredPose_LandsAtTheFootprintTheRoomWasTunedFor" classname="EchoMaze.Tests.PlayerPoseImportTests" runstate="Runnable" seed="2045413297" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.003136" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1093" name="AWiredPose_LandsAtTheFootprintTheRoomWasTunedFor(&quot;Assets/Art/Sprites/Player/Player_back.png&quot;)" fullname="EchoMaze.Tests.PlayerPoseImportTests.AWiredPose_LandsAtTheFootprintTheRoomWasTunedFor(&quot;Assets/Art/Sprites/Player/Player_back.png&quot;)" methodname="AWiredPose_LandsAtTheFootprintTheRoomWasTunedFor" classname="EchoMaze.Tests.PlayerPoseImportTests" runstate="Runnable" seed="1202096397" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.001961" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1094" name="AWiredPose_LandsAtTheFootprintTheRoomWasTunedFor(&quot;Assets/Art/Sprites/Player/Player_side.png&quot;)" fullname="EchoMaze.Tests.PlayerPoseImportTests.AWiredPose_LandsAtTheFootprintTheRoomWasTunedFor(&quot;Assets/Art/Sprites/Player/Player_side.png&quot;)" methodname="AWiredPose_LandsAtTheFootprintTheRoomWasTunedFor" classname="EchoMaze.Tests.PlayerPoseImportTests" runstate="Runnable" seed="1684595968" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.001691" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1095" name="AWiredPose_LandsAtTheFootprintTheRoomWasTunedFor(&quot;Assets/Art/Sprites/Player/Player_34_front.png&quot;)" fullname="EchoMaze.Tests.PlayerPoseImportTests.AWiredPose_LandsAtTheFootprintTheRoomWasTunedFor(&quot;Assets/Art/Sprites/Player/Player_34_front.png&quot;)" methodname="AWiredPose_LandsAtTheFootprintTheRoomWasTunedFor" classname="EchoMaze.Tests.PlayerPoseImportTests" runstate="Runnable" seed="307698884" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.001963" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1096" name="AWiredPose_LandsAtTheFootprintTheRoomWasTunedFor(&quot;Assets/Art/Sprites/Player/Player_34_back.png&quot;)" fullname="EchoMaze.Tests.PlayerPoseImportTests.AWiredPose_LandsAtTheFootprintTheRoomWasTunedFor(&quot;Assets/Art/Sprites/Player/Player_34_back.png&quot;)" methodname="AWiredPose_LandsAtTheFootprintTheRoomWasTunedFor" classname="EchoMaze.Tests.PlayerPoseImportTests" runstate="Runnable" seed="1336578906" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.002200" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+            <test-case id="1098" name="PlaceholderDot_StillFitsTheSameFootprint" fullname="EchoMaze.Tests.PlayerPoseImportTests.PlaceholderDot_StillFitsTheSameFootprint" methodname="PlaceholderDot_StillFitsTheSameFootprint" classname="EchoMaze.Tests.PlayerPoseImportTests" runstate="Runnable" seed="2068601398" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.001103" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1099" name="SurfaceReadTests" fullname="EchoMaze.Tests.SurfaceReadTests" classname="EchoMaze.Tests.SurfaceReadTests" runstate="Runnable" testcasecount="9" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.008949" total="9" passed="9" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1103" name="Brightness_NeverExceedsBasePlusGain" fullname="EchoMaze.Tests.SurfaceReadTests.Brightness_NeverExceedsBasePlusGain" methodname="Brightness_NeverExceedsBasePlusGain" classname="EchoMaze.Tests.SurfaceReadTests" runstate="Runnable" seed="1218574638" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.001963" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1102" name="Corner_IsBrighterThanAPillar" fullname="EchoMaze.Tests.SurfaceReadTests.Corner_IsBrighterThanAPillar" methodname="Corner_IsBrighterThanAPillar" classname="EchoMaze.Tests.SurfaceReadTests" runstate="Runnable" seed="1534839474" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.001072" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1108" name="DifferentSeed_GivesADifferentPattern" fullname="EchoMaze.Tests.SurfaceReadTests.DifferentSeed_GivesADifferentPattern" methodname="DifferentSeed_GivesADifferentPattern" classname="EchoMaze.Tests.SurfaceReadTests" runstate="Runnable" seed="762976727" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000701" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1100" name="FlatWall_SitsAtTheBaseBrightness" fullname="EchoMaze.Tests.SurfaceReadTests.FlatWall_SitsAtTheBaseBrightness" methodname="FlatWall_SitsAtTheBaseBrightness" classname="EchoMaze.Tests.SurfaceReadTests" runstate="Runnable" seed="1788649643" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000577" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1105" name="Fracture_DropsSegmentsAcrossAFlatRun" fullname="EchoMaze.Tests.SurfaceReadTests.Fracture_DropsSegmentsAcrossAFlatRun" methodname="Fracture_DropsSegmentsAcrossAFlatRun" classname="EchoMaze.Tests.SurfaceReadTests" runstate="Runnable" seed="2087542479" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000508" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1107" name="Fracture_IsDeterministicFromTheSeed" fullname="EchoMaze.Tests.SurfaceReadTests.Fracture_IsDeterministicFromTheSeed" methodname="Fracture_IsDeterministicFromTheSeed" classname="EchoMaze.Tests.SurfaceReadTests" runstate="Runnable" seed="226062486" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000714" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1106" name="Fracture_NeverBreaksAcrossAFeature" fullname="EchoMaze.Tests.SurfaceReadTests.Fracture_NeverBreaksAcrossAFeature" methodname="Fracture_NeverBreaksAcrossAFeature" classname="EchoMaze.Tests.SurfaceReadTests" runstate="Runnable" seed="1563001041" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000584" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1104" name="Misses_GetNoBrightness" fullname="EchoMaze.Tests.SurfaceReadTests.Misses_GetNoBrightness" methodname="Misses_GetNoBrightness" classname="EchoMaze.Tests.SurfaceReadTests" runstate="Runnable" seed="224152414" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000557" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1101" name="Pillar_IsBrighterThanAFlatWall" fullname="EchoMaze.Tests.SurfaceReadTests.Pillar_IsBrighterThanAFlatWall" methodname="Pillar_IsBrighterThanAFlatWall" classname="EchoMaze.Tests.SurfaceReadTests" runstate="Runnable" seed="354355280" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000598" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1109" name="VoiceCalibrationMathTests" fullname="EchoMaze.Tests.VoiceCalibrationMathTests" classname="EchoMaze.Tests.VoiceCalibrationMathTests" runstate="Runnable" testcasecount="9" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.004547" total="9" passed="9" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1111" name="ACallThatIsRealButTiny_IsStillRefusedRatherThanGivenAGateItCannotOpen" fullname="EchoMaze.Tests.VoiceCalibrationMathTests.ACallThatIsRealButTiny_IsStillRefusedRatherThanGivenAGateItCannotOpen" methodname="ACallThatIsRealButTiny_IsStillRefusedRatherThanGivenAGateItCannotOpen" classname="EchoMaze.Tests.VoiceCalibrationMathTests" runstate="Runnable" seed="1759688165" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000722" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1110" name="ARoomThatWasNeverspokenIn_IsRefused" fullname="EchoMaze.Tests.VoiceCalibrationMathTests.ARoomThatWasNeverspokenIn_IsRefused" methodname="ARoomThatWasNeverspokenIn_IsRefused" classname="EchoMaze.Tests.VoiceCalibrationMathTests" runstate="Runnable" seed="1870257197" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000299" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1114" name="AShoutAboveTheCalibratedCallGivesMoreReachButNotMoreThanOne" fullname="EchoMaze.Tests.VoiceCalibrationMathTests.AShoutAboveTheCalibratedCallGivesMoreReachButNotMoreThanOne" methodname="AShoutAboveTheCalibratedCallGivesMoreReachButNotMoreThanOne" classname="EchoMaze.Tests.VoiceCalibrationMathTests" runstate="Runnable" seed="593295727" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000306" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1118" name="NoProfileRefused" fullname="EchoMaze.Tests.VoiceCalibrationMathTests.NoProfileRefused" methodname="NoProfileRefused" classname="EchoMaze.Tests.VoiceCalibrationMathTests" runstate="Runnable" seed="112563615" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000173" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1117" name="RunningPeakKeepsTheLoudestWindow" fullname="EchoMaze.Tests.VoiceCalibrationMathTests.RunningPeakKeepsTheLoudestWindow" methodname="RunningPeakKeepsTheLoudestWindow" classname="EchoMaze.Tests.VoiceCalibrationMathTests" runstate="Runnable" seed="1739368197" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000236" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1112" name="TheCalibratedCallOpensTheGateItProduced" fullname="EchoMaze.Tests.VoiceCalibrationMathTests.TheCalibratedCallOpensTheGateItProduced" methodname="TheCalibratedCallOpensTheGateItProduced" classname="EchoMaze.Tests.VoiceCalibrationMathTests" runstate="Runnable" seed="1861620560" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000236" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1113" name="TheCalibratedCallReadsTheTargetLoudness" fullname="EchoMaze.Tests.VoiceCalibrationMathTests.TheCalibratedCallReadsTheTargetLoudness" methodname="TheCalibratedCallReadsTheTargetLoudness" classname="EchoMaze.Tests.VoiceCalibrationMathTests" runstate="Runnable" seed="1145297448" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000220" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1115" name="TheCloseThresholdIsAlwaysBelowTheOpenOne" fullname="EchoMaze.Tests.VoiceCalibrationMathTests.TheCloseThresholdIsAlwaysBelowTheOpenOne" methodname="TheCloseThresholdIsAlwaysBelowTheOpenOne" classname="EchoMaze.Tests.VoiceCalibrationMathTests" runstate="Runnable" seed="744782768" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000342" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1116" name="TheOpenThresholdStaysInsideItsOwnBand" fullname="EchoMaze.Tests.VoiceCalibrationMathTests.TheOpenThresholdStaysInsideItsOwnBand" methodname="TheOpenThresholdStaysInsideItsOwnBand" classname="EchoMaze.Tests.VoiceCalibrationMathTests" runstate="Runnable" seed="1952711823" result="Passed" start-time="2026-10-29 19:48:23Z" end-time="2026-10-29 19:48:23Z" duration="0.000245" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Saving results to: /home/ha/.config/unity3d/DefaultCompany/echo-maze/TestResults.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

@@ -7,6 +7,22 @@
 
 This file is the **living project history**: at the end of each day the ticked items and the week's status are recorded and committed here, and at the end of each week that same commit is tagged `v0.x`. Technical decisions: [DESIGN_DECISIONS.md](DESIGN_DECISIONS.md). Balancing parameters: [TUNING.md](TUNING.md).
 
+## Project status — 2026-10-29
+
+**The short version lives in [STATUS.md](STATUS.md): menu → one real level → victory is playable; the hunt
+systems are next.** This plan remains the schedule and the reasoning behind it.
+
+| Stage | What is done | What is not done yet |
+|---|---|---|
+| **M0 / week 1** | project, git, arc math, renderer, tests, tuning asset | — |
+| **M1 / this stage** | `Boot` menu, in-game mic picker and calibration page, `Level01_Maze` from a text file, one door, sanctuary checkpoint, glass floor, exit + victory panel, pause, death/retry, HUD, Linux player, **111 EditMode + 44 PlayMode tests**, menu/level/victory captures | a human readability session; the `v0.3-maze` tag |
+| **M2 / next** | — | `NoiseBoard` + `HeardBy`, suspicion / `EnemyBrain`, Listen mode, hollow, memory trace, landmark audio, the corridor as chapter two |
+
+**The scope decision of this stage:** the run is **one chapter**, not two. `Level02_Corridor` is built and
+playable in the editor, but it joins `GameFlow.chapterScenes` only when the hunt systems make it a chapter
+rather than a preview. That is what turns "the maze exit" into a victory instead of a corridor with no
+ending. When chapter two lands, the victory panel automatically says "2 rooms" because it reads the list.
+
 ## What changed in the plan, and why
 
 The plan used to be organised around the arc being *readable*. GDD v3.0 says the arc is only the entry point to a stealth game, so the schedule moved from "prove the visual language, then build a game" to "prove the visual language **inside a playable room as early as possible**". Consequences:
@@ -210,6 +226,25 @@ Two things visible in the editor Console that are not errors: the "assembly has 
 **Tests:** `HeardBy` as a pure function gets the heaviest EditMode coverage in the project (occlusion by a wall, blocked by a closed door, halved reach and masked hearing inside a noise zone, hollow multiplier, the Chase exemption, suspicion drain). The device choice too, as a pure selection rule over a supplied list: `Auto` skips every name containing `Monitor`, an empty list yields no device and the simulated fallback, and a saved name that is no longer in the list falls back to `Auto` instead of failing to open. PlayMode: a level-1 smoke test that walks a scripted route to the exit headless.
 **Cut list:** CREDITS → voice-loudness indicator → memory trace 5 s. Never calibration, Listen mode, checkpoint/retry, or the microphone dropdown — a player who cannot select their input on Linux cannot play at all.
 **Criterion:** a new player goes from `PLAY` to finishing level 1 with their voice on Linux, picks their own microphone from the list on the calibration page without touching a file, opens a door, hides in a hollow, dies once and returns to the sanctuary with the section reset — and nobody has explained a single control to them. Tag `v0.3-maze`.
+
+### Week 3 status — 2026-10-29 (M1 closed for the scope below)
+
+This is a **deliberate partial close**. The stage goal was the game's shape plus one real level with a
+victory; the systems that make the dark populated are still M2.
+
+| Item | State |
+|---|---|
+| `Boot` menu, `GameFlow`, `LevelSession`, victory panel, pause, death/retry, HUD | **done** |
+| In-game microphone picker + calibration page (`MicDeviceChoice`, `VoiceCalibrationMath`) | **done**; the player opened `Default Input Device` on this machine (3 devices), gate-on-voice still a human test |
+| `Level01_Maze` from `Assets/Data/Levels/Level01_Maze.txt`, door, sanctuary, glass, exit | **done** |
+| The run is one chapter, so the exit ends in victory | **done** (this stage's scope decision) |
+| A closed door blocks the body as well as the rays | **fixed 2026-10-29**; see `ISSUES.md` #8 |
+| `NoiseBoard`, `HeardBy`, suspicion, `EnemyBrain`, Listen mode, hollow, memory trace, landmark audio | **not built** — the week-3 work list above is the M2 backlog |
+| Human readability session, voice rows 3/6/7, `v0.3-maze` tag | **open** |
+
+The next stage is M2 in [STATUS.md](STATUS.md): one noise stream first, then the brain that listens to it,
+then the silence tools, then chapter two. Nothing in that list changes the level file's contract or the
+tuning asset's ownership.
 
 ---
 

@@ -52,8 +52,10 @@
 # Qoder CLI local config and session data
 .qoder/
 
-# Editor screenshots taken while tuning (QA evidence, re-takeable, never imported by Unity)
+# Editor and player screenshots taken while tuning (QA evidence, re-takeable, never imported by Unity).
+# The player's -echo-shot hook writes here; the files are shown to a human and thrown away, not committed.
 /Captures/
+/Screenshots/
 /Assets/Screenshots/
 # …but the folder lives under Assets/, so Unity imports a meta for the folder itself.
 # Ignoring it too keeps `git status` clean on a machine that has taken captures.

@@ -24,7 +24,8 @@ License activation: `Help ▸ Licensing`, once, in the graphical editor. We do n
 
 - [ ] Clone into a temporary folder, open with Unity 6000.6.3f1
 - [ ] Import finishes without errors; Console has zero red
-- [ ] `Assets/Scenes/Sandbox.unity` ▸ Play ▸ the mechanic works
+- [ ] `Assets/Scenes/Boot.unity` ▸ Play ▸ **begin** ▸ the maze's echo works ▸ the exit reaches the victory
+  panel. (`Sandbox` still exists as the ray-fan lab, but it is no longer the game.)
 - [ ] No "missing script" and no package override in Package Manager
 
 Before opening Unity, the clone can be checked from the shell: `cat ProjectSettings/ProjectVersion.txt` (must be 6000.6.3f1), `git lfs ls-files` (the `*` means the object really downloaded), `ls -l Tools/unity-yaml-merge.sh` (must stay executable), and comparing every `guid:` referenced in `Assets/Scenes` against the `guid:` lines of all `.meta` files plus `Library/PackageCache` — a reference that resolves in neither is a missing script. `merge.unityyamlmerge.driver` is expected to be **missing** here: it is local config, so [TEAM_SETUP.md](TEAM_SETUP.md) §3 runs first on every machine.

@@ -14,6 +14,8 @@ impression and gets moved back to the report.
 | 4 | The character is **drawn wider than it collides**, so it visibly sinks into walls, and the touch mark and the echo arc disagree about where the surface is | Medium — it is the root cause issue 1 worked around, and it decides whether the alcove pocket and the corridor gaps read honestly | open, needs a decision (art scale, hitbox growth, or accept) | week 3 as a decision, week 4 as a change |
 | 5 | The new 4096 art **is not mirror-symmetric**, so the `flipX` that faces the character left draws it lit from the wrong side | Medium — the left-facing pose is visibly inconsistent with the file the art team delivered for it, and issue 2's eight-pose plan was priced on the old symmetry | **closed** — turned out to be an export mistake, not a design decision: the lead re-exported the left profile and the pair is **bit-exact again (0 differing pixels)**, so the slot that had shipped for a day is reverted, `Player_side_left.png` is deleted, and `flipX` stands | week 3, done 2026-10-29 |
 | 6 | Moving the mouse across **due left** spins the character the long way round the compass — five pose changes for two degrees of cursor | Medium — it is the `Atan2` seam, and due left is the one direction on the fan that sits on it, so the gesture that read as broken was only ever broken on the left half | **closed** — the aim ease was `Mathf.LerpAngle` fed radians and it is a degrees API; `PlayerFacing.SmoothTowards` replaces it (`e7b4461`), three EditMode cases pin it (`c770cd4`), with a before/after pose trace | week 3, done 2026-10-29 |
+| 7 | The Linux player had **no Bloom**, and the editor could not reproduce it | Medium-high — the arcs are the game; a hard-edged line is a different game | **closed** — the volume profile serialised a `{fileID: 0}` instead of the Bloom component, so URP stripped the shader at build time; `EnsureVolumeProfile` now writes the component into the asset and repairs a loaded hole | week 3, done 2026-10-29 |
+| 8 | The tutorial's **closed door could be walked through** | High — it is the one piece of level geometry that teaches a decision; walking through it skips the level's lesson | **closed** — the two echo panels were laid *along* the corridor and left a `1.6 m` hole; they are now `0.8 m` panels with a `0.4 m` slit inside the cell, plus a body blocker on `Default`, a layer outside the echo mask | week 3, done 2026-10-29 |
 
 ---
 
@@ -390,6 +392,101 @@ up-left still produces exactly one turn, which is what the sweep in `TUNING.md` 
 to the movement — the art review's decision, gated by `dwellSeconds`. If that reads as flicker in play too, it is
 a design argument about which of the two heads should win a handover, not a bug, and it belongs in
 `DESIGN_DECISIONS.md`'s *Under decision* rather than here.
+
+---
+
+## 7 — The player build had no glow, and the editor could not show me why
+
+**Seen:** 2026-10-29, in `Player.log` of the first Linux build that contained the maze. Not in play, and that is
+the point of the entry: the mechanic this game is made of — the arc that *arrives* off a wall and lights up —
+was rendering in the build as a hard-edged line, and every way of looking at the project from inside the
+editor said everything was fine.
+
+**The measurement.** The shipped player logged, over a 45 second run, 868 lines of which 22 were
+`Shader 'Hidden/Universal Render Pipeline/Bloom' is not supported or has been stripped from the build (in
+'Bloom'). PostProcessing render passes will not execute.` The same four siblings were reported for
+GaussianDepthOfField, BokehDepthOfField, CameraMotionBlur and PaniniProjection — features the game does not
+use, so those are noise. Bloom is not noise: it is the whole `_Hdr` budget documented in `TUNING.md`.
+
+**The hypothesis that was wrong, tested and rejected.** The player was running OpenGL Core 4.5 on Mesa, and
+URP's Bloom is a plausible thing for a GL context to decline. Forcing Vulkan
+(`PlayerSettings.SetGraphicsAPIs(StandaloneLinux64, [Vulkan, OpenGLCore])`) moved the run onto the NVIDIA
+device at Vulkan 1.1, and the warning stayed **word for word**. The graphics API was reverted; a fix that
+changes the device and not the defect is a regression with a story attached.
+
+**What it actually was.** The build log had the answer in one number: every Bloom pass reported
+`Full variant space: 4 → After settings filtering: 2 → After built-in stripping: 2 → After scriptable
+stripping: 0`. URP's `ShaderBuildPreprocessor.GetSupportedFeaturesFromVolumes` searches every
+`t:VolumeProfile` asset under `Assets/` and, when none of them contains an **active** Bloom component, strips
+the shader's remaining variants — after which `shader.isSupported` is false in the player and the render pass
+declines to run. And `Assets/Settings/EchoVolumeProfile.asset` was:
+
+```
+components:
+  - {fileID: 0}
+```
+
+`SceneKit.EnsureVolumeProfile` had created the profile with `ScriptableObject.CreateInstance`, called
+`profile.Add<Bloom>(true)` on it, and only then `AssetDatabase.CreateAsset(profile, path)`. `Add` appends to
+the profile's in-memory list and does not put the component into any file; the component was an orphan, and
+the serialised list was written as a hole. **Three systems away from the cause, the symptom was the look of
+the game.**
+
+**Why the editor could not show this.** Two independent reasons, which is why it survived as long as it did.
+(1) The editor compiles shader variants on demand and never strips, so the Bloom pass always had something to
+run. (2) The bootstrap session that *created* the profile still held the live component in memory, so every
+play session started by that bootstrap glowed correctly; only a later load — which reads the file — got the
+hole. This is the same class of defect as the `objectReference: {fileID: 0}` note in `TEAM_SETUP.md` and the
+runtime `Sprite.Create` that had to become `Assets/Art/Sprites/UI_solid.png`: **an object a scene or asset
+references is only real once it has a GUID.**
+
+**The fix.** `EnsureVolumeProfile` now writes the profile first, then `Add`s the Bloom component and
+`AssetDatabase.AddObjectToAsset`s it, and — because the profile this shipped for weeks is exactly the hole —
+*repairs* a loaded profile that has no Bloom instead of returning the first one it finds, re-asserting the
+committed thresholds on every bootstrap run.
+
+**Acceptance, all three taken from files rather than from eyes.** `Logs/player-build3.log`: Bloom passes read
+`After scriptable stripping: 2` (both glcore and vulkan). The player re-run after the fix: **zero** lines in
+`Player.log` mentioning Bloom, 242 lines instead of 868, and the five remaining stripped-shader warnings are
+the depth-of-field, motion-blur and Panini passes the game does not use. `Assets/Settings/EchoVolumeProfile.asset`
+now contains the component with its values. The check is cheap enough to be a habit: grep the build log for
+`Bloom`, and grep the player log for it too — the second grep should find nothing.
+
+**What this does not settle:** that the arcs *look* right in the player. This machine has no screenshot path
+(`PIL.ImageGrab` fails on the X server and there is no capture CLI), so what is proven is that the Bloom pass
+executes with real variants, not the pixels it produces. A human still has to look at the build — the row is
+in `QA_CHECKLIST.md`, and the microphone half of the same run is rows 2 and 3 of `MIC_TEST_MATRIX.md`.
+
+---
+
+## 8 — The closed door was a hole you could walk through
+
+**Seen:** 2026-10-29, while auditing `Level01_Maze` against the "one real level with a victory" milestone.
+Not seen by a tester, because the level had not been walked end to end yet: the grid test said the exit was
+gated by the door, and the builder's colliders said otherwise.
+
+**Mechanism.** `MazeLevel.BuildDoors` laid the two echo panels *along* the corridor and sized them
+`0.6 × cellSize` at `±0.7 × cellSize`. In a `2 m` cell that is a gap of
+`2 · (0.7 − 0.3) · 2 = 1.6 m` — three times the `0.5 m` body diameter. The panel axis was also wrong for the
+shipped door, which sits on a corner cell with floor to the left and below and walls above and right: the
+"along X" branch put the panels on the wrong pair of sides. The level's `MazeGridTests` passed because the
+grid treats the door *cell* as blocked, which is the right contract; the colliders simply did not implement
+it.
+
+**The fix.**
+
+| | Change | Why this one |
+|---|---|---|
+| **a (shipped)** | Two echo panels **across** the corridor, `0.8 m` wide each at `±0.6 m`, inside the cell, leaving a `0.4 m` slit; plus a `1.8 × 1.8 m` body blocker on `Default` | The slit is narrower than the `0.5 m` body, so it blocks without hiding the door's two-fragment wave signature. `Default` is **outside** the echo mask (`World \| EchoTarget \| Enemy \| Absorber` = `m_Bits: 960`), so the body blocker is invisible to the fan and the wave still reads the slit |
+| b | Make the panels wider until they touch | The wave would read one solid wall; the door would stop being distinguishable from the wall band |
+| c | Put the body blocker on `EchoTarget` | The wave would read the blocker and the slit would disappear |
+| d | Rely on the grid test | The grid was already right; the bug was the scene builder, so the test could not see it |
+
+**Acceptance:** the gap is `0.4 m` against a `0.5 m` body; the body blocker is on a layer the echo filter
+does not include (`EchoDirector.echoLayerMask` is serialised as `960` in both chapter scenes); the exit is
+still unreachable with the door shut and reachable with it open (`MazeGridTests.Level01_TheDoorGatesTheExit`);
+and the rebuilt level is captured after the change. **Closed 2026-10-29** in the same commit that updates
+the milestone docs.
 
 ---
 

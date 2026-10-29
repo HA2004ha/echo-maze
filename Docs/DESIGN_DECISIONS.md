@@ -257,6 +257,26 @@ it is in. The name `SmoothTowards` is a grep, not a proof.
 - The ease rate (`18`/s) is documented in `TUNING.md` as `aimEase` rather than left as a literal, because the
   same eased number steers the echo cone: it is a gameplay lag, not just a presentation curve.
 
+## 2026-10-29 — The run is one chapter until the hunt exists
+
+**Decision:** `GameFlow.chapterScenes` is `{ Level01_Maze }` for this milestone. `Level02_Corridor` stays in
+the build and in the editor, but it is not a chapter a run can enter. The maze exit therefore ends the run
+and shows the victory panel.
+
+**Reason:** the stage's goal was the **shape** of the game — menu, a real level, a victory — not a second
+room with no ending. The corridor is a week-2 blockout with the Crawler's suspicion still a stub; chaining it
+after the maze would make "finish the game" mean walking through a room whose rules are not built yet. A run
+that ends at the maze is honest about what exists, and the victory panel reads the chapter list, so adding
+the corridor later makes it say "2 rooms" with no panel change.
+
+**Cost:** one line of the level list is a **scope promise**, not a permanent architecture. The corridor must
+re-enter the list in the same change that removes the hearing stub and gives it a loop, a hollow and a wake
+trigger (M2). Until then, a tester who wants to see the Crawler opens `Level02_Corridor` from the editor.
+The level file, the door, the sanctuary and the checkpoint remain valid chapter-one content.
+
+**Rule:** a chapter is in `chapterScenes` only when a player can finish it **and** its systems are the ones
+the GDD describes. A preview room is a scene, not a chapter.
+
 ## Under decision
 
 - **Does a human read wall / pillar / corner / hollow / Crawler from the arcs alone, at these thresholds?** Everything above is counted in samples; none of it is seen in eyes. This is the week-2 go/no-go and only the readability session on Linux can close it.
