@@ -57,6 +57,20 @@ namespace EchoMaze.Gameplay
         /// </summary>
         public float FootstepPeriod => DirectorProfile != null ? DirectorProfile.footstepInterval : 0f;
 
+        /// <summary>
+        /// How long Space has been held toward a manual shout, or -1 when no charge is in progress. The only
+        /// consumer is the aim cursor, which walks its head brightness up with this and has to peak on the
+        /// frame <see cref="ArcMath.ManualLoudness"/> does. Negative rather than zero, because "a tap that
+        /// has not been held at all" is a state the cursor draws differently from "no charge at all".
+        /// </summary>
+        public float ChargeSeconds => chargeStart >= 0f ? Time.time - chargeStart : -1f;
+
+        /// <summary>
+        /// Seconds of hold that take the manual echo from a tap to a full shout. Zero when the profile is
+        /// missing, which flattens the cursor's charge lift instead of dividing by nothing.
+        /// </summary>
+        public float ManualChargeSeconds => DirectorProfile != null ? DirectorProfile.manualChargeSeconds : 0f;
+
         public event Action Died;
 
         EchoTuningProfile DirectorProfile => director != null ? director.Profile : null;
