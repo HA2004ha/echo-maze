@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using EchoMaze.Core;
@@ -107,10 +108,19 @@ namespace EchoMaze.DebugTools
                 return;
             }
 
+            // ScreenCapture resolves a relative path against Application.dataPath (…_Data/), not the
+            // directory the player was launched from. The terminal recipe in Docs/STATUS.md means cwd.
+            string full = Path.GetFullPath(path);
+            string folder = Path.GetDirectoryName(full);
+            if (!string.IsNullOrEmpty(folder))
+            {
+                Directory.CreateDirectory(folder);
+            }
+
             var go = new GameObject("Dev Screen Capture");
             Object.DontDestroyOnLoad(go);
             var runner = go.AddComponent<Runner>();
-            runner.path = path;
+            runner.path = full;
             runner.scene = Value("-echo-scene");
             string delay = Value("-echo-shot-at");
             if (delay != null)

@@ -305,22 +305,40 @@ namespace EchoMaze.EditorTools
             Transform existing = parent.Find(name);
             if (existing != null)
             {
+                // Re-assert the copy as well as returning the object: a bootstrap that only repairs the
+                // wiring leaves a scene printing last week's controls, which is exactly what happened when
+                // the menu still said "E touch" after the action became a door/exit interact.
+                Text text = existing.Find("Label")?.GetComponent<Text>();
+                if (text != null)
+                {
+                    text.text = label;
+                }
+
                 return existing.GetComponent<Button>();
             }
 
             return AddButton(parent, name, label, anchored, size);
         }
 
-        static Text EnsureText(Transform parent, string name, string label, int size, Vector2 anchored,
+        static Text EnsureText(Transform parent, string name, string value, int size, Vector2 anchored,
                                Vector2 extent)
         {
             Transform existing = parent.Find(name);
             if (existing != null)
             {
-                return existing.GetComponent<Text>();
+                Text text = existing.GetComponent<Text>();
+                if (text != null)
+                {
+                    // Same rule as EnsureButton: the scene is generated, so the generated copy is the
+                    // source of truth on every rebuild. Runtime labels start empty and are filled later.
+                    text.text = value;
+                    text.fontSize = size;
+                }
+
+                return text;
             }
 
-            return AddText(parent, name, label, size, Cyan, anchored, extent);
+            return AddText(parent, name, value, size, Cyan, anchored, extent);
         }
 
         /// <summary>
@@ -391,7 +409,7 @@ namespace EchoMaze.EditorTools
             Text status = EnsureText(content, "Status", "", 24, new Vector2(0f, -260f), new Vector2(1400f, 44f));
             Text legend = EnsureText(content, "Legend",
                                      "WASD move   mouse aim   Space shout (hold to charge)   F pulse   " +
-                                     "Shift silent   E touch   Esc stop",
+                                     "Shift silent   E door / exit   Esc pause",
                                      22, new Vector2(0f, -330f), new Vector2(1600f, 44f));
             legend.color = new Color(Cyan.r, Cyan.g, Cyan.b, 0.62f);
 

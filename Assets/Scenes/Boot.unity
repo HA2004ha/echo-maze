@@ -2634,7 +2634,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: WASD move   mouse aim   Space shout (hold to charge)   F pulse   Shift silent   E touch   Esc stop
+  m_Text: WASD move   mouse aim   Space shout (hold to charge)   F pulse   Shift silent   E door / exit   Esc pause
 --- !u!222 &2030299716
 CanvasRenderer:
   m_ObjectHideFlags: 0
