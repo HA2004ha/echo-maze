@@ -150,15 +150,26 @@ onto a real edge (22.5°, ±2.4° = one pixel of shake at `aimNoiseRadius`) and 
 change in 30 frames; the diagonal-walk case now settles on `DiagonalUpRight` and holds it, which is the whole
 point of the issue.
 
-`PlayerVisual` gained `diagonalDownSprite` and `diagonalUpSprite`, one `SpriteFor` switch, and one
-`FacesLeft` list, so the set has a single convention — **every file is authored facing screen right** — and the
-day the art team draws the turn properly it is one boolean per pose to revisit. The fallback is
+`PlayerVisual` gained `diagonalDownSprite` and `diagonalUpSprite`, one `SpriteFor` switch, and the flip derived
+from **two** lists rather than one: which way a pose looks, and which way a file was drawn. The fallback is
 all-or-nothing: five sprites or the dot, never a half-dressed character that freezes on a diagonal, guarded by
 `APlayerVisualFromTheFourPoseEra_TurnsItselfOffSilently`. Four PlayMode cases assert pose, sprite *identity*
 and `flipX` per diagonal, and the four captures (`Captures/pose_zoom_diag_*.png`) show them in the picture:
 the mirrored diagonals do move the rim light and the eye, which is the accepted cost above rather than a
 surprise. Eight poses now load from five files — ~13 MB on disk, ~13.4 MB at runtime, every one of them
 resident in any scene that has a player. 77 EditMode and 44 PlayMode cases green.
+
+**Corrected the same day, in play, by the lead's eye: the diagonals were mirrored the wrong way round.** The
+first cut answered "which pose faces left" and "which file is authored which way" with the same list, on the
+stated convention that every file faces screen right. That convention was not a reading of the art — the
+silhouette genuinely does not say (the body outline is symmetric to within 26 of 4096 px), but **the light
+does**, and measuring the 3/4 pair the way the profile was measured puts their cyan rim and eye mass **121 px
+left** of their own bounding-box centre against **+197 px** in the profile. The profile is proven to face
+screen right (issue 5), the light in this set sits on the side the character faces, therefore the two 3/4 stills
+are authored facing screen **left** — and `flipX` had them the wrong way round for both diagonals. `PlayerVisual`
+now keeps the two questions apart (`LooksLeft` and `IsAuthoredLeftward`, flip = the disagreement), which is the
+shape that survives the next asymmetric file instead of silently misnaming itself, the four diagonal cases
+assert the corrected pairing, and the captures were re-taken.
 
 ---
 
