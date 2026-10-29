@@ -1013,6 +1013,8 @@ MonoBehaviour:
   frontSprite: {fileID: 21300000, guid: 71c5edee1a59d552db627ba5a6102381, type: 3}
   backSprite: {fileID: 21300000, guid: 6b8dc5fb1f41fe3b59a83c36a2bbe17b, type: 3}
   sideSprite: {fileID: 21300000, guid: f98d0140125b92dc7b2ea4e254f8bf6a, type: 3}
+  diagonalDownSprite: {fileID: 21300000, guid: 47cfdd1e8c42995cdac1d1833bcac61b, type: 3}
+  diagonalUpSprite: {fileID: 21300000, guid: 7f90ace032cb1892f81217472dfd60fb, type: 3}
   breatheAmplitude: 0.012
   breatheHz: 0.4
   bobHeight: 0.03
@@ -1020,7 +1022,7 @@ MonoBehaviour:
   leanDegrees: 3
   leanReferenceSpeed: 2.5
   calmSeconds: 0.2
-  boundaryDegrees: 10
+  boundaryDegrees: 5
   dwellSeconds: 0.1
   aimNoiseRadius: 0.27
 --- !u!1 &1111473712
