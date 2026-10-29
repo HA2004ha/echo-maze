@@ -166,6 +166,83 @@ namespace EchoMaze.Tests
                 "being given to the vertical");
         }
 
+        /// <summary>
+        /// Docs/ISSUES.md #6, in one assertion. The cursor sits a hair under due left and moves a hair above
+        /// it: two degrees of mouse, and the pose must not move at all.
+        ///
+        /// It used to move six times. Player eased the aim with <c>Mathf.LerpAngle</c>, which is a degrees API
+        /// (like DeltaAngle and SmoothDampAngle), while the aim is kept in radians — so the wrap correction
+        /// that is supposed to fire when the two angles straddle the seam happens to sit at a difference of
+        /// 180 <em>radians</em>, which no pair of Atan2 outputs ever reaches. A crossing of due left lerped the
+        /// long way instead: from −179° through screen right, up, and back down to +179°.
+        ///
+        /// Both directions of the crossing are checked because the seam is the sign of π, and only one of
+        /// them looks like a bug from the outside.
+        /// </summary>
+        [Test]
+        public void ACursorCrossingDueLeft_KeepsFacingLeftAllTheWayAcross()
+        {
+            float d = Mathf.Deg2Rad;
+
+            float forwards = -179f * d;
+            for (int step = 0; step < 20; step++)
+            {
+                forwards = PlayerFacing.SmoothTowards(forwards, 179f * d, 0.3f);
+                Assert.AreEqual(PlayerPose.ProfileLeft, Aim(forwards),
+                    "easing across due left put the character at " + Aim(forwards) + " on step " + step +
+                    ", aim " + (forwards * Mathf.Rad2Deg).ToString("F1") + " degrees");
+            }
+
+            float backwards = 179f * d;
+            for (int step = 0; step < 20; step++)
+            {
+                backwards = PlayerFacing.SmoothTowards(backwards, -179f * d, 0.3f);
+                Assert.AreEqual(PlayerPose.ProfileLeft, Aim(backwards),
+                    "the same crossing the other way reached " + Aim(backwards) + " on step " + step);
+            }
+        }
+
+        /// <summary>
+        /// The same seam on a turn that is meant to be visible: due-left-ish to down-left-ish, forty degrees
+        /// the short way. Everything in between has to stay within forty degrees of due left, or the aim took
+        /// the long way round the compass — which is what the case above looks like in play.
+        /// </summary>
+        [Test]
+        public void ATurnAcrossTheSeam_TakesTheShortWayRound()
+        {
+            float d = Mathf.Deg2Rad;
+            float current = 170f * d;
+            float target = -150f * d;
+
+            for (int step = 0; step < 30; step++)
+            {
+                current = PlayerFacing.SmoothTowards(current, target, 0.3f);
+                float away = Mathf.Abs(Mathf.DeltaAngle(180f, current * Mathf.Rad2Deg));
+                Assert.LessOrEqual(away, 40f,
+                    "step " + step + " of a 170 to -150 degree turn was " + away.ToString("F1") +
+                    " degrees off due left. The turn is forty degrees and goes through 180, so nothing on " +
+                    "this path may reach the right-hand side of the screen");
+            }
+
+            Assert.Less(Mathf.Abs(Mathf.DeltaAngle(-150f, current * Mathf.Rad2Deg)), 1f,
+                "and it has to actually arrive");
+        }
+
+        /// <summary>
+        /// The degrees round-trip must not have changed the case that already worked: a turn inside one half
+        /// of the screen eases like a plain lerp. Without this, the two cases above would pass for any
+        /// function that held the angle still.
+        /// </summary>
+        [Test]
+        public void ATurnThatDoesNotCrossTheSeam_EasesLikeAPlainLerp()
+        {
+            float d = Mathf.Deg2Rad;
+            Assert.AreEqual(30f * Mathf.Deg2Rad, PlayerFacing.SmoothTowards(0f, 60f * d, 0.5f), 1e-5f,
+                "halfway between due right and up-right is thirty degrees");
+            Assert.AreEqual(0f, PlayerFacing.SmoothTowards(0f, 60f * d, 0f), 1e-6f, "no ease, no move");
+            Assert.AreEqual(60f * d, PlayerFacing.SmoothTowards(0f, 60f * d, 1f), 1e-5f, "a full ease arrives");
+        }
+
         [Test]
         public void AStillPlayer_FacesItsAim()
         {
