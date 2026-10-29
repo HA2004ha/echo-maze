@@ -34,6 +34,8 @@ namespace EchoMaze.Tests.PlayMode
         Sprite frontPose;
         Sprite backPose;
         Sprite sidePose;
+        Sprite diagonalDownPose;
+        Sprite diagonalUpPose;
         readonly List<Object> assets = new List<Object>();
 
         float Stride => profile.footstepInterval;
@@ -45,6 +47,8 @@ namespace EchoMaze.Tests.PlayMode
             frontPose = MakePose("test front");
             backPose = MakePose("test back");
             sidePose = MakePose("test side");
+            diagonalDownPose = MakePose("test 34 front");
+            diagonalUpPose = MakePose("test 34 back");
 
             GameObject go = New("rig visual player", false);
             go.transform.position = new Vector2(Far, Far);
@@ -63,6 +67,8 @@ namespace EchoMaze.Tests.PlayMode
             Wire(visual, "frontSprite", frontPose);
             Wire(visual, "backSprite", backPose);
             Wire(visual, "sideSprite", sidePose);
+            Wire(visual, "diagonalDownSprite", diagonalDownPose);
+            Wire(visual, "diagonalUpSprite", diagonalUpPose);
 
             // Built before the activation, because PlayerVisual resolves the Visuals child in Awake and a
             // component that misses it there never gets a second chance.
@@ -167,6 +173,58 @@ namespace EchoMaze.Tests.PlayMode
             Assert.AreEqual(frontPose, sprite.sprite);
         }
 
+        /// <summary>
+        /// The four diagonals are the whole point of Docs/ISSUES.md #2: the echo cone is 64° wide and steered
+        /// by the same number that picks the pose, so a character that can sit 45° off the axis it is shouting
+        /// along is the worst available indicator of its own aim. Each pair below is one texture, and the
+        /// leftward member of every pair is the mirror — the same convention the profile uses, so "unflipped
+        /// means facing screen right" holds for all five files.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator WalkingDownAndRight_ShowsTheTurnedFrontUnflipped()
+        {
+            WalkIn(new Vector2(1f, -1f).normalized);
+            yield return null;
+
+            Assert.AreEqual(PlayerPose.DiagonalDownRight, visual.CurrentPose);
+            Assert.AreEqual(diagonalDownPose, sprite.sprite);
+            Assert.IsFalse(sprite.flipX, "the authored 3/4 front is the rightward one");
+        }
+
+        [UnityTest]
+        public IEnumerator WalkingDownAndLeft_TurnsTheSameFrontAround()
+        {
+            WalkIn(new Vector2(-1f, -1f).normalized);
+            yield return null;
+
+            Assert.AreEqual(PlayerPose.DiagonalDownLeft, visual.CurrentPose);
+            Assert.AreEqual(diagonalDownPose, sprite.sprite,
+                "a third 3/4 file would be 2.7 MB of texture memory for a picture this one mirrored");
+            Assert.IsTrue(sprite.flipX);
+        }
+
+        [UnityTest]
+        public IEnumerator WalkingUpAndRight_ShowsTheTurnedBackUnflipped()
+        {
+            WalkIn(new Vector2(1f, 1f).normalized);
+            yield return null;
+
+            Assert.AreEqual(PlayerPose.DiagonalUpRight, visual.CurrentPose);
+            Assert.AreEqual(diagonalUpPose, sprite.sprite);
+            Assert.IsFalse(sprite.flipX);
+        }
+
+        [UnityTest]
+        public IEnumerator WalkingUpAndLeft_TurnsTheSameBackAround()
+        {
+            WalkIn(new Vector2(-1f, 1f).normalized);
+            yield return null;
+
+            Assert.AreEqual(PlayerPose.DiagonalUpLeft, visual.CurrentPose);
+            Assert.AreEqual(diagonalUpPose, sprite.sprite);
+            Assert.IsTrue(sprite.flipX);
+        }
+
         [UnityTest]
         public IEnumerator StandingStill_FacesWhereThePlayerIsLooking()
         {
@@ -191,20 +249,20 @@ namespace EchoMaze.Tests.PlayMode
         }
 
         /// <summary>
-        /// The two acceptance cases Docs/ISSUES.md #3 asks for, in order.
+        /// The acceptance case Docs/ISSUES.md #3 asked for.
         ///
-        /// A heading parked exactly on a sector boundary is the worst case the resolver used to have: it is
-        /// 45 degrees off the pose it is drawing, so the raw map wants a neighbour every frame and any shake
-        /// of the aim flips the character a quarter-turn. The band should swallow all of it. The jitter is
-        /// the size of the noise the issue measured — one pixel of cursor at ten pixels of separation is
-        /// ~5.7 degrees — and "at most once" is the wording the issue chose, because a pose that settles onto
-        /// the other side once and then stops is not the defect being described.
+        /// A heading parked on a sector boundary is the worst case the resolver used to have: it is 22.5
+        /// degrees off the pose being drawn, so the raw map wants a neighbour every frame and any shake of the
+        /// aim turns the character. The jitter is the largest per-pixel noise that can reach the band at all —
+        /// one pixel of cursor at <c>aimNoiseRadius</c> (24 px, where the aim stops being trusted entirely),
+        /// which is 2.4 degrees — and "at most once" is the wording the issue chose, because a pose that
+        /// settles onto the other side once and then stops is not the defect being described.
         /// </summary>
         [UnityTest]
         public IEnumerator ParkedOnASectorBoundary_CursorJitterForThirtyFrames_ChangesThePoseAtMostOnce()
         {
             subjectBody.linearVelocity = Vector2.zero;
-            LookAt(Mathf.PI * 0.25f);
+            LookAt(Mathf.PI * 0.125f);
 
             int changes = 0;
             PlayerPose previous = visual.CurrentPose;
@@ -212,7 +270,7 @@ namespace EchoMaze.Tests.PlayMode
             for (int frame = 0; frame < 30; frame++)
             {
                 // Alternating either side of the boundary, which is the case that used to alternate poses.
-                LookAt(Mathf.PI * 0.25f + (frame % 2 == 0 ? 0.1f : -0.1f) * Mathf.Deg2Rad * 5.7f);
+                LookAt(Mathf.PI * 0.125f + (frame % 2 == 0 ? 1f : -1f) * 2.4f * Mathf.Deg2Rad);
                 yield return null;
 
                 if (visual.CurrentPose != previous)
@@ -224,12 +282,13 @@ namespace EchoMaze.Tests.PlayMode
 
             Assert.LessOrEqual(changes, 1,
                 "thirty frames of one-pixel cursor noise on a boundary produced " + changes +
-                " quarter-turns. The band is 45 + boundaryDegrees, so anything inside it has to hold still");
+                " turns. The band is SectorHalfWidthDegrees + boundaryDegrees = 27.5 degrees off the pose " +
+                "being drawn, so anything inside it has to hold still");
         }
 
         /// <summary>
         /// The other half: the band must not have become "never turn". A heading that has properly left its
-        /// pose — here a full half-turn, well past 45 + 10 degrees — is taken on the next frame after the
+        /// pose — here a full half-turn, well past 22.5 + 5 degrees — is taken on the next frame after the
         /// dwell window, and without this case the test above would pass for a character that is frozen.
         /// </summary>
         [UnityTest]
@@ -249,10 +308,11 @@ namespace EchoMaze.Tests.PlayMode
         }
 
         /// <summary>
-        /// A held WASD diagonal is |vx| = |vy| forever, which is the tie the resolver breaks by hand every
-        /// single frame, and every wobble of the collider damping crosses it. Two seconds of it must show one
-        /// pose. The first frame is exempt because whatever the character was doing before the keys went down
-        /// is allowed to be answered once.
+        /// A held WASD diagonal is |vx| = |vy| forever. Under four poses that was the boundary the resolver
+        /// broke by hand every single frame, and the reason issue 3 existed; under eight it is the dead centre
+        /// of a sector, so the two seconds of it this case runs has nothing left to argue about. Kept because
+        /// it is the case that fails the day somebody moves a sector edge onto the keyboard: the pose has to
+        /// be the diagonal, and it has to be that pose on every frame after the first.
         /// </summary>
         [UnityTest]
         public IEnumerator WalkingASteadyDiagonal_ForTwoSeconds_HoldsOnePose()
@@ -261,6 +321,10 @@ namespace EchoMaze.Tests.PlayMode
 
             yield return null;
             PlayerPose settled = visual.CurrentPose;
+
+            Assert.AreEqual(PlayerPose.DiagonalUpRight, settled,
+                "a perfect diagonal is 45 degrees, which is the centre of its own sector now that the fan " +
+                "has eight of them");
 
             for (int frame = 0; frame < 120; frame++)
             {
@@ -539,6 +603,45 @@ namespace EchoMaze.Tests.PlayMode
             yield return null;
 
             Assert.IsFalse(unwired.enabled, "and it stays off rather than being re-enabled by anything");
+        }
+
+        /// <summary>
+        /// The half-wired case the eight-pose change actually creates: a scene generated while the fan had
+        /// four poses has the three cardinal sprites and nothing else, and a visual that drew cardinals and
+        /// then went blank on the first diagonal would be worse than one that opted out. The builder is what
+        /// promises the art, and it now requires all five files or falls back to the dot, so this is the guard
+        /// that the promise is kept in both directions.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator APlayerVisualFromTheFourPoseEra_TurnsItselfOffSilently()
+        {
+            GameObject go = New("rig four pose visual", false);
+            var body = go.AddComponent<Rigidbody2D>();
+            body.gravityScale = 0f;
+
+            var oldPlayer = go.AddComponent<Player>();
+            Wire(oldPlayer, "director", director);
+            Wire(oldPlayer, "marks", marks);
+
+            var old = go.AddComponent<PlayerVisual>();
+            Wire(old, "frontSprite", frontPose);
+            Wire(old, "backSprite", backPose);
+            Wire(old, "sideSprite", sidePose);
+
+            GameObject child = new GameObject("Visuals");
+            child.transform.SetParent(go.transform, false);
+            child.AddComponent<SpriteRenderer>();
+
+            go.SetActive(true);
+
+            Assert.IsFalse(old.enabled,
+                "three of five sprites is an incomplete setup: it has to opt out like the empty one does, " +
+                "not stand on a diagonal with no picture to draw");
+
+            yield return null;
+            yield return null;
+
+            Assert.IsFalse(old.enabled);
         }
     }
 }

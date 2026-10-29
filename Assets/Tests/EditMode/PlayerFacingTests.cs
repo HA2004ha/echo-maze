@@ -23,7 +23,7 @@ namespace EchoMaze.Tests
         }
 
         [Test]
-        public void TheFourCardinals_OfTheAimVector_GetTheFourPoses()
+        public void TheFourCardinals_OfTheAimVector_GetTheFourCardinalPoses()
         {
             Assert.AreEqual(PlayerPose.ProfileRight, Aim(0f),
                 "0 is screen right: the canonical profile, unflipped");
@@ -36,40 +36,74 @@ namespace EchoMaze.Tests
         }
 
         /// <summary>
-        /// WASD diagonals are exactly |x| == |y|, so which side of the tie the rule takes is the pose a
-        /// player holding two keys actually sees. Vertical wins: whether you are coming or going carries
-        /// more intent than which hand was raised first.
+        /// The reason the fan was widened (Docs/ISSUES.md #2): the echo cone is 64°, so a pose that can sit
+        /// 45° off the heading is the worst available indicator of the thing the character is doing. A held
+        /// WASD diagonal is exactly |vx| = |vy|, which used to be the boundary the resolver broke by hand
+        /// every frame and is now the dead centre of its own sector.
         /// </summary>
         [Test]
-        public void ADiagonal_ResolvesToTheVerticalPose()
+        public void TheFourDiagonals_GetTheFourDiagonalPoses()
         {
-            Assert.AreEqual(PlayerPose.Back, Move(1f, 1f));
-            Assert.AreEqual(PlayerPose.Back, Move(-1f, 1f));
-            Assert.AreEqual(PlayerPose.Front, Move(1f, -1f));
-            Assert.AreEqual(PlayerPose.Front, Move(-1f, -1f));
+            Assert.AreEqual(PlayerPose.DiagonalUpRight, Move(1f, 1f));
+            Assert.AreEqual(PlayerPose.DiagonalUpLeft, Move(-1f, 1f));
+            Assert.AreEqual(PlayerPose.DiagonalDownRight, Move(1f, -1f));
+            Assert.AreEqual(PlayerPose.DiagonalDownLeft, Move(-1f, -1f));
         }
 
         /// <summary>
-        /// One degree on either side of every boundary, which is the table the sectors have to match. If a
-        /// future edit moves a boundary by a hair, this fails and the hair has to be argued for.
+        /// A tenth of a degree on either side of four of the eight edges, which is the table the sectors have
+        /// to match. If a future edit moves a boundary by a hair, this fails and the hair has to be argued
+        /// for. The edges are all rotations of 22.5 and 67.5 — the sectors are equal and the map is built from
+        /// |x| and |y| — so four of them, one per quadrant, is the whole set.
         /// </summary>
         [Test]
-        public void TheSectorEdges_SitAtFortyFiveAndOneThirtyFiveDegrees()
+        public void TheSectorEdges_SitAtTwentyTwoAndSixtySevenDegrees()
         {
             float d = Mathf.Deg2Rad;
-            Assert.AreEqual(PlayerPose.ProfileRight, Aim(44f * d), "just below the back sector");
-            Assert.AreEqual(PlayerPose.Back, Aim(45f * d), "the edge belongs to the vertical pose");
-            Assert.AreEqual(PlayerPose.Back, Aim(135f * d), "and to the left edge of the same sector");
-            Assert.AreEqual(PlayerPose.ProfileLeft, Aim(136f * d), "just past it");
-            Assert.AreEqual(PlayerPose.Front, Aim(-45f * d), "the front sector keeps its own edges");
-            Assert.AreEqual(PlayerPose.ProfileRight, Aim(-44f * d), "and 44 degrees below right is still right");
-            Assert.AreEqual(PlayerPose.Front, Aim(-135f * d));
-            Assert.AreEqual(PlayerPose.ProfileLeft, Aim(-136f * d));
+            Assert.AreEqual(PlayerPose.ProfileRight, Aim(22.4f * d), "just inside the right sector");
+            Assert.AreEqual(PlayerPose.DiagonalUpRight, Aim(22.6f * d), "just past it, the diagonal has it");
+            Assert.AreEqual(PlayerPose.DiagonalUpRight, Aim(67.4f * d), "the diagonal keeps its own edges");
+            Assert.AreEqual(PlayerPose.Back, Aim(67.6f * d), "and 67.6 is the back sector");
+
+            Assert.AreEqual(PlayerPose.Front, Aim(-112.4f * d), "the front sector reaches down to -112.5");
+            Assert.AreEqual(PlayerPose.DiagonalDownLeft, Aim(-112.6f * d),
+                "and a tenth of a degree past it is the down-left diagonal's");
+            Assert.AreEqual(PlayerPose.DiagonalDownLeft, Aim(-157.4f * d),
+                "the diagonal keeps its own far edge");
+            Assert.AreEqual(PlayerPose.ProfileLeft, Aim(-157.6f * d), "and -157.6 is due left");
         }
 
         /// <summary>
-        /// Walks the whole circle and checks each angle against the sector it falls in, so the four
-        /// assertions above cannot be a lucky sample of a rule that is actually wrong somewhere else.
+        /// Which side an exactly-on-the-edge heading belongs to, asserted with the slope itself rather than
+        /// with a trig value: cos and sin of 22.5° are not exactly the ratio the boundary is defined by, so
+        /// an assertion written at "22.5 degrees" would be testing a float coin toss. The rule is that the
+        /// cardinal takes it — the pose whose file was drawn straight-on rather than one that only exists
+        /// mirrored.
+        /// </summary>
+        [Test]
+        public void AnEdgeExactlyOnTheSlope_BelongsToTheCardinal()
+        {
+            float slope = PlayerFacing.CardinalSlopeLimit;
+
+            Assert.AreEqual(PlayerPose.ProfileRight, PlayerFacing.ResolveDirection(new Vector2(1f, slope)),
+                "on the line, the cardinal wins");
+            Assert.AreEqual(PlayerPose.DiagonalUpRight,
+                PlayerFacing.ResolveDirection(new Vector2(1f, slope * 1.001f)),
+                "and one part in a thousand past it is properly the diagonal's");
+
+            // The same edge approached from the other axis, where the cardinal is the tall vector rather than
+            // the wide one. Written as (slope, 1) rather than as (1, 1/slope) because only this form is an
+            // exact float comparison: the reciprocal of the slope is not representable, so an assertion at
+            // "67.5 degrees" would be measuring a rounding error instead of a rule.
+            Assert.AreEqual(PlayerPose.Back, PlayerFacing.ResolveDirection(new Vector2(slope, 1f)),
+                "the rule is the same at both edges of a sector, not whichever one the code happens to test");
+            Assert.AreEqual(PlayerPose.DiagonalUpRight,
+                PlayerFacing.ResolveDirection(new Vector2(slope * 1.001f, 1f)));
+        }
+
+        /// <summary>
+        /// Walks the whole circle and checks each angle against the sector it falls in, so the assertions
+        /// above cannot be a lucky sample of a rule that is actually wrong somewhere else.
         /// </summary>
         [Test]
         public void EveryDegree_MatchesTheSectorTable()
@@ -77,26 +111,44 @@ namespace EchoMaze.Tests
             for (int deg = -180; deg < 180; deg++)
             {
                 PlayerPose expected;
-                if (deg >= -135 && deg < -45)
+                if (deg >= -157 && deg < -112)
+                {
+                    expected = PlayerPose.DiagonalDownLeft;
+                }
+                else if (deg >= -112 && deg < -67)
                 {
                     expected = PlayerPose.Front;
                 }
-                else if (deg >= -45 && deg < 45)
+                else if (deg >= -67 && deg < -22)
+                {
+                    expected = PlayerPose.DiagonalDownRight;
+                }
+                else if (deg >= -22 && deg < 23)
                 {
                     expected = PlayerPose.ProfileRight;
                 }
-                else if (deg >= 45 && deg < 135)
+                else if (deg >= 23 && deg < 68)
+                {
+                    expected = PlayerPose.DiagonalUpRight;
+                }
+                else if (deg >= 68 && deg < 113)
                 {
                     expected = PlayerPose.Back;
+                }
+                else if (deg >= 113 && deg < 158)
+                {
+                    expected = PlayerPose.DiagonalUpLeft;
                 }
                 else
                 {
                     expected = PlayerPose.ProfileLeft;
                 }
 
-                // Half a degree inside each cell: the edges are pinned by their own test, and a sweep that
-                // straddles them would only be testing which side of an epsilon it rounded to.
-                Assert.AreEqual(expected, Aim((deg + 0.5f) * Mathf.Deg2Rad),
+                // A quarter of a degree inside each cell. The edges are at x.5 degrees, so the sweep has to
+                // avoid them by construction rather than by rounding: at a half-degree offset the sample
+                // would land exactly on every boundary in the set, and the test would be measuring which
+                // side of a float comparison cos() happened to fall on.
+                Assert.AreEqual(expected, Aim((deg + 0.25f) * Mathf.Deg2Rad),
                     deg + " degrees off screen right");
             }
         }
@@ -109,7 +161,9 @@ namespace EchoMaze.Tests
                 "Mathf.Atan2 happened to sign it");
             Assert.AreEqual(PlayerPose.ProfileLeft, Aim(3f), "3 rad is 172 degrees, just short of due left");
             Assert.AreEqual(PlayerPose.ProfileLeft, Aim(-3f), "and so is -3 rad");
-            Assert.AreEqual(PlayerPose.Front, Aim(-2f), "115 degrees below screen right is down-left");
+            Assert.AreEqual(PlayerPose.DiagonalDownLeft, Aim(-2f),
+                "115 degrees below screen right is down-left, which now has a pose of its own instead of " +
+                "being given to the vertical");
         }
 
         [Test]
@@ -121,7 +175,7 @@ namespace EchoMaze.Tests
 
         /// <summary>
         /// Below the deadzone the stick is not being pushed, it is being released. A sub-deadzone vector has
-        /// to fall back to the aim rather than turn the character a quarter-rotation because a key came up
+        /// to fall back to the aim rather than turn the character by a sector because a key came up
         /// one frame early.
         /// </summary>
         [Test]
@@ -175,8 +229,15 @@ namespace EchoMaze.Tests
         /// from rather than against literals, so moving a sector edge moves the hysteresis with it instead of
         /// quietly desynchronising the two.
         /// </summary>
+        /// <summary>
+        /// The acceptance case Docs/ISSUES.md #2 was written for, in the form the issue asked for it: a pure
+        /// function over the compass. Every pose owns everything within <c>SectorHalfWidthDegrees</c> of its
+        /// own centre and hands over outside it, which is the same statement as "the drawn face is never more
+        /// than 22.5° off the axis the sound travels on" — against the 64° cone, the number that made four
+        /// poses the wrong tool.
+        /// </summary>
         [Test]
-        public void EveryPose_SitsFortyFiveDegreesEitherSideOfItsOwnCentre()
+        public void EveryPose_OwnsTwentyTwoDegreesEitherSideOfItsOwnCentre()
         {
             foreach (PlayerPose pose in AllPoses)
             {
@@ -187,18 +248,50 @@ namespace EchoMaze.Tests
                     "from somewhere else");
                 Assert.AreEqual(pose, PlayerFacing.ResolveDirection(centre * 3.7f),
                     "a heading is a direction: scaling it cannot change the answer");
-                Assert.AreEqual(pose, PlayerFacing.ResolveDirection(Rotate(centre, 44f)),
-                    pose + " still owns 44 degrees off its own centre");
-                Assert.AreEqual(pose, PlayerFacing.ResolveDirection(Rotate(centre, -44f)));
-                Assert.AreNotEqual(pose, PlayerFacing.ResolveDirection(Rotate(centre, 46f)),
-                    pose + " has to hand over at 46, which is SectorHalfWidthDegrees plus a degree");
-                Assert.AreNotEqual(pose, PlayerFacing.ResolveDirection(Rotate(centre, -46f)));
+                Assert.AreEqual(pose, PlayerFacing.ResolveDirection(Rotate(centre, 22f)),
+                    pose + " still owns 22 degrees off its own centre");
+                Assert.AreEqual(pose, PlayerFacing.ResolveDirection(Rotate(centre, -22f)));
+                Assert.AreNotEqual(pose, PlayerFacing.ResolveDirection(Rotate(centre, 23f)),
+                    pose + " has to hand over at 23, which is SectorHalfWidthDegrees plus a degree");
+                Assert.AreNotEqual(pose, PlayerFacing.ResolveDirection(Rotate(centre, -23f)));
+            }
+        }
+
+        /// <summary>
+        /// The eight centres have to be the eight compass points, not eight headings that happen to name
+        /// poses the map agrees with. Consecutive centres 45° apart is what makes the fan even, and the
+        /// distance from every centre to every other pose's answer being at least a sector is what makes
+        /// "the nearest pose wins" true rather than merely untested.
+        /// </summary>
+        [Test]
+        public void TheEightCentres_AreFortyFiveDegreesApartAndEachIsItsOwnNeighbour()
+        {
+            for (int i = 0; i < AllPoses.Length; i++)
+            {
+                Vector2 centre = PlayerFacing.PoseCentre(AllPoses[i]);
+
+                for (int j = 0; j < AllPoses.Length; j++)
+                {
+                    float separation = Vector2.Angle(centre, PlayerFacing.PoseCentre(AllPoses[j]));
+                    if (i == j)
+                    {
+                        Assert.AreEqual(0f, separation, 1e-3f, AllPoses[i] + " is not its own centre");
+                        continue;
+                    }
+
+                    Assert.GreaterOrEqual(separation, 45f - 1e-3f,
+                        AllPoses[i] + " and " + AllPoses[j] + " are " + separation +
+                        " degrees apart: eight poses over 360 are one eighth of the circle apart, and a " +
+                        "pair closer than that leaves part of the compass with no pose at all");
+                }
             }
         }
 
         static readonly PlayerPose[] AllPoses =
         {
-            PlayerPose.Front, PlayerPose.Back, PlayerPose.ProfileRight, PlayerPose.ProfileLeft
+            PlayerPose.Front, PlayerPose.Back, PlayerPose.ProfileRight, PlayerPose.ProfileLeft,
+            PlayerPose.DiagonalDownRight, PlayerPose.DiagonalUpRight,
+            PlayerPose.DiagonalDownLeft, PlayerPose.DiagonalUpLeft
         };
 
         static Vector2 Rotate(Vector2 vector, float degrees)
@@ -208,14 +301,15 @@ namespace EchoMaze.Tests
 
         /// <summary>
         /// The band is expressed against <c>PoseCentre</c>, so the width it is added to has to be the real
-        /// half-width of the sectors and not a number that happens to work while there are four poses.
+        /// half-width of the sectors and not a number that happens to work while there are eight poses.
         /// </summary>
         [Test]
         public void TheSectorHalfWidth_IsWhatTheSectorsAreActuallyWorth()
         {
             Assert.AreEqual(360f / AllPoses.Length, PlayerFacing.SectorHalfWidthDegrees * 2f, 1e-4f,
-                "four poses, four equal quarters. Issue 2 in Docs/ISSUES.md doubles the pose count, which " +
-                "halves this to 22.5 and halves the hysteresis band that sits on top of it");
+                "eight poses, eight equal sectors of 45 degrees. A pose count that moves again moves this with " +
+                "it, and PlayerVisual's boundaryDegrees has to halve or double in the same commit or the " +
+                "total dead angle on the compass changes silently");
         }
 
         [Test]

@@ -20,11 +20,16 @@ namespace EchoMaze.Tests
         // hitbox and the 0.447 m silhouette reach in Docs/ISSUES.md are all measured against.
         const float CanvasWorldSize = 1.6f;
 
+        // All five files the scene builder wires: three cardinals and the two 3/4 stills that carry the four
+        // diagonals (Docs/ISSUES.md #2). The three leftward poses are mirrors, so eight poses ship as five
+        // assets, and every one of them is load-bearing.
         static readonly string[] Poses =
         {
             "Assets/Art/Sprites/Player/Player_front.png",
             "Assets/Art/Sprites/Player/Player_back.png",
-            "Assets/Art/Sprites/Player/Player_side.png"
+            "Assets/Art/Sprites/Player/Player_side.png",
+            "Assets/Art/Sprites/Player/Player_34_front.png",
+            "Assets/Art/Sprites/Player/Player_34_back.png"
         };
 
         [TestCaseSource(nameof(WiredPoses))]
