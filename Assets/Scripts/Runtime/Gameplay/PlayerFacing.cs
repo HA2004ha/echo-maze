@@ -138,6 +138,29 @@ namespace EchoMaze.Gameplay
         public const float SectorHalfWidthDegrees = 22.5f;
 
         /// <summary>
+        /// Ease one radian angle towards another by <c>amount</c> (0-1), the shortest way round.
+        ///
+        /// This exists because <c>Mathf.LerpAngle</c> is documented in <em>degrees</em>, and the aim is kept
+        /// in radians. Fed radians it still interpolates fine — until the two angles are on opposite sides of
+        /// the ±π seam, where its wrap correction simply never fires: the correction triggers on a raw
+        /// difference over 180, and no two radian values are ever 180 apart, so a 2° nudge across due left
+        /// lerps the <em>long</em> way, straight through the right-hand side of the compass. Six pose changes
+        /// for two degrees of mouse, which is what <c>Docs/ISSUES.md</c> #6 was called flicker.
+        ///
+        /// Due left is the only place this can happen, and it is the only place the game puts a pose on the
+        /// seam — <c>Atan2</c> returns ±π there and the sign depends on which side of the pixel the cursor
+        /// centre fell on. Facing right is angle 0, which is not a seam, which is why the same gesture on the
+        /// other side never showed anything. <c>ACursorCrossingDueLeft_KeepsFacingLeftAllTheWayAcross</c> is
+        /// the case; it is here rather than in <c>Player</c> because a private method on a MonoBehaviour is
+        /// not testable, and this is the second time the seam has bitten.
+        /// </summary>
+        public static float SmoothTowards(float currentRad, float targetRad, float amount)
+        {
+            return Mathf.Deg2Rad * Mathf.LerpAngle(currentRad * Mathf.Rad2Deg, targetRad * Mathf.Rad2Deg,
+                                                  amount);
+        }
+
+        /// <summary>
         /// Where in one footstep the player is: 0 the instant the step lands, rising to 1 as the next one
         /// comes round. Derived from <c>Player</c>'s own timer rather than a second clock, because that
         /// timer stops while the player stands still and fires immediately when they start again, and a

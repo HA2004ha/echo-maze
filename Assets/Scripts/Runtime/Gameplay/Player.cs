@@ -119,7 +119,7 @@ namespace EchoMaze.Gameplay
 
             float smoothing = Mathf.Clamp01(18f * Time.unscaledDeltaTime);
             aimRad = hasAim
-                ? Mathf.LerpAngle(aimRad, Mathf.Atan2(dir.y, dir.x), smoothing)
+                ? PlayerFacing.SmoothTowards(aimRad, Mathf.Atan2(dir.y, dir.x), smoothing)
                 : Mathf.Atan2(dir.y, dir.x);
             hasAim = true;
         }
