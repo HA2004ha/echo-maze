@@ -176,51 +176,57 @@ namespace EchoMaze.Tests.PlayMode
         /// <summary>
         /// The four diagonals are the whole point of Docs/ISSUES.md #2: the echo cone is 64° wide and steered
         /// by the same number that picks the pose, so a character that can sit 45° off the axis it is shouting
-        /// along is the worst available indicator of its own aim. Each pair below is one texture, and the
-        /// leftward member of every pair is the mirror — the same convention the profile uses, so "unflipped
-        /// means facing screen right" holds for all five files.
+        /// along is the worst available indicator of its own aim. Each pair below is one texture.
+        ///
+        /// Which member of the pair is the mirror is <em>not</em> the same question as which member faces left,
+        /// and conflating them is the bug these four cases exist to keep out: the profile is authored facing
+        /// screen right, the two 3/4 stills are authored facing screen left (their cyan mass sits 121 px left of
+        /// their own centre against +197 px in the profile, and the light in this set is on the side the
+        /// character faces). So the flip is the disagreement between the two, and the unflipped diagonal is the
+        /// leftward one.
         /// </summary>
         [UnityTest]
-        public IEnumerator WalkingDownAndRight_ShowsTheTurnedFrontUnflipped()
-        {
-            WalkIn(new Vector2(1f, -1f).normalized);
-            yield return null;
-
-            Assert.AreEqual(PlayerPose.DiagonalDownRight, visual.CurrentPose);
-            Assert.AreEqual(diagonalDownPose, sprite.sprite);
-            Assert.IsFalse(sprite.flipX, "the authored 3/4 front is the rightward one");
-        }
-
-        [UnityTest]
-        public IEnumerator WalkingDownAndLeft_TurnsTheSameFrontAround()
+        public IEnumerator WalkingDownAndLeft_ShowsTheAuthoredTurnedFront()
         {
             WalkIn(new Vector2(-1f, -1f).normalized);
             yield return null;
 
             Assert.AreEqual(PlayerPose.DiagonalDownLeft, visual.CurrentPose);
+            Assert.AreEqual(diagonalDownPose, sprite.sprite);
+            Assert.IsFalse(sprite.flipX, "Player_34_front is drawn facing screen left, so the leftward " +
+                                         "diagonal needs no mirror");
+        }
+
+        [UnityTest]
+        public IEnumerator WalkingDownAndRight_TurnsTheSameFrontAround()
+        {
+            WalkIn(new Vector2(1f, -1f).normalized);
+            yield return null;
+
+            Assert.AreEqual(PlayerPose.DiagonalDownRight, visual.CurrentPose);
             Assert.AreEqual(diagonalDownPose, sprite.sprite,
                 "a third 3/4 file would be 2.7 MB of texture memory for a picture this one mirrored");
             Assert.IsTrue(sprite.flipX);
         }
 
         [UnityTest]
-        public IEnumerator WalkingUpAndRight_ShowsTheTurnedBackUnflipped()
-        {
-            WalkIn(new Vector2(1f, 1f).normalized);
-            yield return null;
-
-            Assert.AreEqual(PlayerPose.DiagonalUpRight, visual.CurrentPose);
-            Assert.AreEqual(diagonalUpPose, sprite.sprite);
-            Assert.IsFalse(sprite.flipX);
-        }
-
-        [UnityTest]
-        public IEnumerator WalkingUpAndLeft_TurnsTheSameBackAround()
+        public IEnumerator WalkingUpAndLeft_ShowsTheAuthoredTurnedBack()
         {
             WalkIn(new Vector2(-1f, 1f).normalized);
             yield return null;
 
             Assert.AreEqual(PlayerPose.DiagonalUpLeft, visual.CurrentPose);
+            Assert.AreEqual(diagonalUpPose, sprite.sprite);
+            Assert.IsFalse(sprite.flipX);
+        }
+
+        [UnityTest]
+        public IEnumerator WalkingUpAndRight_TurnsTheSameBackAround()
+        {
+            WalkIn(new Vector2(1f, 1f).normalized);
+            yield return null;
+
+            Assert.AreEqual(PlayerPose.DiagonalUpRight, visual.CurrentPose);
             Assert.AreEqual(diagonalUpPose, sprite.sprite);
             Assert.IsTrue(sprite.flipX);
         }

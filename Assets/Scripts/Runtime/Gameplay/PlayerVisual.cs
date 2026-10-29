@@ -31,11 +31,15 @@ namespace EchoMaze.Gameplay
                  "DXT5, with mip levels) to redraw nothing. If the art team ever lights the two sides " +
                  "differently, this stops being free — see Docs/ISSUES.md #5.")]
         [SerializeField] Sprite sideSprite;
-        [Tooltip("The down-diagonal: Player_34_front, which is the front view turned three-quarters. The " +
-                 "down-left diagonal is this same file mirrored.")]
+        [Tooltip("The down-diagonal: Player_34_front, the front view turned three-quarters. It is drawn " +
+                 "facing screen LEFT (its rim and eye mass sit 121 px left of its own centre, against +197 " +
+                 "in the profile), so the down-left pose is this file as-is and the down-right pose is the " +
+                 "mirror. Not a bit-exact flip either way: the 3/4 pair is ~25% asymmetric about its own " +
+                 "mirror, so flipping moves the light. See Docs/ISSUES.md #2.")]
         [SerializeField] Sprite diagonalDownSprite;
-        [Tooltip("The up-diagonal: Player_34_back, the back view turned three-quarters. The up-left " +
-                 "diagonal is this same file mirrored.")]
+        [Tooltip("The up-diagonal: Player_34_back, the back view turned three-quarters, authored facing " +
+                 "screen left like its front counterpart. The up-left pose is this file as-is; the up-right " +
+                 "pose is the mirror.")]
         [SerializeField] Sprite diagonalUpSprite;
 
         [Header("Idle breath")]
@@ -197,12 +201,13 @@ namespace EchoMaze.Gameplay
             CurrentPose = pose;
             lastPoseChangeTime = Time.unscaledTime;
 
-            sprite.sprite = SpriteFor(pose);
-            sprite.flipX = FacesLeft(pose);
+            Sprite file = SpriteFor(pose);
+            sprite.sprite = file;
+            sprite.flipX = LooksLeft(pose) != IsAuthoredLeftward(file);
         }
 
         /// <summary>
-        /// Five files, eight poses. The three leftward ones are the same textures mirrored.
+        /// Five files, eight poses. Three of the poses are drawn by a file that was not authored for them.
         /// </summary>
         Sprite SpriteFor(PlayerPose pose)
         {
@@ -219,19 +224,28 @@ namespace EchoMaze.Gameplay
         }
 
         /// <summary>
-        /// Every file is authored facing screen right — the profile because that is how it was drawn and
-        /// proved to be a mirror (issue 5), the two 3/4 stills because that is the convention chosen for them
-        /// in issue 2, in a set whose turn is carried by the rim light rather than by the silhouette
-        /// (measured: the body outline is symmetric to within 26 of 4096 px, the face offset is 228 px, which
-        /// is five screen pixels). One rule for all three left poses, so the day the art team draws the turn
-        /// properly it is one boolean per pose to revisit, and the PlayMode cases that assert flipX are what
-        /// notice.
+        /// Which way the pose points, whatever draws it.
         /// </summary>
-        static bool FacesLeft(PlayerPose pose)
+        static bool LooksLeft(PlayerPose pose)
         {
             return pose == PlayerPose.ProfileLeft
                 || pose == PlayerPose.DiagonalDownLeft
                 || pose == PlayerPose.DiagonalUpLeft;
+        }
+
+        /// <summary>
+        /// Which way a delivered file was <em>drawn</em>, which is a different question and the one
+        /// <c>Docs/ISSUES.md</c> #2 got wrong by answering both with the same list. The profile is authored
+        /// facing screen right — issue 5 proved the pair is a bit-exact mirror, so the file in the repo is
+        /// the right-facing one. The two 3/4 stills are authored facing screen <em>left</em>: their cyan rim
+        /// and eye mass sits 121 px left of their own bounding-box centre, against 197 px right in the
+        /// profile, and in this set the light is on the side the character faces. So the flip is the
+        /// <em>disagreement</em> between the two lists rather than a property of either — which is also what
+        /// makes the next asymmetric file one entry here, instead of a boolean swap that misnames itself.
+        /// </summary>
+        bool IsAuthoredLeftward(Sprite file)
+        {
+            return file == diagonalDownSprite || file == diagonalUpSprite;
         }
 
         /// <summary>
