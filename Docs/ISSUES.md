@@ -9,7 +9,7 @@ impression and gets moved back to the report.
 | # | Issue | Severity | Status | Lands |
 |---|---|---|---|---|
 | 1 | A touch mark is drawn **inside the character** instead of where the body meets the wall | High — it is the game's primary "you touched something" cue and it currently points at the player | **closed** — mark flashes 0.486 m from the body centre, `Captures/markfix_wall_west.png` | week 3, done 2026-10-28 |
-| 2 | Four poses are too coarse: the face can be a quarter-turn off the direction the echo actually travels | Medium-high — it is the aim indicator the player reads direction off | open, **decided 2026-10-29**: eight poses from the five files in the repo (three of them flipped), no new art | week 3, after issue 3 |
+| 2 | Four poses are too coarse: the face can be a quarter-turn off the direction the echo actually travels | Medium-high — it is the aim indicator the player reads direction off | **closed** — eight poses from the five files in the repo, worst-case face-to-cone error **22.5°**, the 1° sweep rewritten for eight sectors, four diagonal captures | week 3, done 2026-10-29 |
 | 3 | The pose **flickers** on a sector boundary, with no hysteresis and no dwell anywhere | Medium — cosmetic, but it is the thing a player notices first and it doubles with issue 2 | **closed** — three gates in `PlayerVisual`: a 10° band, a 0.1 s dwell and a 0.27 m cursor radius, each with its own case | week 3, done 2026-10-29, and it unblocks issue 2 |
 | 4 | The character is **drawn wider than it collides**, so it visibly sinks into walls, and the touch mark and the echo arc disagree about where the surface is | Medium — it is the root cause issue 1 worked around, and it decides whether the alcove pocket and the corridor gaps read honestly | open, needs a decision (art scale, hitbox growth, or accept) | week 3 as a decision, week 4 as a change |
 | 5 | The new 4096 art **is not mirror-symmetric**, so the `flipX` that faces the character left draws it lit from the wrong side | Medium — the left-facing pose is visibly inconsistent with the file the art team delivered for it, and issue 2's eight-pose plan was priced on the old symmetry | **closed** — turned out to be an export mistake, not a design decision: the lead re-exported the left profile and the pair is **bit-exact again (0 differing pixels)**, so the slot that had shipped for a day is reverted, `Player_side_left.png` is deleted, and `flipX` stands | week 3, done 2026-10-29 |
@@ -122,6 +122,43 @@ What that costs, in the order that matters:
 pure-function case over the same 1° sweep that already exists (`TheFourCardinals…` family), and one capture
 per diagonal pose. The memory line goes into `TUNING.md`: eight runtime poses from five 1024² DXT5
 mip-chained textures, ~2.67 MB each, three of them carrying a flipped half.
+
+**Closed 2026-10-29 exactly as decided: eight poses, five files, no art requested.** The sector map is written
+as a slope comparison against `tan(22.5°)` — `y <= x * limit`, then `x <= y * limit`, then the two signs —
+rather than an `Atan2` and a modulo, so it is exactly scale-invariant and never has to meet the ±π wrap. The
+consequence nobody predicted when the issue was written: **a held WASD diagonal is now a sector *centre***,
+not a boundary. The "vertical wins ties" rule and its `1e-6f` epsilon have nothing left to decide, and the
+only remaining edges sit at 22.5°, 67.5°, 112.5° and 157.5°, which no keyboard combination can produce. An
+edge that *is* hit exactly — only a mouse or an analog stick can — stays with the **cardinal**, the pose whose
+file was drawn straight-on rather than one that is only ever seen flipped.
+
+The ≤ 22.5° claim is measured, not asserted. `EveryDegree_MatchesTheSectorTable` walks 360 samples across
+eight cells; `TheSectorEdges_SitAtTwentyTwoAndSixtySevenDegrees` puts a point either side of all four edges;
+`EveryPose_OwnsTwentyTwoDegreesEitherSideOfItsOwnCentre` checks each pose from its own centre instead of from
+a literal; `TheEightCentres_AreFortyFiveDegreesApartAndEachIsItsOwnNeighbour` proves the fan is regular; and
+`AnEdgeExactlyOnTheSlope_BelongsToTheCardinal` pins the ownership rule with the only two vectors that are
+float-exact on the line — `(1, tan 22.5°)` and `(tan 22.5°, 1)` — because the reciprocal form `(1, 2 + tan)`
+would be asserting a coin toss.
+
+**Issue 3's stated cost is retired by this.** The band went from 10° to 5° because `SectorHalfWidthDegrees`
+went 45 → 22.5, which keeps the total dead angle where it was: a switch window of 27.5° off the current pose's
+centre, 17.5° of responsive angle either side. It is a function of the pose count, not a taste, and the
+bootstrap now *writes* it (`SceneKit.SetFloat` on `boundaryDegrees`) — a scene generated while the fan had
+four poses still has 10 serialised in it, and `EnsureComponent<T>` returns the existing component rather than
+a fresh one, so only the builder re-asserting the number can correct an old scene. The cursor-jitter case moved
+onto a real edge (22.5°, ±2.4° = one pixel of shake at `aimNoiseRadius`) and still passes with at most one
+change in 30 frames; the diagonal-walk case now settles on `DiagonalUpRight` and holds it, which is the whole
+point of the issue.
+
+`PlayerVisual` gained `diagonalDownSprite` and `diagonalUpSprite`, one `SpriteFor` switch, and one
+`FacesLeft` list, so the set has a single convention — **every file is authored facing screen right** — and the
+day the art team draws the turn properly it is one boolean per pose to revisit. The fallback is
+all-or-nothing: five sprites or the dot, never a half-dressed character that freezes on a diagonal, guarded by
+`APlayerVisualFromTheFourPoseEra_TurnsItselfOffSilently`. Four PlayMode cases assert pose, sprite *identity*
+and `flipX` per diagonal, and the four captures (`Captures/pose_zoom_diag_*.png`) show them in the picture:
+the mirrored diagonals do move the rim light and the eye, which is the accepted cost above rather than a
+surprise. Eight poses now load from five files — ~13 MB on disk, ~13.4 MB at runtime, every one of them
+resident in any scene that has a player. 77 EditMode and 44 PlayMode cases green.
 
 ---
 
