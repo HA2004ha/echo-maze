@@ -3,7 +3,7 @@ using UnityEngine;
 namespace EchoMaze.Gameplay
 {
     /// <summary>
-    /// The character: which of the four poses to show, and the small motions that make it a living thing
+    /// The character: which of the eight poses to show, and the small motions that make it a living thing
     /// rather than a sticker. Deliberately not an Animator — there is one still per pose, so the only
     /// motion available is the kind you compute, and a state machine would add the project's first
     /// .anim/.controller assets to get there.
@@ -31,6 +31,12 @@ namespace EchoMaze.Gameplay
                  "DXT5, with mip levels) to redraw nothing. If the art team ever lights the two sides " +
                  "differently, this stops being free — see Docs/ISSUES.md #5.")]
         [SerializeField] Sprite sideSprite;
+        [Tooltip("The down-diagonal: Player_34_front, which is the front view turned three-quarters. The " +
+                 "down-left diagonal is this same file mirrored.")]
+        [SerializeField] Sprite diagonalDownSprite;
+        [Tooltip("The up-diagonal: Player_34_back, the back view turned three-quarters. The up-left " +
+                 "diagonal is this same file mirrored.")]
+        [SerializeField] Sprite diagonalUpSprite;
 
         [Header("Idle breath")]
         [Tooltip("Fractional vertical scale swing while standing still. 0.012 of an 89 pixel body is about " +
@@ -58,12 +64,14 @@ namespace EchoMaze.Gameplay
 
         [Header("Pose stability")]
         [Tooltip("Degrees past a sector boundary the heading has to clear before a neighbour is allowed. " +
-                 "A WASD diagonal is an exact |vx| = |vy| tie by construction, and a cursor 10 px off the " +
-                 "body turns one pixel of shake into ~5.7 degrees of aim, so without a band the pose flips " +
-                 "as often as those numbers wobble. 10 degrees on a 45-degree boundary still leaves 35 " +
-                 "degrees of responsive angle either side of a switch; issue 2 in Docs/ISSUES.md halves both " +
-                 "numbers when the fan widens, because eight boundaries are twice as many places to stick.")]
-        [Range(0f, 20f)] [SerializeField] float boundaryDegrees = 10f;
+                 "A cursor 10 px off the body turns one pixel of shake into ~5.7 degrees of aim, and a " +
+                 "heading that grazes an edge on its way out and back is an eighth-turn of the character per " +
+                 "wobble, so without a band the pose flips as often as those numbers move. 5 degrees on a " +
+                 "22.5-degree sector leaves 17.5 degrees of responsive angle either side of a switch. It is " +
+                 "half the old 10 because the fan has twice the boundaries to be sticky at " +
+                 "(Docs/ISSUES.md #2), which keeps the total dead angle the same; the scene builder " +
+                 "re-asserts it, because a scene generated for four poses still has 10 serialised in it.")]
+        [Range(0f, 20f)] [SerializeField] float boundaryDegrees = 5f;
         [Tooltip("Shortest interval between two pose changes. This is the gate that kills the class " +
                  "wholesale, including the handover when a key is released, where the velocity crosses the " +
                  "movement deadzone constantly and hysteresis cannot see it because the direction is what " +
@@ -98,7 +106,8 @@ namespace EchoMaze.Gameplay
             sprite = visuals != null ? visuals.GetComponent<SpriteRenderer>() : null;
 
             if (player == null || body == null || sprite == null ||
-                frontSprite == null || backSprite == null || sideSprite == null)
+                frontSprite == null || backSprite == null || sideSprite == null ||
+                diagonalDownSprite == null || diagonalUpSprite == null)
             {
                 enabled = false;
                 return;
@@ -188,25 +197,41 @@ namespace EchoMaze.Gameplay
             CurrentPose = pose;
             lastPoseChangeTime = Time.unscaledTime;
 
+            sprite.sprite = SpriteFor(pose);
+            sprite.flipX = FacesLeft(pose);
+        }
+
+        /// <summary>
+        /// Five files, eight poses. The three leftward ones are the same textures mirrored.
+        /// </summary>
+        Sprite SpriteFor(PlayerPose pose)
+        {
             switch (pose)
             {
-                case PlayerPose.Front:
-                    sprite.sprite = frontSprite;
-                    sprite.flipX = false;
-                    break;
-                case PlayerPose.Back:
-                    sprite.sprite = backSprite;
-                    sprite.flipX = false;
-                    break;
-                case PlayerPose.ProfileRight:
-                    sprite.sprite = sideSprite;
-                    sprite.flipX = false;
-                    break;
-                default:
-                    sprite.sprite = sideSprite;
-                    sprite.flipX = true;
-                    break;
+                case PlayerPose.Front: return frontSprite;
+                case PlayerPose.Back: return backSprite;
+                case PlayerPose.ProfileLeft:
+                case PlayerPose.ProfileRight: return sideSprite;
+                case PlayerPose.DiagonalUpRight:
+                case PlayerPose.DiagonalUpLeft: return diagonalUpSprite;
+                default: return diagonalDownSprite;
             }
+        }
+
+        /// <summary>
+        /// Every file is authored facing screen right — the profile because that is how it was drawn and
+        /// proved to be a mirror (issue 5), the two 3/4 stills because that is the convention chosen for them
+        /// in issue 2, in a set whose turn is carried by the rim light rather than by the silhouette
+        /// (measured: the body outline is symmetric to within 26 of 4096 px, the face offset is 228 px, which
+        /// is five screen pixels). One rule for all three left poses, so the day the art team draws the turn
+        /// properly it is one boolean per pose to revisit, and the PlayMode cases that assert flipX are what
+        /// notice.
+        /// </summary>
+        static bool FacesLeft(PlayerPose pose)
+        {
+            return pose == PlayerPose.ProfileLeft
+                || pose == PlayerPose.DiagonalDownLeft
+                || pose == PlayerPose.DiagonalUpLeft;
         }
 
         /// <summary>

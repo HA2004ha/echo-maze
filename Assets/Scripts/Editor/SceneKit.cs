@@ -30,13 +30,14 @@ namespace EchoMaze.EditorTools
         const string PoseFolder = "Assets/Art/Sprites/Player";
 
         /// <summary>
-        /// The pose sheet. The first three are the character as it walks; the rest are imported and
-        /// configured on purpose even where nothing references them yet: an unimported PNG under Assets/
-        /// gets whatever defaults whoever refreshes first leaves behind, and the day the wiring lands the
-        /// team inherits stale PPU-100 settings instead of correct ones. <c>Player_34_*</c> are the
-        /// diagonals <c>Docs/ISSUES.md</c> #2 builds on. There is deliberately no left-profile file: the
-        /// two profiles were bit-exact mirrors (measured again on the 4096 delivery, after one non-mirrored
-        /// export went round and came back — issue #5), so facing left is one <c>flipX</c>.
+        /// The pose sheet, in the order <c>EnsurePlayer</c> wires it: the three cardinals and the two
+        /// diagonals <c>Docs/ISSUES.md</c> #2 was written for. All five are required — the fallback is the
+        /// placeholder dot rather than a half-dressed character who freezes on a diagonal.
+        ///
+        /// There is deliberately no left-profile file: the two profiles were bit-exact mirrors (measured
+        /// again on the 4096 delivery, after one non-mirrored export went round and came back — issue #5), so
+        /// facing left is one <c>flipX</c>. The two diagonals are flipped the same way, which takes the set
+        /// from five files to eight poses.
         /// </summary>
         static readonly string[] PosePaths =
         {
@@ -379,40 +380,47 @@ namespace EchoMaze.EditorTools
 
             EnsureComponent<Player>(player);
 
-            Sprite front = EnsurePoseSprite(PosePaths[0]);
-            Sprite back = EnsurePoseSprite(PosePaths[1]);
-            Sprite side = EnsurePoseSprite(PosePaths[2]);
-
-            // Configure every pose file, wired or not, so the deferred ones cannot be committed with
-            // someone else's defaults.
-            for (int i = 3; i < PosePaths.Length; i++)
+            // Configure every pose file, wired or not, so the ones a later change un-wires cannot be
+            // committed with someone else's defaults.
+            Sprite[] poses = new Sprite[PosePaths.Length];
+            bool complete = true;
+            for (int i = 0; i < PosePaths.Length; i++)
             {
-                EnsurePoseSprite(PosePaths[i]);
+                poses[i] = EnsurePoseSprite(PosePaths[i]);
+                complete &= poses[i] != null;
             }
 
             Transform visuals = EnsureVisualsChild(player);
             var sprite = EnsureComponent<SpriteRenderer>(visuals.gameObject);
             sprite.sortingLayerName = "Default";
 
-            if (front != null && back != null && side != null)
+            if (complete)
             {
                 // Full opacity, no tint: the art is a near-black body with a cyan rim and glowing eyes, so
                 // in a black room only the outline and the eyes read anyway. The old faint disc was a
                 // placeholder, not a look. It has to be a real asset either way — a runtime Sprite.Create
                 // reference cannot survive a scene save.
-                sprite.sprite = front;
+                sprite.sprite = poses[0];
                 sprite.color = Color.white;
 
                 var visual = EnsureComponent<PlayerVisual>(player);
-                SetReference(visual, "frontSprite", front);
-                SetReference(visual, "backSprite", back);
-                SetReference(visual, "sideSprite", side);
+                SetReference(visual, "frontSprite", poses[0]);
+                SetReference(visual, "backSprite", poses[1]);
+                SetReference(visual, "sideSprite", poses[2]);
+                SetReference(visual, "diagonalDownSprite", poses[3]);
+                SetReference(visual, "diagonalUpSprite", poses[4]);
+
+                // The hysteresis band is a fraction of a sector, so it is a function of the pose count and
+                // not a taste: a scene generated while the fan had four poses still has the old 10 degrees
+                // serialised in it, and running the bootstrap is the thing that has to correct that rather
+                // than an inspector edit nobody remembers to make.
+                SetFloat(visual, "boundaryDegrees", 5f);
             }
             else
             {
-                Debug.LogWarning("Player pose art missing under " + PoseFolder +
-                                 " (need " + PosePaths[0] + ", " + PosePaths[1] + ", " + PosePaths[2] +
-                                 "); falling back to the placeholder dot.", player);
+                Debug.LogWarning("Player pose art missing under " + PoseFolder + " (need all of " +
+                                 string.Join(", ", PosePaths) + "); falling back to the placeholder dot.",
+                                 player);
 
                 Sprite dot = EnsurePlayerDot();
                 if (dot != null)
@@ -628,6 +636,23 @@ namespace EchoMaze.EditorTools
             }
 
             property.objectReferenceValue = value;
+            property.serializedObject.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        /// <summary>
+        /// Writes a serialised float on an existing component. Used for the one number whose correct value
+        /// depends on something outside the scene, so that re-running the bootstrap rather than opening the
+        /// inspector is what keeps an old scene honest.
+        /// </summary>
+        public static void SetFloat(UnityEngine.Object target, string field, float value)
+        {
+            SerializedProperty property = SerializedPropertyOf(target, field);
+            if (property == null)
+            {
+                return;
+            }
+
+            property.floatValue = value;
             property.serializedObject.ApplyModifiedPropertiesWithoutUndo();
         }
 
