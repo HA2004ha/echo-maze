@@ -13,6 +13,7 @@ impression and gets moved back to the report.
 | 3 | The pose **flickers** on a sector boundary, with no hysteresis and no dwell anywhere | Medium — cosmetic, but it is the thing a player notices first and it doubles with issue 2 | **closed** — three gates in `PlayerVisual`: a 10° band, a 0.1 s dwell and a 0.27 m cursor radius, each with its own case | week 3, done 2026-10-29, and it unblocks issue 2 |
 | 4 | The character is **drawn wider than it collides**, so it visibly sinks into walls, and the touch mark and the echo arc disagree about where the surface is | Medium — it is the root cause issue 1 worked around, and it decides whether the alcove pocket and the corridor gaps read honestly | open, needs a decision (art scale, hitbox growth, or accept) | week 3 as a decision, week 4 as a change |
 | 5 | The new 4096 art **is not mirror-symmetric**, so the `flipX` that faces the character left draws it lit from the wrong side | Medium — the left-facing pose is visibly inconsistent with the file the art team delivered for it, and issue 2's eight-pose plan was priced on the old symmetry | **closed** — turned out to be an export mistake, not a design decision: the lead re-exported the left profile and the pair is **bit-exact again (0 differing pixels)**, so the slot that had shipped for a day is reverted, `Player_side_left.png` is deleted, and `flipX` stands | week 3, done 2026-10-29 |
+| 6 | Moving the mouse across **due left** spins the character the long way round the compass — five pose changes for two degrees of cursor | Medium — it is the `Atan2` seam, and due left is the one direction on the fan that sits on it, so the gesture that read as broken was only ever broken on the left half | **closed** — the aim ease was `Mathf.LerpAngle` fed radians and it is a degrees API; `PlayerFacing.SmoothTowards` replaces it (`e7b4461`), three EditMode cases pin it (`c770cd4`), with a before/after pose trace | week 3, done 2026-10-29 |
 
 ---
 
@@ -328,6 +329,67 @@ exist; the honest ask to the art team, whenever they next touch this character, 
 **Acceptance:** met by the measurement above — the delivered pair is bit-exact, so the flipped in-game body
 *is* the delivered drawing, and `Captures/issue5_left_profile.png` stands as the record of the version that
 was not.
+
+---
+
+## 6 — Crossing due left with the mouse spun the character round the whole compass
+
+**Seen:** 2026-10-29, in play, by the lead. It arrived as "when we face left and change into up-left or
+down-left diagonal, we have flicker", and it was narrowed twice more before it was diagnosable: it is the
+**mouse**, not the keys; it happens **from a cursor pointing exactly left**; and — the clue that named the bug
+— **the same gesture on the right side is clean**.
+
+**What it was.** `Player.UpdateAim` eases the aim toward the cursor instead of snapping to it, and the ease was
+`Mathf.LerpAngle(aimRad, Mathf.Atan2(dir.y, dir.x), smoothing)`. `aimRad` is in **radians**.
+`Mathf.LerpAngle` — like `DeltaAngle` and `SmoothDampAngle` — is a **degrees** API. Its wrap correction fires
+on a raw difference over 180, and no two radian numbers are 180 apart, so the correction never runs: the seam
+is interpolated the **long way round**, close to a full circle of aim travel for two degrees of cursor.
+
+**Why only the left.** `Atan2` returns ±π, and due left is the only direction on the fan that lives on that
+discontinuity — a cursor a hair under the axis reads −179°, a hair above reads +179°, and the sign belongs to
+which side of the pixel the centre fell on. Screen right is 0, which is not a seam, so the whole right half of
+the compass eased correctly and the lead's own comparison between the two sides was the measurement that
+localised it before any code was read.
+
+**Measured on the build, easing −179° toward +179° at the game's own rate (0.3 per frame):**
+
+```
+before  Front  ProfileRight  DiagonalUpRight  Back  DiagonalUpLeft  ProfileLeft …
+after   ProfileLeft  ProfileLeft  ProfileLeft  ProfileLeft  ProfileLeft  ProfileLeft …
+```
+
+Five turns of the character for two degrees of mouse. Eight poses made it roughly twice as loud as four had:
+the long way round crosses **seven** 45° boundaries where it used to cross three 90° ones, and the sweep is
+fast enough to clear `boundaryDegrees` every time, so it lands about one change per `dwellSeconds` — which is
+the cadence that gets described as flicker.
+
+**Why issue 3's gates were not the answer, and were not touched.** The band, the dwell and the cursor radius
+all assume the heading is a real measurement of where the player is pointing. Here it was not: the aim genuinely
+did leave the sector, seven times over. Re-tuning `boundaryDegrees` or `dwellSeconds` would have bought back
+nothing and cost response — so the diagnosis came first and the fix landed one file over, in the *source* of the
+heading rather than in the gating of it.
+
+**Fix.** `PlayerFacing.SmoothTowards(currentRad, targetRad, amount)` — degrees in, degrees out, radians back —
+called by `Player.UpdateAim`. It is in `PlayerFacing` rather than left as a line in `Player` for the same reason
+the sector map is: a private method on a MonoBehaviour cannot be pinned by a test, and this is the second time
+the ±π seam has needed one in that file (`BothEndsOfTheAtan2Range_AreTheSameHeading` is the first). It is also
+now the only radian-angle easing in the project, so the misuse has a name to grep for.
+
+**Tests.** `PlayerFacingTests` gains three cases:
+`ACursorCrossingDueLeft_KeepsFacingLeftAllTheWayAcross` (both directions of the crossing, twenty steps each,
+the pose may not leave the profile), `ATurnAcrossTheSeam_TakesTheShortWayRound` (170° → −150° stays within 40°
+of due left *and arrives* — the seam case that is meant to turn, so the first case cannot pass on a function
+that simply holds the angle still), and `ATurnThatDoesNotCrossTheSeam_EasesLikeAPlainLerp` (the degrees
+round-trip has not changed the case that already worked). **80/80 EditMode, 44/44 PlayMode.**
+
+**Acceptance:** the trace above, taken from the live editor against the built `SmoothTowards`. A cursor can now
+cross due left in either direction and the character does not move; a deliberate 45° move from due left to
+up-left still produces exactly one turn, which is what the sweep in `TUNING.md` prices.
+
+**What this does not settle:** stopping still re-faces the body to the cursor, and starting still turns it back
+to the movement — the art review's decision, gated by `dwellSeconds`. If that reads as flicker in play too, it is
+a design argument about which of the two heads should win a handover, not a bug, and it belongs in
+`DESIGN_DECISIONS.md`'s *Under decision* rather than here.
 
 ---
 

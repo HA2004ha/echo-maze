@@ -223,6 +223,40 @@ Every choice that closes one path and leaves another open is recorded here, so t
 - The dot fallback is all-or-nothing on the five files. A half-wired set disables `PlayerVisual` silently (the builder already warned) rather than drawing cardinals correctly and going blank on the first diagonal: `PlayerVisualTests.APlayerVisualFromTheFourPoseEra_TurnsItselfOffSilently`.
 - `Player_34_*` are not available to a 3/4 camera any more. If that camera happens, its stills are an art request, not these two files.
 
+## 2026-10-29 — Radian angles get one easing function, because `Mathf`'s are degrees APIs
+
+**Decision:** `PlayerFacing.SmoothTowards(currentRad, targetRad, amount)` is the project's only radian-angle
+ease, and `Player.UpdateAim` calls it. The line it replaces was `Mathf.LerpAngle(aimRad, Atan2(…), smoothing)`
+— correct in shape, wrong in units. No gate, no band, no tuning number moved, and `PlayerVisual` was not
+touched.
+
+**Reason:** the flicker `Docs/ISSUES.md` #6 records was this line and not the hysteresis. `LerpAngle`,
+`DeltaAngle` and `SmoothDampAngle` are all documented in **degrees**, and the aim is kept in radians; the wrap
+correction inside them fires on a raw difference over 180, which two radian values never reach, so crossing the
+±π seam interpolated the long way round — measured, five pose changes for two degrees of cursor. It could not
+be fixed where the flicker was being looked for: the band, the dwell and the cursor radius all assume the
+heading is a real measurement of where the player points, and here the heading genuinely did leave the sector,
+seven times over, so a wider band would only have made the character deaf. It could not stay inline in `Player`
+either, because a private method on a MonoBehaviour has no EditMode reach, and this is the second time the seam
+has needed a test in `PlayerFacing` (`BothEndsOfTheAtan2Range_AreTheSameHeading` being the first).
+
+**Cost:** a public function on a class that is otherwise the pose map, and a units round-trip per frame per
+aim — three multiplies, no `Atan2`, nothing measurable. The real cost is the one this entry exists for: the
+defect was invisible for a full week because the code *looked* right. `Mathf.LerpAngle` reads like "lerp an
+angle", the field it was called on is called `aimRad`, and nothing in the line says which unit either side of
+it is in. The name `SmoothTowards` is a grep, not a proof.
+
+**Rules:**
+- Any radian angle that eases goes through `SmoothTowards`. A new radian field does not get `LerpAngle`,
+  `DeltaAngle` or `SmoothDampAngle` handed its values directly — those three take degrees, and the type system
+  says nothing about it.
+- Seam cases are asserted by **pose**, not by angle. `ACursorCrossingDueLeft_KeepsFacingLeftAllTheWayAcross`
+  fails when the character moves, whatever the arithmetic returns; `ATurnAcrossTheSeam_TakesTheShortWayRound`
+  asserts both that the ease stayed on the short arc *and* that it arrived, because a function that simply
+  refused to move would pass the first half.
+- The ease rate (`18`/s) is documented in `TUNING.md` as `aimEase` rather than left as a literal, because the
+  same eased number steers the echo cone: it is a gameplay lag, not just a presentation curve.
+
 ## Under decision
 
 - **Does a human read wall / pillar / corner / hollow / Crawler from the arcs alone, at these thresholds?** Everything above is counted in samples; none of it is seen in eyes. This is the week-2 go/no-go and only the readability session on Linux can close it.
