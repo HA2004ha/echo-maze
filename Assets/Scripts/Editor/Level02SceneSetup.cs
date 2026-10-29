@@ -83,6 +83,7 @@ namespace EchoMaze.EditorTools
             Player player = playerObject.GetComponent<Player>();
             SceneKit.SetReference(player, "director", director);
             SceneKit.SetReference(player, "marks", marks);
+            SceneKit.EnsureAimCursor(playerObject);
 
             SceneKit.EnsureCrawler(CrawlerStart, Patrol, director, player);
             SceneKit.EnsureRunController(player, SceneKit.EnsureDeathNotice());

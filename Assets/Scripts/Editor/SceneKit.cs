@@ -7,6 +7,7 @@ using UnityEngine.UI;
 using EchoMaze.Core;
 using EchoMaze.Data;
 using EchoMaze.Gameplay;
+using EchoMaze.UI;
 
 namespace EchoMaze.EditorTools
 {
@@ -62,6 +63,66 @@ namespace EchoMaze.EditorTools
         /// someone forgets.
         /// </summary>
         const float PosePixelsPerUnit = 2560f;
+
+        const string CursorRingPath = "Assets/Art/Sprites/Cursor_ring.png";
+        const string CursorDotPath = "Assets/Art/Sprites/Cursor_dot.png";
+        const string CursorHeadPath = "Assets/Art/Sprites/Cursor_head.png";
+
+        /// <summary>
+        /// The aim cursor is drawn 1:1 with screen pixels, so its two constants are the same number read two
+        /// ways: 48 texels at 90 texels-per-unit is 0.533 world units, and the blockout camera puts one world
+        /// unit at ~90 screen pixels (Docs/TUNING.md), so 48 texels is 48 pixels at the 1080p target. That is
+        /// what makes an anti-aliased circle here a crisp one on screen, and it is the same reasoning that
+        /// gives the placeholder dot PPU 16 rather than a downscaled sheet.
+        /// </summary>
+        const int CursorTexels = 48;
+
+        const float CursorPixelsPerUnit = 90f;
+
+        // Strokes, in texels, measured from the canvas centre (24, 24). The weight is one number on
+        // purpose: the game is drawn entirely in thin lines and a reticle with a different line weight to
+        // the arcs would look like it belongs to another game.
+        const float RingRadius = 15f;
+        const float RingHalfWidth = 0.7f;
+
+        /// <summary>
+        /// 1.4 and not 1.0, which is the "two pixels" the design asks for: analytic anti-aliasing is honest
+        /// about area, and a disc of radius 1 covers 3.14 texels spread over four pixels, so its brightest
+        /// pixel is 0.76 and the dot's carefully budgeted brightness never arrives. At 1.4 a whole pixel
+        /// fits inside the disc, the peak is 1, and the mark is still under three screen pixels across.
+        /// </summary>
+        const float DotRadius = 1.4f;
+
+        const float HeadArcRadius = 18.5f;
+        const float HeadArcHalfWidth = 0.8f;
+        const float HeadArcHalfAngleDegrees = 18f;
+        const float HeadArcAngleFeather = 5f;
+        const float HeadTip = 21.5f;
+        const float HeadWingDepth = 3.3f;
+        const float HeadWingHalf = 3.4f;
+
+        /// <summary>
+        /// The canvas centre in texel coordinates, which is the geometric middle rather than the average of
+        /// the pixel indices: the sprite pivot lands here, and every element is measured from it.
+        /// </summary>
+        const float CursorCentre = CursorTexels * 0.5f;
+
+        /// <summary>
+        /// The head's arc sits at r18.5 and not on the ring at r15, which is the obvious place for it, because
+        /// two SpriteRenderers stack: an arc drawn over the ring composites to 1 - (1-ring)(1-head), which at
+        /// a full charge would be 0.75 alpha and land at 0.62 luminance — over Bloom's 0.55 threshold, so the
+        /// interface would glow exactly when the player is loudest, which is the one thing GDD 3.0 forbids.
+        /// The ring's ink stops at r16 and the head's starts at r17.4, so the brightest pixel on screen is one
+        /// element's alpha and AimCursorMath.AlphaCeiling really is the whole budget. The arc and the chevron
+        /// may overlap each other freely: they are one sprite, and one sprite takes one tint.
+        ///
+        /// Feather, likewise, is one number for every edge in the set: the ramp is what makes a 1.4-texel
+        /// stroke survive being drawn at one texel per screen pixel, and two softnesses in one glyph reads as
+        /// one of them being out of focus.
+        /// </summary>
+        const float StrokeFeather = 0.55f;
+
+        const int CursorSupersample = 4;
 
         public static EchoTuningProfile EnsureTuning()
         {
@@ -252,6 +313,234 @@ namespace EchoMaze.EditorTools
         }
 
         /// <summary>
+        /// One of the three aim-cursor files: drawn here, written to disk as a PNG, imported with the settings
+        /// the runtime expects, and returned as a sprite. The bytes are the artifact and this code is their
+        /// source, which is why the file is rewritten whenever it stops matching what the drawer produces —
+        /// a committed PNG that the generator has silently moved away from is the worst kind of drift, because
+        /// the art looks right in the editor and only the numbers in the code have changed.
+        ///
+        /// The shape is drawn analytically at four samples per texel and averaged, rather than rasterised at
+        /// 48x48: the whole look of this game is thin lines, and a jagged circle is the one failure an asset
+        /// class like this cannot survive. White RGB with the alpha carrying coverage is the same contract
+        /// <see cref="TouchMarks"/> builds its dashes on, so the tint on the renderer is the only place colour
+        /// lives.
+        /// </summary>
+        static Sprite EnsureCursorSprite(string path, System.Func<float, float, float> coverage)
+        {
+            EnsureFolder("Assets/Art/Sprites");
+
+            float step = 1f / CursorSupersample;
+            float weight = 1f / (CursorSupersample * CursorSupersample);
+            var pixels = new Color32[CursorTexels * CursorTexels];
+            for (int py = 0; py < CursorTexels; py++)
+            {
+                for (int px = 0; px < CursorTexels; px++)
+                {
+                    float sum = 0f;
+                    for (int sy = 0; sy < CursorSupersample; sy++)
+                    {
+                        for (int sx = 0; sx < CursorSupersample; sx++)
+                        {
+                            sum += coverage(px + (sx + 0.5f) * step, py + (sy + 0.5f) * step);
+                        }
+                    }
+
+                    pixels[py * CursorTexels + px] = new Color32(
+                        255, 255, 255, (byte)Mathf.RoundToInt(Mathf.Clamp01(sum * weight) * 255f));
+                }
+            }
+
+            var texture = new Texture2D(CursorTexels, CursorTexels, TextureFormat.RGBA32, false);
+            texture.SetPixels32(pixels);
+            texture.Apply(false);
+            byte[] bytes = texture.EncodeToPNG();
+            Object.DestroyImmediate(texture);
+
+            bool rewrote = !BytesEqual(System.IO.File.Exists(path) ? System.IO.File.ReadAllBytes(path) : null,
+                                       bytes);
+            if (rewrote)
+            {
+                System.IO.File.WriteAllBytes(path, bytes);
+            }
+
+            // ForceUpdate on a rewritten file, plain import on one that already matched: the second case is
+            // the bootstrap re-run, and it must not churn a .meta it has nothing to change.
+            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
+
+            var importer = (TextureImporter)AssetImporter.GetAtPath(path);
+            if (importer != null && ConfigureCursorImporter(importer))
+            {
+                importer.SaveAndReimport();
+            }
+
+            // Reload: a reimport destroys the object a previous call may have returned.
+            return AssetDatabase.LoadAssetAtPath<Sprite>(path);
+        }
+
+        static bool BytesEqual(byte[] a, byte[] b)
+        {
+            if (a == null || b == null || a.Length != b.Length)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < a.Length; i++)
+            {
+                if (a[i] != b[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// The one anti-aliasing primitive: 1 well inside the boundary of a shape, 0 well outside it, ramping
+        /// between the two over <c>feather</c> texels. Every element of the cursor is one call to this, so the
+        /// ring, the dot and the head cannot disagree about how soft an edge is.
+        /// </summary>
+        static float Edge(float signedDistance, float feather)
+        {
+            return Mathf.Clamp01(0.5f - signedDistance / feather);
+        }
+
+        /// <summary>
+        /// Canvas coordinates with (0, 0) at the bottom-left, the way a texture row is numbered, so y grows
+        /// upward and an angle measured with Atan2 turns the same way <c>Quaternion.Euler(0, 0, degrees)</c>
+        /// turns. The centre is the geometric 24 and not the 23.5 the pixel indices average to, because 24 is
+        /// where the sprite pivot is: a head drawn half a texel off the pivot would orbit the wrong point.
+        /// </summary>
+        static float DistanceFromCentre(float x, float y)
+        {
+            float dx = x - CursorCentre;
+            float dy = y - CursorCentre;
+            return Mathf.Sqrt(dx * dx + dy * dy);
+        }
+
+        static float RingCoverage(float x, float y)
+        {
+            return Edge(Mathf.Abs(DistanceFromCentre(x, y) - RingRadius) - RingHalfWidth, StrokeFeather);
+        }
+
+        static float DotCoverage(float x, float y)
+        {
+            return Edge(DistanceFromCentre(x, y) - DotRadius, StrokeFeather);
+        }
+
+        /// <summary>
+        /// The direction head: a 36-degree bracket curved along the ring, and a 90-degree chevron that grows
+        /// out of the middle of it with its tip at r21.5 — the farthest thing any cursor sprite draws.
+        /// Authored pointing along +x, which is atan2's zero, so the rotation the runtime applies is the aim
+        /// angle itself and not the aim angle plus an offset somebody has to remember when the sprite is
+        /// redrawn.
+        ///
+        /// The arc is wide enough to be read as a bracket rather than as part of the arrow, and its ends are
+        /// outside the chevron; a 24-degree span at this radius sat inside the arrowhead entirely and drew the
+        /// glyph twice in the same four pixels (caught by previewing the generated PNG, not by looking at the
+        /// numbers).
+        ///
+        /// The arc and the chevron are maxed, never added: two strokes of one sprite crossing is still one
+        /// sprite, and a summed alpha would brighten the crossing above every state AimCursorMath budgets.
+        /// </summary>
+        static float HeadCoverage(float x, float y)
+        {
+            float dx = x - CursorCentre;
+            float dy = y - CursorCentre;
+            float distance = Mathf.Sqrt(dx * dx + dy * dy);
+            float fromPlusX = Mathf.Abs(Mathf.Atan2(dy, dx) * Mathf.Rad2Deg);
+
+            float arc = Edge(Mathf.Abs(distance - HeadArcRadius) - HeadArcHalfWidth, StrokeFeather) *
+                        Edge(fromPlusX - HeadArcHalfAngleDegrees, HeadArcAngleFeather);
+
+            float wing = HeadTip - HeadWingDepth;
+            float upper = SegmentCoverage(dx, dy, HeadTip, 0f, wing, HeadWingHalf, RingHalfWidth);
+            float lower = SegmentCoverage(dx, dy, HeadTip, 0f, wing, -HeadWingHalf, RingHalfWidth);
+
+            return Mathf.Max(arc, Mathf.Max(upper, lower));
+        }
+
+        static float SegmentCoverage(float px, float py, float ax, float ay, float bx, float by,
+                                     float halfWidth)
+        {
+            float vx = bx - ax;
+            float vy = by - ay;
+            float wx = px - ax;
+            float wy = py - ay;
+            float t = Mathf.Clamp01((wx * vx + wy * vy) / (vx * vx + vy * vy));
+            float nx = wx - t * vx;
+            float ny = wy - t * vy;
+
+            return Edge(Mathf.Sqrt(nx * nx + ny * ny) - halfWidth, StrokeFeather);
+        }
+
+        /// <summary>
+        /// Returns whether anything changed, for the same reason <see cref="ConfigurePoseImporter"/> does.
+        ///
+        /// Mipmaps off and bilinear is the deliberate split from the poses, and it is the same split the
+        /// placeholder dot already makes: this art is authored at the size it is drawn, one texel to one
+        /// screen pixel at the 1080p target, so there is no downscale for a mip chain to rescue and a chain
+        /// would only blur a 1.4-texel stroke the moment the screen is not exactly 1080p.
+        /// </summary>
+        static bool ConfigureCursorImporter(TextureImporter importer)
+        {
+            bool changed = false;
+
+            void Set(bool current, bool value, System.Action apply)
+            {
+                if (current != value)
+                {
+                    apply();
+                    changed = true;
+                }
+            }
+
+            Set(importer.textureType == TextureImporterType.Sprite, true,
+                () => importer.textureType = TextureImporterType.Sprite);
+            Set(importer.spriteImportMode == SpriteImportMode.Single, true,
+                () => importer.spriteImportMode = SpriteImportMode.Single);
+            Set(importer.sRGBTexture, true, () => importer.sRGBTexture = true);
+            Set(importer.alphaSource == TextureImporterAlphaSource.FromInput, true,
+                () => importer.alphaSource = TextureImporterAlphaSource.FromInput);
+            Set(importer.alphaIsTransparency, true, () => importer.alphaIsTransparency = true);
+            Set(importer.mipmapEnabled, false, () => importer.mipmapEnabled = false);
+
+            if (!Mathf.Approximately(importer.spritePixelsPerUnit, CursorPixelsPerUnit))
+            {
+                importer.spritePixelsPerUnit = CursorPixelsPerUnit;
+                changed = true;
+            }
+
+            // Concentric with the canvas, which is the aim point: the ring, the dot and the head are three
+            // sprites that must land on each other exactly, and the head rotates about this point.
+            if (importer.spritePivot != new Vector2(0.5f, 0.5f))
+            {
+                importer.spritePivot = new Vector2(0.5f, 0.5f);
+                changed = true;
+            }
+
+            if (importer.filterMode != FilterMode.Bilinear)
+            {
+                importer.filterMode = FilterMode.Bilinear;
+                changed = true;
+            }
+
+            if (importer.wrapMode != TextureWrapMode.Clamp)
+            {
+                importer.wrapMode = TextureWrapMode.Clamp;
+                changed = true;
+            }
+
+            if (importer.maxTextureSize < CursorTexels)
+            {
+                importer.maxTextureSize = CursorTexels;
+                changed = true;
+            }
+
+            return changed;
+        }
+
+        /// <summary>
         /// The camera the wave was tuned against: orthographic, pure black, HDR on so Bloom can catch the
         /// cyan, and the near/far planes wide because the ribbon is drawn in the z = 0 plane while the
         /// capture code sometimes sits elsewhere.
@@ -432,6 +721,91 @@ namespace EchoMaze.EditorTools
             }
 
             return player;
+        }
+
+        /// <summary>
+        /// The pointer the game draws in place of the one the operating system draws: a ring, a dot on the
+        /// exact aim point, and a head that turns to the angle the face and the cone are already using.
+        ///
+        /// Flat and world-space, deliberately not a child of the player. The root is placed by projecting the
+        /// screen pointer, so parenting it to the body would add the body's position to a coordinate that is
+        /// already absolute — and the body is also what the pointer is measured against for the parked state.
+        ///
+        /// Returns null with a warning, never an error, when the art could not be written: the component
+        /// disables itself on an incomplete setup and <c>Cursor.visible</c> is left alone, so a machine that
+        /// cannot have the reticle keeps the pointer it already has.
+        /// </summary>
+        public static GameObject EnsureAimCursor(GameObject player)
+        {
+            Sprite ring = EnsureCursorSprite(CursorRingPath, RingCoverage);
+            Sprite dot = EnsureCursorSprite(CursorDotPath, DotCoverage);
+            Sprite head = EnsureCursorSprite(CursorHeadPath, HeadCoverage);
+            if (ring == null || dot == null || head == null)
+            {
+                Debug.LogWarning("Aim cursor art unavailable (" + CursorRingPath + ", " + CursorDotPath +
+                                 ", " + CursorHeadPath + "); the system cursor stays and the aim is unchanged.");
+                return null;
+            }
+
+            GameObject cursorObject = FindOrCreate("Aim Cursor");
+            cursorObject.layer = 0;
+
+            // Where the pointer happened to be when someone saved the scene is not scene state. LateUpdate
+            // overwrites this every frame; the reset is so the editor view does not open with a reticle
+            // sitting on the player.
+            cursorObject.transform.position = Vector3.zero;
+            cursorObject.transform.rotation = Quaternion.identity;
+            cursorObject.transform.localScale = Vector3.one;
+
+            var cursor = EnsureComponent<AimCursor>(cursorObject);
+            SetReference(cursor, "player", player.GetComponent<Player>());
+            SetReference(cursor, "ringSprite", ring);
+            SetReference(cursor, "dotSprite", dot);
+            SetReference(cursor, "headSprite", head);
+
+            // The radius that decides when the head goes slack is PlayerVisual's number, not a second opinion
+            // on it. Read off the component this scene already has and written here, so an inspector tweak is
+            // carried over by the next bootstrap run rather than leaving two fields that quietly disagree
+            // about where the aim stops meaning anything.
+            var visual = player.GetComponent<PlayerVisual>();
+            if (visual != null)
+            {
+                SerializedProperty noise = SerializedPropertyOf(visual, "aimNoiseRadius");
+                if (noise != null)
+                {
+                    SetFloat(cursor, "parkRadius", noise.floatValue);
+                }
+            }
+
+            // The layer and the order are also set at runtime by AimCursor.Awake; setting them here is what
+            // makes the scene correct in the editor and in a capture taken before the first LateUpdate.
+            EnsureCursorChild(cursorObject, "Ring", ring, 0);
+            EnsureCursorChild(cursorObject, "Dot", dot, 1);
+            EnsureCursorChild(cursorObject, "Head", head, 2);
+
+            return cursorObject;
+        }
+
+        static Transform EnsureCursorChild(GameObject root, string name, Sprite sprite, int order)
+        {
+            Transform child = root.transform.Find(name);
+            if (child == null)
+            {
+                GameObject created = new GameObject(name);
+                created.transform.SetParent(root.transform, false);
+                child = created.transform;
+            }
+
+            child.localPosition = Vector3.zero;
+            child.localRotation = Quaternion.identity;
+            child.localScale = Vector3.one;
+
+            var renderer = EnsureComponent<SpriteRenderer>(child.gameObject);
+            renderer.sprite = sprite;
+            renderer.sortingLayerName = "HUD";
+            renderer.sortingOrder = order;
+
+            return child;
         }
 
         /// <summary>

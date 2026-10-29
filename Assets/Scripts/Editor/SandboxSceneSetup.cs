@@ -188,6 +188,7 @@ namespace EchoMaze.EditorTools
             EchoDirector director = SceneKit.EnsureDirector(tuning, field);
             SceneKit.SetReference(playerObject.GetComponent<Player>(), "director", director);
             SceneKit.SetReference(playerObject.GetComponent<Player>(), "marks", marks);
+            SceneKit.EnsureAimCursor(playerObject);
 
             EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
             EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene(), SandboxPath);
