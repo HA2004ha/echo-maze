@@ -24,6 +24,7 @@ namespace EchoMaze.EditorTools
                                                Vector2 cameraBoundsHalf, float cameraSize, string chapterTitle)
         {
             UiKit.EnsureEventSystem();
+            EnsureDeathSnarl(player, director);
             GameObject notice = SceneKit.EnsureDeathNotice();
             RunController runner = SceneKit.EnsureRunController(player, notice);
             LevelSession session = SceneKit.EnsureLevelSession(player, runner, director, chapterTitle);
@@ -34,6 +35,54 @@ namespace EchoMaze.EditorTools
             UiKit.EnsurePausePanel(session);
             UiKit.EnsureVictoryPanel();
             return session;
+        }
+
+        /// <summary>
+        /// The death sound on the player's own object. Missing clip is a warning, not an error: the death
+        /// is still counted and the black screen still comes.
+        /// </summary>
+        public static DeathSnarl EnsureDeathSnarl(Player player, EchoDirector director)
+        {
+            var snarl = player.GetComponent<DeathSnarl>() ?? player.gameObject.AddComponent<DeathSnarl>();
+            var clip = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/Death_snarl.wav");
+            if (clip == null)
+            {
+                Debug.LogWarning("Death clip Assets/Audio/Death_snarl.wav is not imported: dying will be silent.",
+                                 player);
+            }
+
+            SceneKit.SetReference(snarl, "director", director);
+            SceneKit.SetReference(snarl, "clip", clip);
+            return snarl;
+        }
+
+        /// <summary>A hollow over <paramref name="size"/> of floor at <paramref name="centre"/>; one object per name.</summary>
+        public static Hollow EnsureHollow(string name, Vector2 centre, Vector2 size, Player player,
+                                          LevelSession session)
+        {
+            GameObject go = GameObject.Find(name) ?? new GameObject(name);
+            var hollow = go.GetComponent<Hollow>() ?? go.AddComponent<Hollow>();
+            SceneKit.SetReference(hollow, "player", player);
+            SceneKit.SetReference(hollow, "session", session);
+            SceneKit.SetVector2(hollow, "centre", centre);
+            SceneKit.SetVector2(hollow, "size", size);
+            return hollow;
+        }
+
+        /// <summary>The chapter-one hints, switched on. Chapters that want none simply do not call this.</summary>
+        public static LevelHints EnsureHints(EchoDirector director, Player player, TouchMarks marks,
+                                             LevelSession session)
+        {
+            GameObject go = GameObject.Find("Level Hints") ?? new GameObject("Level Hints");
+            var hints = go.GetComponent<LevelHints>() ?? go.AddComponent<LevelHints>();
+            SceneKit.SetReference(hints, "director", director);
+            SceneKit.SetReference(hints, "player", player);
+            SceneKit.SetReference(hints, "marks", marks);
+            SceneKit.SetReference(hints, "session", session);
+            var serialized = new SerializedObject(hints);
+            serialized.FindProperty("hintsEnabled").boolValue = true;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            return hints;
         }
     }
 }

@@ -23,7 +23,7 @@ namespace EchoMaze.EditorTools
         // The run is one chapter for this milestone: the maze is the level a player is meant to finish, and
         // finishing it must show the victory panel. The corridor stays in the build as the week-4 room and
         // is entered from the editor until its hunt systems make it a chapter rather than a preview.
-        public static readonly string[] Chapters = { "Level01_Maze" };
+        public static readonly string[] Chapters = { "Level01_Maze", "Level02_Corridor" };
         const string MenuScene = "Boot";
 
         /// <summary>

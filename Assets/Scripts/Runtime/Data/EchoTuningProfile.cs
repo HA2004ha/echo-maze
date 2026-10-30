@@ -91,8 +91,38 @@ namespace EchoMaze.Data
         [Header("Hearing")]
         [Tooltip("rho = enemy hearing radius / visible echo reach at the same loudness. The tuning knob from the GDD: too high and pinging is never worth it, too low and there is no tension.")]
         [Range(0.05f, 3f)] public float rho = 0.8f;
-        [Tooltip("Crawler speed as a fraction of walk speed. Above 1 the creature cannot be outrun, which is the whole Crawler design.")]
-        [Range(0.1f, 2f)] public float crawlerSpeedMultiplier = 0.65f;
+
+        [Header("Crawler gait")]
+        [Tooltip("Crawler speed while patrolling, as a fraction of walk speed (0.4 = 1 m/s). Slow and heavy: the patrol is meant to be heard coming long before it arrives. Never above the chase multiplier.")]
+        [Range(0.1f, 0.95f)] public float crawlerPatrolSpeedMultiplier = 0.4f;
+        [Tooltip("Crawler speed while hunting a noise, as a fraction of walk speed (0.8 = 2 m/s). Clamped below 1: the player who keeps walking always gets away, which is the whole Crawler design.")]
+        [Range(0.1f, 0.95f)] public float crawlerChaseSpeedMultiplier = 0.8f;
+        [Tooltip("Seconds between two patrol steps. A hunt keeps the stride and shortens the interval in proportion to the speed (see Crawler.StepInterval), so a faster Crawler sounds faster rather than longer-legged.")]
+        [Range(0.2f, 4f)] public float crawlerStepInterval = 1.5f;
+        [Tooltip("Volume of one step clip at 1 m. Loud on purpose: the stomp is how a player tracks the creature without pinging. Shares the roar's AudioSource, so it falls off over roarHearDistance.")]
+        [Range(0f, 1f)] public float crawlerStepVolume = 1f;
+
+        [Header("Crawler roar")]
+        [Tooltip("Shortest seconds between two roars. Each interval is drawn uniformly from [min, max] on the Crawler's own seed, so a retry roars on the same beats.")]
+        [Range(1f, 60f)] public float roarIntervalMin = 10f;
+        [Tooltip("Longest seconds between two roars. Rare on purpose: a roar is a location cue, and one every few seconds would make the creature trivially trackable.")]
+        [Range(1f, 60f)] public float roarIntervalMax = 15f;
+        [Tooltip("Radius the warm roar ring grows to, in world units. Shows where the creature is; it measures nothing, so it is not an echo.")]
+        [Range(0.5f, 15f)] public float roarWaveRadius = 5f;
+        [Tooltip("Seconds the roar ring takes to grow to roarWaveRadius while fading out.")]
+        [Range(0.1f, 5f)] public float roarWaveSeconds = 1.2f;
+        [Tooltip("Distance at which the roar becomes inaudible (linear rolloff from 1 m). The listener is on the player, on the z = 0 plane.")]
+        [Range(1f, 40f)] public float roarHearDistance = 12f;
+        [Tooltip("Volume of the roar clip at 1 m.")]
+        [Range(0f, 1f)] public float roarVolume = 0.8f;
+        [Tooltip("Volume of the death snarl (Death_snarl.wav), played flat (2D) at the moment the Crawler kills the player. It answers the roar, so it should not be quieter than roarVolume.")]
+        [Range(0f, 1f)] public float deathSoundVolume = 1f;
+
+        [Header("Hollow")]
+        [Tooltip("Fraction of an enemy's normal hearing radius that applies to a quiet sound made inside a hollow. Not zero: a hollow is nearly unhearable, not soundproof. An enemy already chasing ignores it.")]
+        [Range(0.01f, 1f)] public float hollowHearingMultiplier = 0.15f;
+        [Tooltip("Loudness above which a sound made inside a hollow is heard at full radius: pinging or shouting from cover breaks it. Footsteps, the F pulse, bumps and door sounds sit below it.")]
+        [Range(0f, 1f)] public float hollowBreaksAbove = 0.25f;
 
         [Header("Arc train")]
         [Tooltip("Arcs emitted per ping. One arc per ping is a single ring and reads as a pulse; three read as a wave with a front.")]
@@ -191,6 +221,34 @@ namespace EchoMaze.Data
         [Tooltip("Seconds between weak pulses.")]
         [Range(0.1f, 5f)] public float weakPulseCooldown = 1.2f;
 
+        [Header("Wall memory")]
+        [Tooltip("Remembered wall segments kept at once. When full the oldest is overwritten and counted as overflow.")]
+        [Range(50, 5000)] public int wallMemoryCapacity = 1500;
+        [Tooltip("A touch within this many metres of a remembered line, and roughly along it, extends that line instead of adding another. Without it, bumping one wall ten times would spend ten slots.")]
+        [Range(0.02f, 0.5f)] public float wallMemoryMergeDistance = 0.15f;
+        [Tooltip("Length of the line one touch remembers, centred on the contact point along the wall.")]
+        [Range(0.2f, 3f)] public float wallMemorySegmentLength = 1f;
+        [Tooltip("Colour of a remembered wall. A slightly bluer cyan than arcColor on purpose: memory must never read as a live echo.")]
+        public Color wallMemoryColor = new Color(0.38f, 0.78f, 1f, 1f);
+        [Tooltip("Brightness of a remembered wall. Dimmer than a live arc, and constant: the line never fades out.")]
+        [Range(0.05f, 1f)] public float wallMemoryAlpha = 0.45f;
+        [Tooltip("Line width as a fraction of baseThickness. Thin: it is a hand on the wall, not a wave.")]
+        [Range(0.2f, 1.5f)] public float wallMemoryThicknessScale = 0.6f;
+        [Tooltip("Seconds a new remembered line takes to fade in.")]
+        [Range(0.05f, 1f)] public float wallMemoryFadeInSeconds = 0.25f;
+
+        [Header("Footprint trail")]
+        [Tooltip("Seconds a footprint stays before it is gone. Also sizes the ring buffer.")]
+        [Range(1f, 10f)] public float trailSeconds = 4f;
+        [Tooltip("Metres walked between two footprints. A step, not a frame: the trail costs the same at 30 and 300 fps.")]
+        [Range(0.1f, 1f)] public float trailStepDistance = 0.35f;
+        [Tooltip("Footprint colour: warm and neutral, so it is neither a wall (cyan) nor a creature (orange).")]
+        public Color trailColor = new Color(0.95f, 0.88f, 0.72f, 1f);
+        [Tooltip("Brightness of the newest footprint; it fades linearly to zero over trailSeconds.")]
+        [Range(0.05f, 1f)] public float trailMaxAlpha = 0.35f;
+        [Tooltip("Edge of one footprint dot in metres.")]
+        [Range(0.03f, 0.3f)] public float trailDotSize = 0.09f;
+
         void OnValidate()
         {
             coneHalfAngleDeg = Mathf.Clamp(coneHalfAngleDeg, 5f, 90f);
@@ -213,6 +271,12 @@ namespace EchoMaze.Data
             weakPulseRadius = Mathf.Clamp(weakPulseRadius, 0.25f, 4f);
             weakPulseRays = Mathf.Clamp(weakPulseRays, 24, 512) | 1;
             weakPulseCooldown = Mathf.Max(0.1f, weakPulseCooldown);
+            wallMemoryCapacity = Mathf.Max(50, wallMemoryCapacity);
+            wallMemoryMergeDistance = Mathf.Max(0.02f, wallMemoryMergeDistance);
+            wallMemorySegmentLength = Mathf.Max(0.2f, wallMemorySegmentLength);
+            wallMemoryFadeInSeconds = Mathf.Max(0.05f, wallMemoryFadeInSeconds);
+            trailSeconds = Mathf.Max(1f, trailSeconds);
+            trailStepDistance = Mathf.Max(0.1f, trailStepDistance);
             walkSpeed = Mathf.Max(0.5f, walkSpeed);
             silentSpeed = Mathf.Clamp(silentSpeed, 0.1f, walkSpeed);
             interactionRange = Mathf.Clamp(interactionRange, 0.25f, 4f);
@@ -221,7 +285,21 @@ namespace EchoMaze.Data
             calibrationMinOpenRms = Mathf.Max(0.001f, calibrationMinOpenRms);
             calibrationMaxOpenRms = Mathf.Max(calibrationMinOpenRms, calibrationMaxOpenRms);
             rho = Mathf.Max(0.05f, rho);
-            crawlerSpeedMultiplier = Mathf.Clamp(crawlerSpeedMultiplier, 0.1f, 2f);
+            // TUNING.md rule 5: strictly slower than the player's walk even on a hunt, and never faster on
+            // patrol than on a hunt, or "it heard me" would read as the creature slowing down.
+            crawlerChaseSpeedMultiplier = Mathf.Clamp(crawlerChaseSpeedMultiplier, 0.1f, 0.95f);
+            crawlerPatrolSpeedMultiplier = Mathf.Clamp(crawlerPatrolSpeedMultiplier, 0.1f, crawlerChaseSpeedMultiplier);
+            crawlerStepInterval = Mathf.Clamp(crawlerStepInterval, 0.2f, 4f);
+            crawlerStepVolume = Mathf.Clamp01(crawlerStepVolume);
+            roarIntervalMin = Mathf.Clamp(roarIntervalMin, 1f, 60f);
+            roarIntervalMax = Mathf.Clamp(roarIntervalMax, roarIntervalMin, 60f);
+            roarWaveRadius = Mathf.Clamp(roarWaveRadius, 0.5f, 15f);
+            roarWaveSeconds = Mathf.Clamp(roarWaveSeconds, 0.1f, 5f);
+            roarHearDistance = Mathf.Clamp(roarHearDistance, 1f, 40f);
+            roarVolume = Mathf.Clamp01(roarVolume);
+            deathSoundVolume = Mathf.Clamp01(deathSoundVolume);
+            hollowHearingMultiplier = Mathf.Clamp(hollowHearingMultiplier, 0.01f, 1f);
+            hollowBreaksAbove = Mathf.Clamp01(hollowBreaksAbove);
             // TUNING.md rule 1, enforced here so a designer raising walk speed cannot silently break
             // the one property that makes a returning arc look like it is returning.
             waveSpeed = Mathf.Max(waveSpeed, 1.6f * walkSpeed);

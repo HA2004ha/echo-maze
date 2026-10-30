@@ -179,7 +179,7 @@ namespace EchoMaze.Core
         }
 
         public void AddConeOutline(Vector2 origin, float aimRad, float coneHalfRad, float radius,
-                                   float alpha, EchoTuningProfile profile)
+                                   float alpha, Color color, EchoTuningProfile profile)
         {
             if (alpha <= 0f || radius <= 0f)
             {
@@ -195,7 +195,7 @@ namespace EchoMaze.Core
 
             for (int i = 1; i <= EmissionSegments; i++)
             {
-                AddSegment(emissionPath[i - 1], emissionPath[i], half, profile.arcColor, alpha);
+                AddSegment(emissionPath[i - 1], emissionPath[i], half, color, alpha);
             }
         }
 

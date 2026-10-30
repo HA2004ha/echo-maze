@@ -335,11 +335,36 @@ namespace EchoMaze.Gameplay
                 marks.Flash(contact.point, contact.normal, body.position);
             }
 
+            RememberContacts(collision);
+
             // Careless walking has a cost, but a body resting on a wall while listening does not: the
             // bump is only a noise if there was real speed behind it.
             if (director != null && collision.relativeVelocity.sqrMagnitude > 0.25f)
             {
                 director.ReportNoise(contact.point, director.Profile.bumpLoudness);
+            }
+        }
+
+        /// <summary>Sliding along a wall is a series of stays, not enters: this is what lets the memory follow a hand.</summary>
+        void OnCollisionStay2D(Collision2D collision)
+        {
+            if (IsAlive)
+            {
+                RememberContacts(collision);
+            }
+        }
+
+        void RememberContacts(Collision2D collision)
+        {
+            if (marks == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < collision.contactCount; i++)
+            {
+                ContactPoint2D contact = collision.GetContact(i);
+                marks.Remember(collision.collider, contact.point, contact.normal);
             }
         }
 

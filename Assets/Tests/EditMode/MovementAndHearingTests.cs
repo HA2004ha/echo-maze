@@ -1,5 +1,6 @@
 using EchoMaze.Core;
 using EchoMaze.Data;
+using EchoMaze.Gameplay;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -107,9 +108,36 @@ namespace EchoMaze.Tests
         [Test]
         public void Defaults_KeepTheCrawlerOutrunnable()
         {
-            Assert.Less(profile.walkSpeed * profile.crawlerSpeedMultiplier, profile.walkSpeed,
+            // The chase is the Crawler's fastest gait, so it is the one that has to stay under the player.
+            Assert.Less(profile.walkSpeed * profile.crawlerChaseSpeedMultiplier, profile.walkSpeed,
                 "the Crawler is defined as something you can outrun; the level escape rules in the GDD " +
                 "cannot be met by an enemy that is faster than the player");
+        }
+
+        [Test]
+        public void OnValidate_KeepsTheChaseUnderWalkingAndThePatrolUnderTheChase()
+        {
+            profile.crawlerChaseSpeedMultiplier = 1.5f;
+            profile.crawlerPatrolSpeedMultiplier = 2f;
+            Validate(profile);
+
+            Assert.Less(profile.walkSpeed * profile.crawlerChaseSpeedMultiplier, profile.walkSpeed,
+                "a hunting Crawler that matches the player's walk can never be escaped");
+            Assert.LessOrEqual(profile.crawlerPatrolSpeedMultiplier, profile.crawlerChaseSpeedMultiplier,
+                "a Crawler that slows down when it hears you tells the player the opposite of the truth");
+        }
+
+        [Test]
+        public void StepInterval_IsThePatrolBeatOnPatrolAndShorterOnAHunt()
+        {
+            float patrol = profile.crawlerPatrolSpeedMultiplier;
+            float chase = profile.crawlerChaseSpeedMultiplier;
+            float onPatrol = Crawler.StepInterval(profile.crawlerStepInterval, patrol, patrol);
+            float onHunt = Crawler.StepInterval(profile.crawlerStepInterval, patrol, chase);
+
+            Assert.AreEqual(1.5f, onPatrol, 1e-5f, "the product owner's patrol beat is one step every 1.5 s");
+            Assert.AreEqual(0.75f, onHunt, 1e-5f, "same stride at twice the speed is half the interval");
+            Assert.Less(onHunt, onPatrol, "a hunting Crawler must be heard stepping faster");
         }
 
         /// <summary>

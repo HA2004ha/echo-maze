@@ -96,6 +96,12 @@ namespace EchoMaze.EditorTools
                                                              6f, "chapter two  ·  the corridor");
             SceneKit.EnsureLevelExit(exit, session);
 
+            // The two pockets in the wall. Their boxes are the inside of each alcove only (1.2 x 1.2 m, the
+            // 0.5 m body fits with 0.35 m to spare on each side), so standing in the room's doorway of the
+            // alcove is not cover. The first one is the spawn.
+            LevelSceneKit.EnsureHollow("Hollow_South", new Vector2(2f, -3.1f), new Vector2(1.2f, 1.2f), player, session);
+            LevelSceneKit.EnsureHollow("Hollow_North", new Vector2(-2.5f, 3.1f), new Vector2(1.2f, 1.2f), player, session);
+
             EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
             EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene(), LevelPath);
             Selection.activeGameObject = playerObject;
@@ -108,7 +114,21 @@ namespace EchoMaze.EditorTools
         /// </summary>
         static GameObject BuildRoom()
         {
-            SceneKit.EnsureWall("Wall_North", new Vector2(0f, 2.7f), new Vector2(7.8f, 0.4f));
+            // The single north slab of earlier builds would close the new opening, and EnsureWall never deletes.
+            GameObject oldNorth = GameObject.Find("Wall_North");
+            if (oldNorth != null)
+            {
+                Object.DestroyImmediate(oldNorth);
+            }
+
+            // The north wall is split like the south one, leaving the second pocket at the far side of the room
+            // from the spawn: opening x -3.1..-1.9, inside y 2.5..3.7. It clears the pillar's left edge (-2.1)
+            // by the body's width at y = 1.3 and is 2.9 m from the Crawler's far patrol point.
+            SceneKit.EnsureWall("Wall_NorthWest", new Vector2(-3.5f, 2.7f), new Vector2(0.8f, 0.4f));
+            SceneKit.EnsureWall("Wall_NorthEast", new Vector2(1f, 2.7f), new Vector2(5.8f, 0.4f));
+            SceneKit.EnsureWall("Alcove2_West", new Vector2(-3.3f, 3.3f), new Vector2(0.4f, 1.4f));
+            SceneKit.EnsureWall("Alcove2_East", new Vector2(-1.7f, 3.3f), new Vector2(0.4f, 1.4f));
+            SceneKit.EnsureWall("Alcove2_Back", new Vector2(-2.5f, 3.9f), new Vector2(2f, 0.4f));
             SceneKit.EnsureWall("Wall_West", new Vector2(-3.7f, 0f), new Vector2(0.4f, 5.8f));
             SceneKit.EnsureWall("Wall_East", new Vector2(3.7f, 0f), new Vector2(0.4f, 5.8f));
 

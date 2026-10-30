@@ -28,6 +28,8 @@ namespace EchoMaze.EditorTools
         const string VolumePath = "Assets/Settings/EchoVolumeProfile.asset";
         const string MaterialPath = "Assets/Art/Materials/Arc_Cyan.mat";
         const string PlayerDotPath = "Assets/Art/Sprites/Player_dot.png";
+        const string RoarClipPath = "Assets/Audio/Crawler_roar.wav";
+        const string StepClipPath = "Assets/Audio/Crawler_step.wav";
 
         const string PoseFolder = "Assets/Art/Sprites/Player";
 
@@ -743,6 +745,7 @@ namespace EchoMaze.EditorTools
                 sprite.color = new Color(0.25f, 0.45f, 0.47f, 0.35f);
             }
 
+            EnsureSoleListener(player);
             return player;
         }
 
@@ -858,10 +861,78 @@ namespace EchoMaze.EditorTools
             return child;
         }
 
+        /// <summary>
+        /// The ears are on the player, not the camera: the world is the z = 0 plane and the camera sits at
+        /// z = -10, so a listener there would hear every sound from at least ten metres and distance would
+        /// mean nothing. Any other listener (the default camera's) is removed, because two make Unity warn
+        /// every frame and only one of them is honoured.
+        /// </summary>
+        static void EnsureSoleListener(GameObject player)
+        {
+            foreach (AudioListener stray in Object.FindObjectsByType<AudioListener>(FindObjectsInactive.Include))
+            {
+                if (stray.gameObject != player)
+                {
+                    Object.DestroyImmediate(stray);
+                }
+            }
+
+            EnsureComponent<AudioListener>(player);
+        }
+
         public static TouchMarks EnsureTouchMarks()
         {
             GameObject go = FindOrCreate("Touch Marks");
-            return EnsureComponent<TouchMarks>(go);
+            var marks = EnsureComponent<TouchMarks>(go);
+
+            // Wired here rather than in each scene's setup, so every scene with a Player gets the wall
+            // memory and the footprints from the one call it already makes, and a rebuild finds what the
+            // last one made (by name) instead of stacking a second copy.
+            SetReference(marks, "memory", EnsureWallMemory());
+            EnsureFootprintTrail();
+            return marks;
+        }
+
+        /// <summary>The remembered walls: one mesh on the Echo layer, under the live arcs (order -10).</summary>
+        public static WallMemoryView EnsureWallMemory()
+        {
+            GameObject go = FindOrCreate("Wall Memory");
+            var view = EnsureComponent<WallMemoryView>(go);
+            ConfigureEchoMesh(go, -10);
+            SetReference(view, "profile", EnsureTuning());
+            return view;
+        }
+
+        /// <summary>The player's footprints: same renderer setup, between the memory and the arcs (order -8).</summary>
+        public static FootprintTrailView EnsureFootprintTrail()
+        {
+            GameObject go = FindOrCreate("Footprint Trail");
+            var view = EnsureComponent<FootprintTrailView>(go);
+            ConfigureEchoMesh(go, -8);
+            SetReference(view, "profile", EnsureTuning());
+            var player = Object.FindAnyObjectByType<Player>();
+            if (player != null)
+            {
+                SetReference(view, "target", player.transform);
+            }
+
+            return view;
+        }
+
+        static void ConfigureEchoMesh(GameObject go, int sortingOrder)
+        {
+            var renderer = go.GetComponent<MeshRenderer>();
+            Material material = EnsureMaterial();
+            if (material != null)
+            {
+                renderer.sharedMaterial = material;
+            }
+
+            renderer.sortingLayerName = "Echo";
+            renderer.sortingOrder = sortingOrder;
+            renderer.lightProbeUsage = UnityEngine.Rendering.LightProbeUsage.Off;
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
         }
 
         /// <summary>
@@ -903,7 +974,48 @@ namespace EchoMaze.EditorTools
             SetReference(crawler, "director", director);
             SetReference(crawler, "player", player);
             SetVector2Array(crawler, "patrolPoints", patrol);
+            EnsureRoarVoice(go, director != null ? director.Profile : null);
+
+            // The stomp is "Mech Stomp" (hc, opengameart.org, CC0), pitched down x0.68 with a bass boost so
+            // it sounds giant. Missing is a warning for the same reason as the roar: the step is still a noise.
+            var stepClip = AssetDatabase.LoadAssetAtPath<AudioClip>(StepClipPath);
+            if (stepClip == null)
+            {
+                Debug.LogWarning("Step clip " + StepClipPath + " is not imported: the Crawler's footsteps will " +
+                                 "be reported as noise but not heard. Drop a mono recording there.", go);
+            }
+
+            SetReference(crawler, "stepClip", stepClip);
             return crawler;
+        }
+
+        /// <summary>
+        /// The roar's speaker: fully 3D with a linear fall-off, so loudness is distance and nothing else. The
+        /// clip is "CC0 Deep Monster Roar" (trazzz123, opengameart.org), trimmed to 3.2 s mono; a missing one is a warning, because the roar
+        /// is still seen as a ripple and the level stays playable without it.
+        /// </summary>
+        static void EnsureRoarVoice(GameObject go, EchoTuningProfile tuning)
+        {
+            var voice = EnsureComponent<AudioSource>(go);
+            voice.playOnAwake = false;
+            voice.loop = false;
+            voice.spatialBlend = 1f;
+            voice.rolloffMode = AudioRolloffMode.Linear;
+            voice.minDistance = 1f;
+            voice.dopplerLevel = 0f;
+            if (tuning != null)
+            {
+                voice.maxDistance = tuning.roarHearDistance;
+            }
+
+            var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(RoarClipPath);
+            if (clip == null)
+            {
+                Debug.LogWarning("Roar clip " + RoarClipPath + " is not imported: the Crawler's roar will be " +
+                                 "seen but not heard. Drop a mono recording there.", go);
+            }
+
+            voice.clip = clip;
         }
 
         public static EchoDirector EnsureDirector(EchoTuningProfile tuning, EchoRenderer field,

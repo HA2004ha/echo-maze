@@ -2,7 +2,7 @@
 
 A 2D top-down stealth/horror game where the screen is completely black and you see the world through **the echo of your own sound**: you make a noise, a cone-shaped wave travels forward, hits walls and creatures, and comes back as a train of returning arcs; you have to read the shape of each arc. Every sound you make is also heard by the things in the dark — they cannot be killed, only escaped, and one touch kills. This is a project for the Game Theory course at Iran University of Science and Technology.
 
-Three levels: an enemy-free maze that teaches the language, The Corridor, The Sump. English only, **Linux PC** with a microphone and headphones.
+Three levels: an enemy-free maze that teaches the language, The Corridor, The Sump. English only, **Windows and Linux PC** with a microphone and headphones.
 
 - Design document: [GDD.md](GDD.md) (version 3.0, at the repo root; the exported PDF snapshot is [Docs/GDD-3.0-snapshot-2026-10-29.pdf](Docs/GDD-3.0-snapshot-2026-10-29.pdf))
 - **Current state: [Docs/STATUS.md](Docs/STATUS.md)** — how far we are and what the next stage is
@@ -68,7 +68,7 @@ If a machine has no usable input, the director logs one warning and falls back t
 ## Folder layout
 
 ```
-Assets/Scenes            Sandbox (mechanic test) · Boot (menu, week 3) · Level01_Maze · Level02_Corridor · Level03_Sump
+Assets/Scenes            Sandbox (mechanic test) · Boot (menu) · Level01_Maze · Level02_Corridor · (Level03_Sump, not built yet)
 Assets/Scripts/Runtime   Core (echo) · Audio (sound input) · Gameplay · Data · UI · Debug
 Assets/Scripts/Editor    Editor tooling (echo debug window, level validation, Validate Git Setup)
 Assets/Tests             EditMode (arc math / readability / hearing) and PlayMode (scene validation)

@@ -1,3 +1,5 @@
+using EchoMaze.Core;
+using EchoMaze.Data;
 using UnityEngine;
 
 namespace EchoMaze.Gameplay
@@ -38,6 +40,9 @@ namespace EchoMaze.Gameplay
                  "dragging themselves along a corridor.")]
         [SerializeField, Range(2, 24)] int poolSize = 10;
 
+        [Tooltip("Where touched walls are remembered for good. Optional: without it the marks still flash.")]
+        [SerializeField] WallMemoryView memory;
+
         const int SpriteEdge = 32;
 
         SpriteRenderer[] pool;
@@ -45,10 +50,12 @@ namespace EchoMaze.Gameplay
         float[] startAlpha;
         Sprite dash;
         int cursor;
+        int enemyLayer;
 
         void Awake()
         {
             dash = BuildDash();
+            enemyLayer = LayerMask.NameToLayer("Enemy");
 
             pool = new SpriteRenderer[Mathf.Max(2, poolSize)];
             expiresAt = new float[pool.Length];
@@ -117,6 +124,52 @@ namespace EchoMaze.Gameplay
             renderer.transform.localScale = new Vector3(dashSize.x, dashSize.y, 1f);
             startAlpha[index] = markColor.a;
             expiresAt[index] = Time.time + fadeSeconds;
+        }
+
+        /// <summary>
+        /// Remembers the wall at a contact: a line along the contact tangent, centred on the point physics
+        /// reports (the real surface, unlike <see cref="Flash"/>, which pushes its dash out of the body).
+        /// Called on enter and on stay, so sliding along a wall keeps extending one line. Creatures are
+        /// not walls: the Enemy layer, or an <see cref="EchoSurface"/> of kind Crawler or Spike, is ignored.
+        /// </summary>
+        public void Remember(Collider2D other, Vector2 contactPoint, Vector2 surfaceNormal)
+        {
+            if (memory == null || other == null || other.gameObject.layer == enemyLayer ||
+                surfaceNormal.sqrMagnitude < 1e-6f)
+            {
+                return;
+            }
+
+            if (other.TryGetComponent(out EchoSurface surface) &&
+                (surface.kind == SurfaceKind.Crawler || surface.kind == SurfaceKind.Spike))
+            {
+                return;
+            }
+
+            // Walls are axis-aligned boxes: a contact at a corner reports a diagonal normal, and a line drawn
+            // along that tangent sticks out of the wall in a star. Snap to the face the contact is nearer
+            // to and clip the line to the box, so the memory follows the wall and stops at its end.
+            if (other is BoxCollider2D)
+            {
+                bool verticalFace = Mathf.Abs(surfaceNormal.x) > Mathf.Abs(surfaceNormal.y);
+                Bounds box = other.bounds;
+                Vector2 onFace = contactPoint;
+                if (verticalFace)
+                {
+                    onFace.x = Mathf.Abs(contactPoint.x - box.min.x) < Mathf.Abs(contactPoint.x - box.max.x)
+                        ? box.min.x : box.max.x;
+                }
+                else
+                {
+                    onFace.y = Mathf.Abs(contactPoint.y - box.min.y) < Mathf.Abs(contactPoint.y - box.max.y)
+                        ? box.min.y : box.max.y;
+                }
+
+                memory.Remember(onFace, verticalFace ? Vector2.up : Vector2.right, box);
+                return;
+            }
+
+            memory.Remember(contactPoint, new Vector2(-surfaceNormal.y, surfaceNormal.x));
         }
 
         /// <summary>Marks still on the wall. Read by the tests and by the debug window.</summary>
