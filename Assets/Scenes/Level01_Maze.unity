@@ -289,6 +289,7 @@ GameObject:
   - component: {fileID: 75152902}
   - component: {fileID: 75152901}
   - component: {fileID: 75152903}
+  - component: {fileID: 75152904}
   m_Layer: 0
   m_Name: Menu
   m_TagString: Untagged
@@ -375,10 +376,10 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 0.55, g: 0.85, b: 0.92, a: 1}
-    m_HighlightedColor: {r: 0.85, g: 1, b: 1, a: 1}
+    m_NormalColor: {r: 0.5, g: 0.83, b: 0.92, a: 1}
+    m_HighlightedColor: {r: 0.5, g: 0.83, b: 0.92, a: 1}
     m_PressedColor: {r: 0.38, g: 0.72, b: 0.8, a: 1}
-    m_SelectedColor: {r: 0.85, g: 1, b: 1, a: 1}
+    m_SelectedColor: {r: 0.5, g: 0.83, b: 0.92, a: 1}
     m_DisabledColor: {r: 0.22, g: 0.28, b: 0.3, a: 1}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.08
@@ -398,6 +399,23 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &75152904
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 75152899}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e38a105be2f6287d5a3e24a565676902, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: EchoMaze.Runtime::EchoMaze.UI.UIButtonFeedback
+  frame: {fileID: 75152901}
+  hoverScale: 1.04
+  settleSeconds: 0.09
+  glowColor: {r: 0.85, g: 1, b: 1, a: 1}
+  glowStrength: 0.8
 --- !u!1 &79992015
 GameObject:
   m_ObjectHideFlags: 0
@@ -581,6 +599,7 @@ GameObject:
   - component: {fileID: 163733758}
   - component: {fileID: 163733757}
   - component: {fileID: 163733756}
+  - component: {fileID: 163733761}
   m_Layer: 0
   m_Name: Pause Panel
   m_TagString: Untagged
@@ -602,6 +621,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: EchoMaze.Runtime::EchoMaze.UI.PausePanel
   session: {fileID: 1049558699}
   content: {fileID: 901206686}
+  fade: {fileID: 163733761}
   resumeButton: {fileID: 1172677799}
   restartButton: {fileID: 632972044}
   menuButton: {fileID: 75152903}
@@ -691,6 +711,23 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &163733761
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 163733755}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 22a6e689e1d915c5ab405411284e2f28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: EchoMaze.Runtime::EchoMaze.UI.UIPanelFade
+  group: {fileID: 901206688}
+  inSeconds: 0.32
+  outSeconds: 0.2
+  playOnEnable: 0
+  ease: 2
 --- !u!1 &181196282
 GameObject:
   m_ObjectHideFlags: 0
@@ -783,6 +820,81 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
+--- !u!1 &196203866
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 196203867}
+  - component: {fileID: 196203869}
+  - component: {fileID: 196203868}
+  m_Layer: 0
+  m_Name: textdim
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &196203867
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 196203866}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 901206687}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 1500, y: 1020}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &196203868
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 196203866}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.55}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: bc8a7f36ea82a63818e7843fd65ec0e7, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &196203869
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 196203866}
+  m_CullTransparentMesh: 1
 --- !u!1 &263450257
 GameObject:
   m_ObjectHideFlags: 0
@@ -954,6 +1066,8 @@ GameObject:
   - component: {fileID: 370423729}
   - component: {fileID: 370423728}
   - component: {fileID: 370423727}
+  - component: {fileID: 370423733}
+  - component: {fileID: 370423732}
   m_Layer: 0
   m_Name: Victory Panel
   m_TagString: Untagged
@@ -974,6 +1088,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: EchoMaze.Runtime::EchoMaze.UI.VictoryPanel
   content: {fileID: 687930360}
+  fade: {fileID: 370423733}
+  typewriter: {fileID: 370423732}
   summaryLabel: {fileID: 838384519}
   menuButton: {fileID: 991604704}
 --- !u!114 &370423728
@@ -1060,6 +1176,37 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &370423732
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 370423726}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc4d729c8c43ceb0e80309d11e4f0b70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: EchoMaze.Runtime::EchoMaze.UI.UITypewriter
+  label: {fileID: 838384519}
+  charactersPerSecond: 38
+--- !u!114 &370423733
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 370423726}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 22a6e689e1d915c5ab405411284e2f28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: EchoMaze.Runtime::EchoMaze.UI.UIPanelFade
+  group: {fileID: 687930362}
+  inSeconds: 0.32
+  outSeconds: 0.2
+  playOnEnable: 0
+  ease: 2
 --- !u!1 &399426194
 GameObject:
   m_ObjectHideFlags: 0
@@ -1147,6 +1294,7 @@ GameObject:
   - component: {fileID: 413730355}
   - component: {fileID: 413730354}
   - component: {fileID: 413730356}
+  - component: {fileID: 413730357}
   m_Layer: 0
   m_Name: Quit
   m_TagString: Untagged
@@ -1233,10 +1381,10 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 0.55, g: 0.85, b: 0.92, a: 1}
-    m_HighlightedColor: {r: 0.85, g: 1, b: 1, a: 1}
+    m_NormalColor: {r: 0.5, g: 0.83, b: 0.92, a: 1}
+    m_HighlightedColor: {r: 0.5, g: 0.83, b: 0.92, a: 1}
     m_PressedColor: {r: 0.38, g: 0.72, b: 0.8, a: 1}
-    m_SelectedColor: {r: 0.85, g: 1, b: 1, a: 1}
+    m_SelectedColor: {r: 0.5, g: 0.83, b: 0.92, a: 1}
     m_DisabledColor: {r: 0.22, g: 0.28, b: 0.3, a: 1}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.08
@@ -1256,6 +1404,23 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &413730357
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 413730352}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e38a105be2f6287d5a3e24a565676902, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: EchoMaze.Runtime::EchoMaze.UI.UIButtonFeedback
+  frame: {fileID: 413730354}
+  hoverScale: 1.04
+  settleSeconds: 0.09
+  glowColor: {r: 0.85, g: 1, b: 1, a: 1}
+  glowStrength: 0.8
 --- !u!1 &559885076
 GameObject:
   m_ObjectHideFlags: 0
@@ -1488,6 +1653,7 @@ GameObject:
   - component: {fileID: 632972043}
   - component: {fileID: 632972042}
   - component: {fileID: 632972044}
+  - component: {fileID: 632972045}
   m_Layer: 0
   m_Name: Restart
   m_TagString: Untagged
@@ -1574,10 +1740,10 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 0.55, g: 0.85, b: 0.92, a: 1}
-    m_HighlightedColor: {r: 0.85, g: 1, b: 1, a: 1}
+    m_NormalColor: {r: 0.5, g: 0.83, b: 0.92, a: 1}
+    m_HighlightedColor: {r: 0.5, g: 0.83, b: 0.92, a: 1}
     m_PressedColor: {r: 0.38, g: 0.72, b: 0.8, a: 1}
-    m_SelectedColor: {r: 0.85, g: 1, b: 1, a: 1}
+    m_SelectedColor: {r: 0.5, g: 0.83, b: 0.92, a: 1}
     m_DisabledColor: {r: 0.22, g: 0.28, b: 0.3, a: 1}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.08
@@ -1597,6 +1763,23 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &632972045
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 632972040}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e38a105be2f6287d5a3e24a565676902, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: EchoMaze.Runtime::EchoMaze.UI.UIButtonFeedback
+  frame: {fileID: 632972042}
+  hoverScale: 1.04
+  settleSeconds: 0.09
+  glowColor: {r: 0.85, g: 1, b: 1, a: 1}
+  glowStrength: 0.8
 --- !u!1 &672825056
 GameObject:
   m_ObjectHideFlags: 0
@@ -1701,13 +1884,14 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 687930361}
+  - component: {fileID: 687930362}
   m_Layer: 0
   m_Name: Content
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &687930361
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1722,6 +1906,7 @@ RectTransform:
   m_Children:
   - {fileID: 861563583}
   - {fileID: 399426195}
+  - {fileID: 1208306227}
   - {fileID: 79992016}
   - {fileID: 991604707}
   - {fileID: 838384517}
@@ -1734,6 +1919,18 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!225 &687930362
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 687930360}
+  m_Enabled: 1
+  m_Alpha: 0
+  m_Interactable: 0
+  m_BlocksRaycasts: 0
+  m_IgnoreParentGroups: 0
 --- !u!1 &785996422
 GameObject:
   m_ObjectHideFlags: 0
@@ -2345,6 +2542,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 901206687}
+  - component: {fileID: 901206688}
   m_Layer: 0
   m_Name: Content
   m_TagString: Untagged
@@ -2366,6 +2564,7 @@ RectTransform:
   m_Children:
   - {fileID: 1438458027}
   - {fileID: 111403214}
+  - {fileID: 196203867}
   - {fileID: 602519037}
   - {fileID: 1172677796}
   - {fileID: 632972041}
@@ -2380,6 +2579,18 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!225 &901206688
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 901206686}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &920187944
 GameObject:
   m_ObjectHideFlags: 0
@@ -2546,6 +2757,7 @@ GameObject:
   - component: {fileID: 991604706}
   - component: {fileID: 991604705}
   - component: {fileID: 991604704}
+  - component: {fileID: 991604708}
   m_Layer: 0
   m_Name: Menu
   m_TagString: Untagged
@@ -2574,10 +2786,10 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 0.55, g: 0.85, b: 0.92, a: 1}
-    m_HighlightedColor: {r: 0.85, g: 1, b: 1, a: 1}
+    m_NormalColor: {r: 0.5, g: 0.83, b: 0.92, a: 1}
+    m_HighlightedColor: {r: 0.5, g: 0.83, b: 0.92, a: 1}
     m_PressedColor: {r: 0.38, g: 0.72, b: 0.8, a: 1}
-    m_SelectedColor: {r: 0.85, g: 1, b: 1, a: 1}
+    m_SelectedColor: {r: 0.5, g: 0.83, b: 0.92, a: 1}
     m_DisabledColor: {r: 0.22, g: 0.28, b: 0.3, a: 1}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.08
@@ -2655,6 +2867,23 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: -190}
   m_SizeDelta: {x: 520, y: 74}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &991604708
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 991604703}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e38a105be2f6287d5a3e24a565676902, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: EchoMaze.Runtime::EchoMaze.UI.UIButtonFeedback
+  frame: {fileID: 991604705}
+  hoverScale: 1.04
+  settleSeconds: 0.09
+  glowColor: {r: 0.85, g: 1, b: 1, a: 1}
+  glowStrength: 0.8
 --- !u!1 &1049558698
 GameObject:
   m_ObjectHideFlags: 0
@@ -2812,6 +3041,7 @@ GameObject:
   - component: {fileID: 1172677798}
   - component: {fileID: 1172677797}
   - component: {fileID: 1172677799}
+  - component: {fileID: 1172677800}
   m_Layer: 0
   m_Name: Resume
   m_TagString: Untagged
@@ -2898,10 +3128,10 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 0.55, g: 0.85, b: 0.92, a: 1}
-    m_HighlightedColor: {r: 0.85, g: 1, b: 1, a: 1}
+    m_NormalColor: {r: 0.5, g: 0.83, b: 0.92, a: 1}
+    m_HighlightedColor: {r: 0.5, g: 0.83, b: 0.92, a: 1}
     m_PressedColor: {r: 0.38, g: 0.72, b: 0.8, a: 1}
-    m_SelectedColor: {r: 0.85, g: 1, b: 1, a: 1}
+    m_SelectedColor: {r: 0.5, g: 0.83, b: 0.92, a: 1}
     m_DisabledColor: {r: 0.22, g: 0.28, b: 0.3, a: 1}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.08
@@ -2921,6 +3151,98 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1172677800
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1172677795}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e38a105be2f6287d5a3e24a565676902, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: EchoMaze.Runtime::EchoMaze.UI.UIButtonFeedback
+  frame: {fileID: 1172677797}
+  hoverScale: 1.04
+  settleSeconds: 0.09
+  glowColor: {r: 0.85, g: 1, b: 1, a: 1}
+  glowStrength: 0.8
+--- !u!1 &1208306226
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1208306227}
+  - component: {fileID: 1208306229}
+  - component: {fileID: 1208306228}
+  m_Layer: 0
+  m_Name: textdim
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1208306227
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1208306226}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 687930361}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 1500, y: 1020}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1208306228
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1208306226}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.55}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: bc8a7f36ea82a63818e7843fd65ec0e7, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1208306229
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1208306226}
+  m_CullTransparentMesh: 1
 --- !u!1 &1242940110
 GameObject:
   m_ObjectHideFlags: 0
@@ -3023,6 +3345,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1290993812}
   - component: {fileID: 1290993811}
+  - component: {fileID: 1290993814}
+  - component: {fileID: 1290993813}
   m_Layer: 0
   m_Name: Death Notice
   m_TagString: Untagged
@@ -3075,6 +3399,35 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &1290993813
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1290993810}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 22a6e689e1d915c5ab405411284e2f28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: EchoMaze.Runtime::EchoMaze.UI.UIPanelFade
+  group: {fileID: 1290993814}
+  inSeconds: 0.35
+  outSeconds: 0.2
+  playOnEnable: 1
+  ease: 2
+--- !u!225 &1290993814
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1290993810}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 0
+  m_BlocksRaycasts: 0
+  m_IgnoreParentGroups: 0
 --- !u!1 &1301217492
 GameObject:
   m_ObjectHideFlags: 0

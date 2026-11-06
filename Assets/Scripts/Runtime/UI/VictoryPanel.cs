@@ -17,6 +17,8 @@ namespace EchoMaze.UI
     public sealed class VictoryPanel : MonoBehaviour
     {
         [SerializeField] GameObject content;
+        [SerializeField] UIPanelFade fade;
+        [SerializeField] UITypewriter typewriter;
         [SerializeField] Text summaryLabel;
         [SerializeField] Button menuButton;
 
@@ -32,7 +34,11 @@ namespace EchoMaze.UI
                 GameFlow.Active.RunCompleted += Show;
             }
 
-            if (content != null)
+            if (fade != null)
+            {
+                fade.HideImmediate();
+            }
+            else if (content != null)
             {
                 content.SetActive(false);
             }
@@ -49,20 +55,37 @@ namespace EchoMaze.UI
         void Show()
         {
             GameFlow flow = GameFlow.Active;
+            string text = null;
             if (summaryLabel != null && flow != null)
             {
                 // The heading already says "YOU WERE NOT HEARD"; the summary is only the run's three numbers.
-                var text = new StringBuilder();
-                text.AppendLine(Count(flow.ChapterCount, "room") + ", " +
-                                Count(flow.TotalPings, "wave") + ", " +
-                                Count(flow.TotalDeaths, "time") + " heard");
-                text.Append(FormatTime(flow.TotalSeconds));
-                summaryLabel.text = text.ToString();
+                var builder = new StringBuilder();
+                builder.AppendLine(Count(flow.ChapterCount, "room") + ", " +
+                                   Count(flow.TotalPings, "wave") + ", " +
+                                   Count(flow.TotalDeaths, "time") + " heard");
+                builder.Append(FormatTime(flow.TotalSeconds));
+                text = builder.ToString();
             }
 
-            if (content != null)
+            if (fade != null)
+            {
+                fade.Show();
+            }
+            else if (content != null)
             {
                 content.SetActive(true);
+            }
+
+            // The page goes up first and the numbers arrive under it: a panel that fades in already
+            // full of text says nothing happened, while one that types says the machine is still
+            // counting what you just did.
+            if (typewriter != null && text != null)
+            {
+                typewriter.Play(text);
+            }
+            else if (text != null)
+            {
+                summaryLabel.text = text;
             }
         }
 

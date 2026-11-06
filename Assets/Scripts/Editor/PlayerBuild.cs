@@ -15,14 +15,16 @@ namespace EchoMaze.EditorTools
     public static class PlayerBuild
     {
         /// <summary>Where the player lands, relative to the project root. Kept out of version control.</summary>
-        public const string OutputFolder = "Builds";
+        public const string OutputFolder = "Builds/StandaloneLinux64";
 
         /// <summary>
-        /// The leaf of the build path is the name of the executable Unity writes, and on Linux it gets no
-        /// extension: this project's player is <c>Builds/echo-maze</c>, not <c>Builds/Linux</c> and not
-        /// anything named after <c>PlayerSettings.productName</c>.
+        /// The leaf of the build path is the name of the executable Unity writes, and on Linux 6000 that
+        /// name carries the architecture suffix: this project's player is
+        /// <c>Builds/StandaloneLinux64/echo-maze.x86_64</c>. The path matches what the editor's own
+        /// <c>Build Settings ▸ Build…</c> produces, so the two builders cannot leave the team with two
+        /// artifacts and one documentation.
         /// </summary>
-        public const string ExecutableName = "echo-maze";
+        public const string ExecutableName = "echo-maze.x86_64";
 
         /// <summary>
         /// A development build, because this artifact is what the team tests with: it writes the log this

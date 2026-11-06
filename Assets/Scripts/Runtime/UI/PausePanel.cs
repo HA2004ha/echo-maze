@@ -19,6 +19,10 @@ namespace EchoMaze.UI
         [SerializeField] LevelSession session;
         [Tooltip("The visible part, switched with the pause. The component is not on it, on purpose.")]
         [SerializeField] GameObject content;
+        [Tooltip("Fades the content rather than switching it, so a pause page arriving reads as an event. " +
+                 "The generator may leave this unset on a scene it has not rebuilt yet, and the old " +
+                 "SetActive path below still works on one.")]
+        [SerializeField] UIPanelFade fade;
         [SerializeField] Button resumeButton;
         [SerializeField] Button restartButton;
         [SerializeField] Button menuButton;
@@ -52,7 +56,11 @@ namespace EchoMaze.UI
                 quitButton.onClick.AddListener(Quit);
             }
 
-            if (content != null)
+            if (fade != null)
+            {
+                fade.HideImmediate();
+            }
+            else if (content != null)
             {
                 content.SetActive(false);
             }
@@ -68,7 +76,7 @@ namespace EchoMaze.UI
 
         void OnPauseToggled(bool paused)
         {
-            if (content == null)
+            if (content == null && fade == null)
             {
                 return;
             }
@@ -77,10 +85,25 @@ namespace EchoMaze.UI
             // victory panel is. Without this guard the two panels are printed on top of each other, which
             // is exactly what the first capture of the victory screen showed.
             bool visible = paused && (session == null || !session.IsComplete);
-            content.SetActive(visible);
             if (visible && chapterLabel != null && session != null)
             {
                 chapterLabel.text = session.ChapterTitle;
+            }
+
+            if (fade != null)
+            {
+                if (visible)
+                {
+                    fade.Show();
+                }
+                else
+                {
+                    fade.Hide();
+                }
+            }
+            else if (content != null)
+            {
+                content.SetActive(visible);
             }
         }
 

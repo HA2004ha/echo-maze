@@ -38,6 +38,8 @@ namespace EchoMaze.EditorTools
         const string FramePanelPath = "Assets/Art/Sprites/UI/UI_frame_panel.png";
         const string FrameButtonPath = "Assets/Art/Sprites/UI/UI_frame_button.png";
         const string VignettePath = "Assets/Art/Sprites/UI/UI_vignette.png";
+        const string DimPath = "Assets/Art/Sprites/UI/UI_dim.png";
+        const string LegendBandPath = "Assets/Art/Sprites/UI/UI_legend_band.png";
         const string RingPath = "Assets/Art/Sprites/UI/UI_ring_thin.png";
         const string FontPath = "Assets/Art/Fonts/ShareTechMono-Regular.ttf";
         const int SolidTexels = 4;
@@ -48,8 +50,11 @@ namespace EchoMaze.EditorTools
         // The frame sprite is white so the button's ColorBlock can tint it, and the idle tint starts
         // below 1 so the hover tint can lift the hairline toward full brightness — ColorTint against a
         // white base can brighten, against a cyan base it could only muddy.
-        static readonly Color ButtonIdle = new Color(0.55f, 0.85f, 0.92f, 1f);
-        static readonly Color ButtonHover = new Color(0.85f, 1.0f, 1.0f, 1f);
+        // Slightly cooler than it was before the motion pass: with a real hover glow underneath it, the
+        // idle colour no longer has to suggest availability on its own and can go back to being furniture.
+        // (The old ButtonHover constant died here — brightening is UIButtonFeedback's job now, and two
+        // systems writing one Image.color is a flicker, not a highlight.)
+        static readonly Color ButtonIdle = new Color(0.50f, 0.83f, 0.92f, 1f);
         static readonly Color ButtonPressed = new Color(0.38f, 0.72f, 0.80f, 1f);
         static readonly Color ButtonDisabled = new Color(0.22f, 0.28f, 0.30f, 1f);
 
@@ -417,13 +422,23 @@ namespace EchoMaze.EditorTools
             button.transition = Selectable.Transition.ColorTint;
             ColorBlock colors = button.colors;
             colors.normalColor = ButtonIdle;
-            colors.highlightedColor = ButtonHover;
+            // Hover and selection are no longer the ColorBlock's job: the <see cref="UIButtonFeedback"/>
+            // attached below writes the frame colour every frame it is ramping, and two writers on one
+            // colour is a flicker. The block keeps what feedback cannot do — the pressed dip and the
+            // disabled fade.
+            colors.highlightedColor = ButtonIdle;
             colors.pressedColor = ButtonPressed;
-            colors.selectedColor = ButtonHover;
+            colors.selectedColor = ButtonIdle;
             colors.disabledColor = ButtonDisabled;
             colors.colorMultiplier = 1f;
             colors.fadeDuration = 0.08f;
             button.colors = colors;
+
+            // Colour alone only speaks while the pointer is down, which is after the decision and not
+            // during it. The hover-and-focus grow is attached to every generated button from here so
+            // there is no button in the game that can forget it has hands.
+            var feedback = SceneKit.EnsureComponent<UIButtonFeedback>(button.gameObject);
+            SceneKit.SetReference(feedback, "frame", background);
 
             Transform labelObject = button.transform.Find("Label");
             Text text = labelObject != null ? labelObject.GetComponent<Text>() : null;
@@ -604,6 +619,88 @@ namespace EchoMaze.EditorTools
             return ImportUiSprite(VignettePath, 0);
         }
 
+        /// <summary>
+        /// The vignette's inverse: darkest at the centre, gone at the edges. The wash was written to
+        /// keep the room readable through the middle of a panel, and that empty centre is exactly where
+        /// the diorama plays — behind the menu's text column, the brightest thing on screen outshines
+        /// the glyphs. Every panel screen therefore dims its own middle with this, so legibility is a
+        /// painted property of the panel rather than a mercy of whatever happens to be behind it.
+        /// </summary>
+        public static Sprite EnsureDimSprite()
+        {
+            var existing = AssetDatabase.LoadAssetAtPath<Sprite>(DimPath);
+            if (existing != null)
+            {
+                return existing;
+            }
+
+            SceneKit.EnsureFolder(System.IO.Path.GetDirectoryName(DimPath));
+            const int size = 512;
+            var texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            var pixels = new Color32[size * size];
+            float centre = (size - 1) * 0.5f;
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float dx = (x - centre) / centre;
+                    float dy = (y - centre) / centre;
+                    float radius = Mathf.Sqrt(dx * dx + dy * dy) / Mathf.Sqrt(2f);
+                    // Fully opaque through the middle third, squared falloff to nothing: the same curve
+                    // as the wash, reversed, so the two gradients agree about where the soft part lives.
+                    float t = Mathf.Clamp01((0.70f - radius) / 0.70f);
+                    pixels[y * size + x] = new Color32(255, 255, 255, (byte)(t * t * 255f));
+                }
+            }
+
+            texture.SetPixels32(pixels);
+            texture.Apply();
+            System.IO.File.WriteAllBytes(DimPath, texture.EncodeToPNG());
+            Object.DestroyImmediate(texture);
+            return ImportUiSprite(DimPath, 0);
+        }
+
+        /// <summary>
+        /// A vertical fade, opaque at its own bottom edge: the band the menu's controls legend sits on.
+        /// The dim column is an ellipse and its falloff is spent before it reaches y −360, while the
+        /// diorama's trim glow sweeps straight through that line as the model turns — a faint glyph
+        /// over a Bloom-lit bar is invisible, not low-contrast. The band fades up rather than covering
+        /// the bottom of the screen, so the glowing frame stays part of the picture and only the row
+        /// of words owns a piece of dark.
+        /// </summary>
+        public static Sprite EnsureLegendBandSprite()
+        {
+            var existing = AssetDatabase.LoadAssetAtPath<Sprite>(LegendBandPath);
+            if (existing != null)
+            {
+                return existing;
+            }
+
+            SceneKit.EnsureFolder(System.IO.Path.GetDirectoryName(LegendBandPath));
+            const int width = 64;
+            const int height = 256;
+            var texture = new Texture2D(width, height, TextureFormat.RGBA32, false);
+            var pixels = new Color32[width * height];
+            for (int y = 0; y < height; y++)
+            {
+                float v = y / (height - 1f);
+                // Smoothstep from the bottom edge: full dark under the words, gone by the top of the
+                // band, with no hard line either way.
+                float t = 1f - v;
+                float a = t * t * (3f - 2f * t);
+                for (int x = 0; x < width; x++)
+                {
+                    pixels[y * width + x] = new Color32(255, 255, 255, (byte)(a * 255f));
+                }
+            }
+
+            texture.SetPixels32(pixels);
+            texture.Apply();
+            System.IO.File.WriteAllBytes(LegendBandPath, texture.EncodeToPNG());
+            Object.DestroyImmediate(texture);
+            return ImportUiSprite(LegendBandPath, 0);
+        }
+
         static Sprite EnsureRingSprite()
         {
             var existing = AssetDatabase.LoadAssetAtPath<Sprite>(RingPath);
@@ -704,10 +801,34 @@ namespace EchoMaze.EditorTools
             GameObject contentObject = FindOrCreateChild(canvas.transform, "Content");
             content = contentObject.transform;
 
+            // The fade surface: an alpha the panels can ramp without deactivating anything, so the panel
+            // components that subscribe from the canvas keep their events through a hide. Re-asserted at
+            // full alpha because a scene must never save mid-fade and ship an invisible menu. The panel's
+            // Content child is saved deactivated on some screens, and AddComponent on an inactive object
+            // returns a reference the editor will not evaluate — hence SceneKit.EnsureComponent.
+            CanvasGroup group = SceneKit.EnsureComponent<CanvasGroup>(contentObject);
+            // Active, always, at build time: the old doctrine saved this child switched off, and a fade
+            // ramping the CanvasGroup of an inactive object fades nothing a player will ever see. Under
+            // the new doctrine hidden is alpha zero on an active object — which is also why the panel
+            // components on the canvas keep their event subscriptions through a hide.
+            contentObject.SetActive(true);
+            group.alpha = 1f;
+            group.interactable = true;
+            group.blocksRaycasts = true;
+
             // Find-or-create plus re-assert: the guard that used to skip an existing wash is how a
             // flat-black scene survived every style change the generator went through after it.
             EnsureImage(content, "wash", EnsureVignetteSprite(), Image.Type.Simple,
                         Vector2.zero, Vector2.zero, new Color(0f, 0f, 0f, washAlpha), true, 0);
+
+            // The text column sits on its own dim, not on the wash's empty centre: over the 3D
+            // diorama the wave crest is brighter than Cyan, and a menu whose buttons blink in and
+            // out with the background is a menu nobody reads. One column size for every panel
+            // screen so the dim belongs to the layout, not to whichever page happens to need it.
+            EnsureImage(content, "textdim", EnsureDimSprite(), Image.Type.Simple,
+                        Vector2.zero, new Vector2(1500f, 1020f),
+                        new Color(0f, 0f, 0f, 0.55f), false, 1);
+
             heading = EnsureLabel(content, "Heading", "", 44, Cyan,
                                   new Vector2(0f, 250f), new Vector2(900f, 90f),
                                   TextAnchor.MiddleCenter, true);
@@ -771,9 +892,12 @@ namespace EchoMaze.EditorTools
             Text room = EnsureLabel(content, "Room", "", 22, CyanFaint, new Vector2(0f, -310f),
                                     new Vector2(700f, 40f));
 
-            var panel = canvas.GetComponent<PausePanel>() ?? canvas.gameObject.AddComponent<PausePanel>();
+            var panel = SceneKit.EnsureComponent<PausePanel>(canvas.gameObject);
+            var fade = SceneKit.EnsureComponent<UIPanelFade>(canvas.gameObject);
+            SceneKit.SetReference(fade, "group", content.GetComponent<CanvasGroup>());
             SceneKit.SetReference(panel, "session", session);
             SceneKit.SetReference(panel, "content", content.gameObject);
+            SceneKit.SetReference(panel, "fade", fade);
             SceneKit.SetReference(panel, "resumeButton", resume);
             SceneKit.SetReference(panel, "restartButton", restart);
             SceneKit.SetReference(panel, "menuButton", menu);
@@ -798,13 +922,23 @@ namespace EchoMaze.EditorTools
             EnsureLabel(content, "Footer", "the maze never learned your name", 20, CyanFaint,
                         new Vector2(0f, -270f), new Vector2(900f, 40f));
 
-            var panel = canvas.GetComponent<VictoryPanel>() ?? canvas.gameObject.AddComponent<VictoryPanel>();
+            var panel = SceneKit.EnsureComponent<VictoryPanel>(canvas.gameObject);
+            var fade = SceneKit.EnsureComponent<UIPanelFade>(canvas.gameObject);
+            SceneKit.SetReference(fade, "group", content.GetComponent<CanvasGroup>());
+            var typewriter = SceneKit.EnsureComponent<UITypewriter>(canvas.gameObject);
+            SceneKit.SetReference(typewriter, "label", summary);
             SceneKit.SetReference(panel, "content", content.gameObject);
+            SceneKit.SetReference(panel, "fade", fade);
+            SceneKit.SetReference(panel, "typewriter", typewriter);
             SceneKit.SetReference(panel, "summaryLabel", summary);
             SceneKit.SetReference(panel, "menuButton", menu);
 
-            // Hidden until the run ends: the component would otherwise cover the room it is standing in.
-            content.gameObject.SetActive(false);
+            // Hidden until the run ends by alpha rather than by deactivation: the fade and the typing
+            // both run on this canvas, and the summary is the thing the player came to read.
+            CanvasGroup group = content.GetComponent<CanvasGroup>();
+            group.alpha = 0f;
+            group.interactable = false;
+            group.blocksRaycasts = false;
             return panel;
         }
 
@@ -815,24 +949,37 @@ namespace EchoMaze.EditorTools
         /// </summary>
         public static MainMenu EnsureMainMenu(EchoDirector director, VoiceCalibration calibration)
         {
-            Canvas canvas = EnsurePanel("Main Menu", out Transform content, out Text heading, 0.88f);
+            // 0.80 and not 0.88: the room behind this canvas now has moving light in it, and the wash's
+            // job is to hold the text off that light, not to bury it. The centre was always empty on
+            // purpose; now there is something worth seeing in it.
+            Canvas canvas = EnsurePanel("Main Menu", out Transform content, out Text heading, 0.80f);
 
-            heading = EnsureLabel(content, "Heading", Track("ECHO MAZE"), 96, Cyan,
+            heading = EnsureLabel(content, "Heading", Track("ECHO MAZE"), 96,
+                                  Color.Lerp(Cyan, Color.white, 0.45f),
                                   new Vector2(0f, 320f), new Vector2(1200f, 160f),
                                   TextAnchor.MiddleCenter, true);
+
+            // The nearest a legacy Text can come to a gradient: the glyph colour lifted toward white and
+            // the glow Shadow left full cyan, so the bright part sits in the letters and the cyan bleeds
+            // around them, which is the way a lit screen actually washes its own edges. A vertex gradient
+            // would need TextMeshPro, and the whole interface is one font deep on legacy Text for the
+            // sake of the rebuild doctrine above.
 
             // The rings go behind the title in sibling order, so they read as the title's own echo rather
             // than as wallpaper in front of it.
             Sprite ring = EnsureRingSprite();
-            EnsureImage(content, "Ring1", ring, Image.Type.Simple, new Vector2(0f, 320f), new Vector2(300f, 300f),
-                        new Color(Cyan.r, Cyan.g, Cyan.b, 0.35f), false, 2);
-            EnsureImage(content, "Ring2", ring, Image.Type.Simple, new Vector2(0f, 320f), new Vector2(440f, 440f),
-                        new Color(Cyan.r, Cyan.g, Cyan.b, 0.20f), false, 3);
-            EnsureImage(content, "Ring3", ring, Image.Type.Simple, new Vector2(0f, 320f), new Vector2(580f, 580f),
-                        new Color(Cyan.r, Cyan.g, Cyan.b, 0.10f), false, 4);
+            Image ring1 = EnsureImage(content, "Ring1", ring, Image.Type.Simple, new Vector2(0f, 320f),
+                                      new Vector2(300f, 300f),
+                                      new Color(Cyan.r, Cyan.g, Cyan.b, 0.35f), false, 2);
+            Image ring2 = EnsureImage(content, "Ring2", ring, Image.Type.Simple, new Vector2(0f, 320f),
+                                      new Vector2(440f, 440f),
+                                      new Color(Cyan.r, Cyan.g, Cyan.b, 0.20f), false, 3);
+            Image ring3 = EnsureImage(content, "Ring3", ring, Image.Type.Simple, new Vector2(0f, 320f),
+                                      new Vector2(580f, 580f),
+                                      new Color(Cyan.r, Cyan.g, Cyan.b, 0.10f), false, 4);
 
-            EnsureLabel(content, "Subtitle", "a maze you see by sound", 24, CyanFaint,
-                        new Vector2(0f, 205f), new Vector2(1000f, 50f));
+            Text subtitle = EnsureLabel(content, "Subtitle", "a maze you see by sound", 24, CyanFaint,
+                                        new Vector2(0f, 205f), new Vector2(1000f, 50f));
 
             Button start = EnsureButton(content, "Start", "begin", new Vector2(0f, 40f), new Vector2(520f, 84f));
             Button calibrate = EnsureButton(content, "Calibrate", "tune your voice", new Vector2(0f, -64f),
@@ -840,10 +987,30 @@ namespace EchoMaze.EditorTools
             Button quit = EnsureButton(content, "Quit", "quit", new Vector2(0f, -150f), new Vector2(520f, 68f));
             Text status = EnsureLabel(content, "Status", "", 24, CyanMild, new Vector2(0f, -280f),
                                       new Vector2(1400f, 44f));
-            EnsureLabel(content, "Legend",
-                        "WASD move   mouse aim   Space shout (hold to charge)   F pulse\n" +
-                        "Shift silent   E door / exit   Esc pause",
-                        20, CyanFaint, new Vector2(0f, -360f), new Vector2(1600f, 80f));
+            Text legend = EnsureLabel(content, "Legend",
+                                      "WASD move   mouse aim   Space shout (hold to charge)   F pulse\n" +
+                                      "Shift silent   E door / exit   Esc pause",
+                                      20, CyanFaint, new Vector2(0f, -360f), new Vector2(1600f, 80f));
+
+            // The band goes in after the labels exist so its position in the draw order is the last
+            // slot before them; it dims everything above it, which is why nothing visible is on it.
+            EnsureImage(content, "legendband", EnsureLegendBandSprite(), Image.Type.Simple,
+                        new Vector2(0f, -350f), new Vector2(1700f, 340f),
+                        new Color(0f, 0f, 0f, 0.75f), false, 5);
+
+            // The rings breathe and the page writes itself: both drivers sit on the canvas rather than
+            // on the Content child so a hide of the menu never freezes a fade halfway through its own
+            // face. The arrays are re-asserted in reading order on every rebuild.
+            var pulse = SceneKit.EnsureComponent<UITitlePulse>(canvas.gameObject);
+            SceneKit.SetReferenceArray(pulse, "rings", new UnityEngine.Object[] { ring1, ring2, ring3 });
+            SceneKit.SetReference(pulse, "headingShadow", heading.GetComponent<Shadow>());
+
+            var entrance = SceneKit.EnsureComponent<MenuEntrance>(canvas.gameObject);
+            SceneKit.SetReferenceArray(entrance, "elements", new UnityEngine.Object[]
+            {
+                heading.transform, subtitle.transform, start.transform, calibrate.transform,
+                quit.transform, status.transform, legend.transform
+            });
 
             var menu = canvas.GetComponent<MainMenu>() ?? canvas.gameObject.AddComponent<MainMenu>();
             SceneKit.SetReference(menu, "director", director);
@@ -868,6 +1035,16 @@ namespace EchoMaze.EditorTools
         static CalibrationPanel EnsureCalibration(VoiceCalibration calibration, GameObject root)
         {
             Transform content = root.transform;
+
+            // The calibration page switches its own object off when it closes, which makes it the one
+            // panel allowed to fade from inside: nothing subscribes from here that a deactivation could
+            // kill. The group is left at full alpha in the scene; OnEnable at runtime restarts the fade
+            // from zero, and the close path only ever disables the object once alpha has reached zero.
+            // EnsureComponent because this root is deliberately inactive in the editor while we build it.
+            var pageGroup = SceneKit.EnsureComponent<CanvasGroup>(root);
+            pageGroup.alpha = 1f;
+            pageGroup.interactable = true;
+            pageGroup.blocksRaycasts = true;
 
             // The menu is a bright page, not a dark room: unlike pause and victory, this panel has to blank
             // out live UI sitting under it in the same canvas, so it carries its own near-opaque dim rather
@@ -902,7 +1079,8 @@ namespace EchoMaze.EditorTools
             Text deviceInfo = EnsureLabel(content, "DeviceInfo", "", 20, CyanFaint, new Vector2(0f, -360f),
                                           new Vector2(1200f, 44f));
 
-            var view = root.GetComponent<CalibrationPanel>() ?? root.AddComponent<CalibrationPanel>();
+            var view = SceneKit.EnsureComponent<CalibrationPanel>(root);
+            SceneKit.SetReference(view, "group", pageGroup);
             SceneKit.SetReference(view, "startButton", begin);
             SceneKit.SetReference(view, "closeButton", close);
             SceneKit.SetReference(view, "meter", meter);

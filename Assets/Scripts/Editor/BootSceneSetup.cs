@@ -68,8 +68,20 @@ namespace EchoMaze.EditorTools
             VoiceCalibration calibration = SceneKit.EnsureVoiceCalibration(director);
             GameFlow flow = SceneKit.EnsureGameFlow(Chapters, MenuScene);
 
+            // The rejected phase-1 backdrop: collider-only 2D walls that were invisible between waves.
+            // Gone on rebuild rather than left dormant, so nobody can mistake its objects for the stage.
+            SceneKit.RemoveLegacyMenuStage();
+
+            // GDD: "Background is an echo arc drifting slowly" — here a real 3D maze model on a table,
+            // turning under its own camera, its walls washed by a wave of light that draws no lines.
+            // The flat orthographic camera keeps its tag and its tests; Menu3DStage switches the view
+            // at runtime, and levels never see any of this because they load single.
+            GameObject maze = SceneKit.EnsureMenuMaze3D();
+            GameObject menuCamera = SceneKit.EnsureMenuCamera3D(maze);
+
             UiKit.EnsureEventSystem();
-            UiKit.EnsureMainMenu(director, calibration);
+            MainMenu menu = UiKit.EnsureMainMenu(director, calibration);
+            SceneKit.EnsureMenuStage(menu.gameObject, menuCamera);
 
             EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
             EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene(), ScenePath);

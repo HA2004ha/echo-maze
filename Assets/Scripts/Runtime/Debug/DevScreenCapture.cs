@@ -158,6 +158,15 @@ namespace EchoMaze.DebugTools
                 runner.delaySeconds = float.Parse(delay, CultureInfo.InvariantCulture);
             }
 
+            // The victory summary now types itself out, and the picture is taken completeLead after the
+            // run ends: 0.4 s catches eighteen characters, and a settled page needs the writer's own
+            // runtime as the lead. Worth naming from the terminal rather than fixing in code.
+            string completeLead = Value("-echo-complete-lead");
+            if (completeLead != null)
+            {
+                runner.completeLeadSeconds = float.Parse(completeLead, CultureInfo.InvariantCulture);
+            }
+
             string[] args = System.Environment.GetCommandLineArgs();
             runner.ping = System.Array.IndexOf(args, "-echo-ping") >= 0;
             runner.quitAfter = System.Array.IndexOf(args, "-echo-quit") >= 0;

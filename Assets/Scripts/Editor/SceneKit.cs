@@ -665,6 +665,238 @@ namespace EchoMaze.EditorTools
         public static GameObject EnsureWall(string name, Vector2 centre, Vector2 size) =>
             EnsureShape(name, centre, Shape.Box(size.x, size.y), SurfaceKind.Plain, 1f);
 
+        /// <summary>
+        /// Deletes the phase-1 menu stage — the collider-only backdrop and its ambient pinger — whose
+        /// whole visible life was a split second of arc every few seconds. The 3D diorama replaces it.
+        /// Idempotent: a scene that was never rebuilt through that phase simply has nothing to remove.
+        /// </summary>
+        public static void RemoveLegacyMenuStage()
+        {
+            foreach (string name in new[] { "Menu Backdrop", "Menu Ambient Pinger" })
+            {
+                GameObject stale = GameObject.Find(name);
+                if (stale != null)
+                {
+                    Object.DestroyImmediate(stale);
+                }
+            }
+        }
+
+        /// <summary>
+        /// The diorama's walls, authored as {x, z, width, depth} in model units on a ±4.7 field. No
+        /// generator seed: a menu backdrop that changes shape between runs looks like a bug between
+        /// two runs, and this one is furniture.
+        /// </summary>
+        static readonly float[][] MenuMazeLayout =
+        {
+            // The four ring walls butt-joint rather than overlap: the N/S pair is 8.9 wide so its end
+            // caps meet the E/W inner faces (x=±4.45) as opposite-facing planes that are each buried in
+            // the other wall. Two same-facing boxes flush at a corner (the old 9.9) put two outward faces
+            // in the same plane, and a Z-buffer strobing those corners is exactly what the glow revealed.
+            // The E/W pair stays 9.5 deep and closes the outer corners.
+            new[] { 0f, 4.5f, 8.9f, 0.5f },
+            new[] { 0f, -4.5f, 8.9f, 0.5f },
+            new[] { -4.7f, 0f, 0.5f, 9.5f },
+            new[] { 4.7f, 0f, 0.5f, 9.5f },
+            new[] { -2.7f, 2.6f, 3.4f, 0.5f },
+            new[] { 2.6f, 2.7f, 0.5f, 3.0f },
+            new[] { -0.6f, 3.4f, 0.5f, 1.7f },
+            new[] { 1.2f, 0.9f, 2.6f, 0.5f },
+            new[] { -1.4f, 0.2f, 0.5f, 2.4f },
+            new[] { 3.4f, 0.4f, 2.0f, 0.5f },
+            new[] { -3.4f, -0.4f, 0.5f, 2.6f },
+            new[] { 0.4f, -2.6f, 3.2f, 0.5f },
+            new[] { -2.6f, -2.8f, 2.0f, 0.5f },
+            new[] { 2.8f, -1.4f, 0.5f, 1.8f },
+            new[] { -0.4f, -1.2f, 1.6f, 0.5f },
+            new[] { 1.6f, -3.6f, 0.5f, 1.6f },
+            new[] { -3.8f, 1.2f, 0.5f, 1.6f },
+            new[] { 3.6f, -3.2f, 1.6f, 0.5f },
+        };
+
+        /// <summary>
+        /// The 3D maze the menu now stands on, assembled as a turntable: the base plate, the humming
+        /// trim frame, and the wall pivot are all children of one "Maze Diorama" that
+        /// <see cref="MenuMazeDrift"/> turns, so the model is a rigid body and no wall can ever sweep
+        /// through a static frame mid-rotation — when the wall corners glowed they Z-fought against the
+        /// trim they passed through, which is the other half of the corner glitch. The walls under
+        /// "Maze Walls" remain the only things the emissive wave touches: the frame carries its own
+        /// steady material glow and keeps the model's outline between waves.
+        ///
+        /// Rebuild rather than reconcile: every child is one primitive with no references to lose, so
+        /// a generator that clears its own frame before drawing it cannot drift from the layout above.
+        /// </summary>
+        public static GameObject EnsureMenuMaze3D()
+        {
+            GameObject root = FindOrCreate("Menu Maze 3D");
+            root.transform.position = new Vector3(0f, -1.2f, 0f);
+            root.transform.rotation = Quaternion.identity;
+
+            for (int i = root.transform.childCount - 1; i >= 0; i--)
+            {
+                Object.DestroyImmediate(root.transform.GetChild(i).gameObject);
+            }
+
+            Material block = EnsureMazeMaterial("Assets/Art/Materials/Maze_Block.mat", "Maze_Block",
+                                                new Color(0.035f, 0.047f, 0.065f, 1f),
+                                                new Color(0.10f, 0.145f, 0.20f, 1f),
+                                                Vector4.zero);
+            Material trim = EnsureMazeMaterial("Assets/Art/Materials/Maze_Trim.mat", "Maze_Trim",
+                                               new Color(0.02f, 0.10f, 0.12f, 1f),
+                                               new Color(0.10f, 0.45f, 0.55f, 1f),
+                                               new Vector4(0.30f, 2.1f, 2.9f, 0.85f));
+
+            GameObject pivot = new GameObject("Maze Diorama");
+            pivot.transform.SetParent(root.transform, false);
+
+            // Base and trim are children of the pivot, not the root: the whole assembly turns as one
+            // rigid body. The wave's MaterialPropertyBlock only ever reaches "Maze Walls" renderers,
+            // so the trim keeps glowing from its material value while the walls under it echo.
+            CreateBox("Maze Base", pivot.transform, new Vector3(0f, -0.08f, 0f),
+                      new Vector3(10.6f, 0.16f, 10.6f), block);
+
+            CreateBox("Maze Trim North", pivot.transform, new Vector3(0f, 0.12f, 5.0f),
+                      new Vector3(10.4f, 0.22f, 0.18f), trim);
+            CreateBox("Maze Trim South", pivot.transform, new Vector3(0f, 0.12f, -5.0f),
+                      new Vector3(10.4f, 0.22f, 0.18f), trim);
+            CreateBox("Maze Trim West", pivot.transform, new Vector3(-5.0f, 0.12f, 0f),
+                      new Vector3(0.18f, 0.22f, 10.4f), trim);
+            CreateBox("Maze Trim East", pivot.transform, new Vector3(5.0f, 0.12f, 0f),
+                      new Vector3(0.18f, 0.22f, 10.4f), trim);
+
+            GameObject walls = new GameObject("Maze Walls");
+            walls.transform.SetParent(pivot.transform, false);
+
+            for (int i = 0; i < MenuMazeLayout.Length; i++)
+            {
+                float[] wall = MenuMazeLayout[i];
+                CreateBox(string.Format("Maze Wall {0:00}", i), walls.transform,
+                          new Vector3(wall[0], 0.53f, wall[1]),
+                          new Vector3(wall[2], 0.9f, wall[3]), block);
+            }
+
+            return root;
+        }
+
+        /// <summary>
+        /// The eye the diorama is built for: perspective, about 34 degrees down, close enough that the
+        /// model fills the screen behind the text and far enough that no wall leans into the title.
+        /// Untagged on purpose — <c>Camera.main</c> must keep answering to the gameplay camera, which
+        /// several runtime readers take for granted. Saved inactive; <see cref="Menu3DStage"/> is the
+        /// only thing that switches it on, so the scene file keeps its one-enabled-camera invariant.
+        /// </summary>
+        public static GameObject EnsureMenuCamera3D(GameObject mazeRoot)
+        {
+            // FindIncludingInactive, not FindOrCreate: this camera is saved switched off, and
+            // GameObject.Find cannot see it — the plain helper would append a second one every build.
+            GameObject go = FindIncludingInactive("Menu Camera 3D") ?? new GameObject("Menu Camera 3D");
+
+            Camera camera = EnsureComponent<Camera>(go);
+            camera.orthographic = false;
+            camera.fieldOfView = 40f;
+            camera.nearClipPlane = 0.3f;
+            camera.farClipPlane = 80f;
+            camera.clearFlags = CameraClearFlags.SolidColor;
+            camera.backgroundColor = Color.black;
+            camera.allowHDR = true;
+            camera.allowMSAA = false;
+            camera.cullingMask = ~0;
+            camera.GetUniversalAdditionalCameraData().renderPostProcessing = true;
+
+            go.transform.position = mazeRoot.transform.position + new Vector3(0f, 8.8f, -13.2f);
+            go.transform.LookAt(mazeRoot.transform.position + new Vector3(0f, 0.5f, 0f));
+
+            Transform pivot = mazeRoot.transform.Find("Maze Diorama");
+            Transform walls = mazeRoot.transform.Find("Maze Diorama/Maze Walls");
+
+            var drift = EnsureComponent<MenuMazeDrift>(go);
+            SetReference(drift, "mazePivot", pivot);
+
+            var wave = EnsureComponent<MenuMazeEchoWave>(go);
+            SetReference(wave, "mazeWallsRoot", walls);
+
+            // Re-assert the wave's tune, not just its target: Boot.unity carries whatever defaults the
+            // component had when AddComponent first ran, and a edited C# default never reaches a saved
+            // scene on its own. The crest in particular is the difference between text you can read
+            // over the diorama and text the Bloom erases.
+            SetColor(wave, "waveColor", new Color(0.22f, 1.5f, 2.1f));
+            SetFloat(wave, "intervalSeconds", 4.2f);
+            SetFloat(wave, "waveSeconds", 1.6f);
+            SetFloat(wave, "reach", 13f);
+            SetFloat(wave, "bandWidth", 1.7f);
+            SetFloat(wave, "originHalfExtent", 4.4f);
+
+            go.SetActive(false);
+            return go;
+        }
+
+        /// <summary>
+        /// Hands the canvas ownership of the stage swap: diorama camera on, flat camera off, once, at
+        /// Awake. The gameplay camera is found while the menu camera is still switched off, so the
+        /// inactive-excluding lookup cannot answer with the diorama's own.
+        /// </summary>
+        public static Menu3DStage EnsureMenuStage(GameObject menuCanvas, GameObject menuCamera)
+        {
+            var stage = EnsureComponent<Menu3DStage>(menuCanvas);
+            SetReference(stage, "menuStage", menuCamera);
+            SetReference(stage, "gameplayCamera", Object.FindAnyObjectByType<Camera>());
+            return stage;
+        }
+
+        static Material EnsureMazeMaterial(string path, string name, Color side, Color top,
+                                           Vector4 wave)
+        {
+            Shader shader = Shader.Find("EchoMaze/MazeBlock");
+            if (shader == null)
+            {
+                Debug.LogError("EchoMaze/MazeBlock not found. Is Assets/Art/Shaders/MazeBlock.shader imported?");
+                return null;
+            }
+
+            Material material = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (material == null)
+            {
+                EnsureFolder("Assets/Art/Materials");
+                material = new Material(shader) { name = name };
+                AssetDatabase.CreateAsset(material, path);
+            }
+
+            material.shader = shader;
+            material.SetColor("_BaseColor", side);
+            material.SetColor("_TopColor", top);
+            material.SetVector("_Wave", wave);
+            EditorUtility.SetDirty(material);
+            return material;
+        }
+
+        static GameObject CreateBox(string name, Transform parent, Vector3 localPosition,
+                                    Vector3 size, Material material)
+        {
+            GameObject box = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            box.name = name;
+
+            // The primitive arrives with a collider for a physics game; this model is never touched by
+            // a wave or a player, and a stray MeshCollider would only join the ping raycasts as an
+            // invisible wall that happened to be in the menu's world coordinates.
+            Collider collider = box.GetComponent<Collider>();
+            if (collider != null)
+            {
+                Object.DestroyImmediate(collider);
+            }
+
+            box.transform.SetParent(parent, false);
+            box.transform.localPosition = localPosition;
+            box.transform.localScale = size;
+
+            var renderer = box.GetComponent<MeshRenderer>();
+            renderer.sharedMaterial = material;
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
+            renderer.lightProbeUsage = UnityEngine.Rendering.LightProbeUsage.Off;
+            renderer.reflectionProbeUsage = UnityEngine.Rendering.ReflectionProbeUsage.Off;
+            return box;
+        }
+
         public static GameObject EnsurePlayer(Vector2 spawn)
         {
             GameObject player = FindOrCreate("Player");
@@ -1071,6 +1303,22 @@ namespace EchoMaze.EditorTools
                                            TextAnchor.MiddleCenter, true);
             Stretch(label.gameObject);
 
+            // The blackout arrives on a fade rather than a slam: a death is loud in the game's own terms,
+            // and a screen that cuts to black at full alpha reads as a crash rather than as a consequence.
+            // The fade driver lives on the canvas itself because nothing subscribes from here — the object
+            // is allowed to switch itself off, which is the one case the panel survival rule does not cover.
+            // EnsureComponent rather than AddComponent: this canvas is saved inactive, and an AddComponent
+            // onto an inactive object hands back a reference the editor will not evaluate (see EnsureComponent).
+            var group = EnsureComponent<CanvasGroup>(canvasObject);
+            group.alpha = 1f;
+            group.interactable = false;
+            group.blocksRaycasts = false;
+
+            var fade = EnsureComponent<UIPanelFade>(canvasObject);
+            SetReference(fade, "group", group);
+            SetBool(fade, "playOnEnable", true);
+            SetFloat(fade, "inSeconds", 0.35f);
+
             canvasObject.SetActive(false);
             return canvasObject;
         }
@@ -1139,6 +1387,19 @@ namespace EchoMaze.EditorTools
             property.serializedObject.ApplyModifiedPropertiesWithoutUndo();
         }
 
+        /// <summary>A serialized bool, for the mode flags a generated object must not ship unset.</summary>
+        public static void SetBool(UnityEngine.Object target, string field, bool value)
+        {
+            SerializedProperty property = SerializedPropertyOf(target, field);
+            if (property == null)
+            {
+                return;
+            }
+
+            property.boolValue = value;
+            property.serializedObject.ApplyModifiedPropertiesWithoutUndo();
+        }
+
         /// <summary>A serialized string, so a chapter title lives in the code that builds the scene.</summary>
         public static void SetString(UnityEngine.Object target, string field, string value)
         {
@@ -1161,6 +1422,23 @@ namespace EchoMaze.EditorTools
             }
 
             property.vector2Value = value;
+            property.serializedObject.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        /// <summary>
+        /// A serialized Colour. The wave's crest is an HDR Colour field, and a component saved into
+        /// Boot.unity keeps whatever default AddComponent gave it until a generator writes the new
+        /// value here — changing the C# default alone never reaches the scene file.
+        /// </summary>
+        public static void SetColor(UnityEngine.Object target, string field, Color value)
+        {
+            SerializedProperty property = SerializedPropertyOf(target, field);
+            if (property == null)
+            {
+                return;
+            }
+
+            property.colorValue = value;
             property.serializedObject.ApplyModifiedPropertiesWithoutUndo();
         }
 
@@ -1207,6 +1485,30 @@ namespace EchoMaze.EditorTools
             {
                 property.InsertArrayElementAtIndex(i);
                 property.GetArrayElementAtIndex(i).vector2Value = values[i];
+            }
+
+            property.serializedObject.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        /// <summary>
+        /// Writes a serialised array of component or object references, for the components whose wiring
+        /// is a list rather than a single slot — the entrance's ordered elements and the pulse's rings,
+        /// both of which are meaningless in the wrong order.
+        /// </summary>
+        public static void SetReferenceArray(UnityEngine.Object target, string field,
+                                             UnityEngine.Object[] values)
+        {
+            SerializedProperty property = SerializedPropertyOf(target, field);
+            if (property == null)
+            {
+                return;
+            }
+
+            property.ClearArray();
+            for (int i = 0; i < values.Length; i++)
+            {
+                property.InsertArrayElementAtIndex(i);
+                property.GetArrayElementAtIndex(i).objectReferenceValue = values[i];
             }
 
             property.serializedObject.ApplyModifiedPropertiesWithoutUndo();
@@ -1284,10 +1586,20 @@ namespace EchoMaze.EditorTools
             return null;
         }
 
-        static T EnsureComponent<T>(GameObject go) where T : Component
+        public static T EnsureComponent<T>(GameObject go) where T : Component
         {
             T component = go.GetComponent<T>();
-            return component != null ? component : go.AddComponent<T>();
+            if (component != null)
+            {
+                return component;
+            }
+
+            // Re-fetched rather than trusted: an AddComponent on an *inactive* GameObject in the editor
+            // hands back a reference Unity will not evaluate until the object wakes, and writing through
+            // it throws MissingComponentException for a component that demonstrably exists. GetComponent
+            // after the add returns the real thing either way.
+            go.AddComponent<T>();
+            return go.GetComponent<T>();
         }
 
         static bool HasMissingScript(GameObject go)

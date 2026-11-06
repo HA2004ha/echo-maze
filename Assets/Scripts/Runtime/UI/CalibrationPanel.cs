@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using EchoMaze.Audio;
 using EchoMaze.Core;
 using UnityEngine;
@@ -36,6 +37,14 @@ namespace EchoMaze.UI
         [SerializeField] Button deviceButton;
         [SerializeField] Text deviceLabel;
         [SerializeField, Range(0.5f, 10f)] float deviceRescanSeconds = 2f;
+        [Tooltip("The page fades itself in on open and out on close, and turns itself off only when the " +
+                 "fade has landed — this object is the one panel allowed to animate its own death, " +
+                 "because nothing subscribes from a page that only exists while you are looking at it.")]
+        [SerializeField] CanvasGroup group;
+        [SerializeField] float fadeSeconds = 0.22f;
+
+        Coroutine fadeRun;
+        bool closing;
 
         string instruction = "make the sound you want to play with";
         string[] devices = Array.Empty<string>();
@@ -74,6 +83,20 @@ namespace EchoMaze.UI
             // The page is where a headset gets plugged in, so the list is rebuilt every time it opens rather
             // than once at startup.
             RefreshDevices();
+
+            closing = false;
+            if (group != null)
+            {
+                if (fadeRun != null)
+                {
+                    StopCoroutine(fadeRun);
+                }
+
+                group.alpha = 0f;
+                group.interactable = true;
+                group.blocksRaycasts = true;
+                fadeRun = StartCoroutine(Fade(0f, 1f, false));
+            }
         }
 
         void OnDestroy()
@@ -216,7 +239,37 @@ namespace EchoMaze.UI
         public void Close()
         {
             calibration?.Cancel();
-            gameObject.SetActive(false);
+            if (group == null || closing)
+            {
+                gameObject.SetActive(false);
+                return;
+            }
+
+            // The coroutine runs on this object, so it dies with the SetActive at the end — which is the
+            // point: the disable is the last thing the fade does, not the first thing the close does.
+            closing = true;
+            group.blocksRaycasts = false;
+            group.interactable = false;
+            fadeRun = StartCoroutine(Fade(group.alpha, 0f, true));
+        }
+
+        IEnumerator Fade(float from, float to, bool disableAtEnd)
+        {
+            float seconds = Mathf.Max(0.05f, fadeSeconds);
+            float elapsed = 0f;
+            while (elapsed < seconds)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float t = elapsed / seconds;
+                group.alpha = Mathf.Lerp(from, to, to > from ? 1f - (1f - t) * (1f - t) : t * t);
+                yield return null;
+            }
+
+            group.alpha = to;
+            if (disableAtEnd)
+            {
+                gameObject.SetActive(false);
+            }
         }
 
         void OnFinished(GateCalibration result)

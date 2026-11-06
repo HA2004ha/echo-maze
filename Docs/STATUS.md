@@ -1,6 +1,6 @@
 # Status — where the game is, and what is next
 
-**Last updated:** 2026-10-29
+**Last updated:** 2026-11-06
 **Current milestone:** **M1 — a complete playable shape** (menu → one real level → victory)
 **Next milestone:** **M2 — the hunt and the rest of the maze language** (NoiseBoard, suspicion, Listen mode, hollow, memory trace)
 
@@ -98,7 +98,7 @@ rather than a preview. The same rule applies to `Sandbox`: it is the ray-fan lab
 | PlayMode suite | **44 / 44** green (`Logs/playmode.xml`, 2026-10-29); the maze flow is covered by the scene builder and the EditMode grid tests |
 | Maze is solvable | `MazeGridTests`: the exit is unreachable while the door is closed and reachable when it opens; every walkable cell is reachable |
 | Door is a barrier | the two echo panels leave a 0.4 m slit, narrower than the 0.5 m body; the Default-layer blocker closes the cell physically |
-| Player build | `Builds/echo-maze`, Development build, Linux64; menu, level and victory captures in `Screenshots/` (local, git-ignored) |
+| Player build | `Builds/StandaloneLinux64/echo-maze.x86_64`, Development build, Linux64; menu, level and victory captures in `Screenshots/` (local, git-ignored) |
 | Microphone | player opened a real capture device (log above) |
 | Readability by a human | **not run yet** — this is the open go/no-go from week 2 and needs people, headphones and the build |
 
@@ -118,6 +118,67 @@ These are deliberately listed so the next stage does not mistake a built room fo
 - **Section reset** exists as hooks for doors and enemy rewinds; a full reset of authored state is still
   week 4 work.
 - **Readability and `ρ`** are still measured on the corridor, not on the maze with a creature in it.
+
+---
+
+## Known open defects (phase 3, 2026-11-06)
+
+Two items are knowingly left standing at the end of phase 3. Both are recorded here with the measurements
+that got us to them, so the next pass starts from evidence rather than from a hunch.
+
+### 1. The diorama's emissive wave does not appear in any capture
+
+The corner glitch and the menu legibility are fixed and verified. The wave — the thing that was supposed to
+make the diorama read as *echoing* — has never been seen to light the walls in a captured frame, in the
+editor or in the player.
+
+What has been ruled out, with the evidence:
+
+- **Wiring.** `mazeWallsRoot` in `Boot.unity` points at the `Maze Walls` transform (fileID checked); the
+  component is enabled and `walls.Length == 18` at runtime.
+- **The shader and Bloom.** Setting `_Wave` on the *material* `Maze_Block.mat` makes all 18 walls blaze cyan
+  (`Assets/Screenshots/material_wave.png`). So the shader reads the property, HDR values above 1 do reach
+  Bloom, and the camera renders the geometry.
+- **The per-renderer path.** Writing the same value through a `MaterialPropertyBlock` on those 18 renderers
+  produced nothing (`manual_band.png`) and then only ~6 walls lit (`mpb_test.png`).
+
+The first diagnosis was the SRP batcher: a property declared inside `CBUFFER_START(UnityPerMaterial)` can be
+ignored by per-renderer overrides, so `_Wave` was moved outside the cbuffer in both passes of
+`Assets/Art/Shaders/MazeBlock.shader`. **That change is in place but is not yet proven to have fixed
+anything** — the manual paint test run after it still showed no lit walls.
+
+The second diagnosis, which is the one to test first next time: **both manual-paint experiments were
+invalid, because `MenuMazeEchoWave` was running and overwriting the block.** `OneWave()` writes every
+renderer's `_Wave` every frame during a pulse and zeroes all of them when it settles, so a hand-painted band
+is clobbered within one to two frames — which would look exactly like "nothing rendered", and exactly like
+"only some walls lit" if the paint landed mid-band. The experiments proved the paint did not survive, not
+that MPB does not work.
+
+So the wave may be fine and only ever have been missed by the captures, or it may genuinely not render. The
+two are separated by a measurement that does not involve painting by hand:
+
+1. Enter play on `Assets/Scenes/Boot.unity`, and every ~0.4 s for 6 s read the live MPB back off the wall
+   renderers (`GetPropertyBlock` → `GetVector("_Wave").w`) *and* take a screenshot in the same call. If the
+   numbers sweep 0 → 1 → 0 on a ~4 s cycle while the frames stay dark, the wave logic runs and the render
+   path is the bug. If the numbers stay flat at 0, the coroutine is not reaching the loop.
+2. If it is a render-path bug, the next lever is the material's SRP-batcher status rather than the shader
+   text — check whether `Maze_Block.mat` reports batched, and if in doubt give the walls their own material
+   instances (`renderer.materials`) so the value cannot be batched away at all. 18 walls is not a
+   performance conversation.
+3. Capture timing is a separate trap: `-echo-shot-at` counts from player start while the wave clock starts
+   at the menu's `Awake`, and the cycle is 2.6 s of dark followed by 1.6 s of band. A single early capture
+   proves nothing; a burst across 8–13 s covers at least one full cycle.
+
+### 2. The controls legend needed its own dim
+
+The vignette wash is transparent in the centre by design, and the phase-3 dim column (`UI_dim.png`, α0.55)
+covers the title and buttons — but the legend at y −360 sits below that ellipse, over the diorama's glowing
+trim, and went unreadable. Fixed with a second generated sprite, `UI_legend_band.png`: a 64×256 vertical
+fade laid under the legend in `UiKit.EnsureMainMenu`. **Seen and confirmed** in
+`Screenshots/final_menu_3.0.png` and `final_menu_10.0.png`: both WASD lines read clearly where before the
+trim's glow washed them out, and the same two frames show the corners clean at two different rotation
+angles with no wall past the frame. Neither frame caught the wave mid-band, which is item 1 above and is the
+reason that item stays open rather than being called a capture-timing miss.
 
 ---
 
@@ -151,7 +212,7 @@ victory panel with two rooms on it.
 "/home/<you>/Unity/Hub/Editor/6000.6.3f1-x86_64/Editor/Unity" -batchmode -quit -projectPath . \
     -executeMethod EchoMaze.EditorTools.PlayerBuild.Build
 
-./Builds/echo-maze
+./Builds/StandaloneLinux64/echo-maze.x86_64
 ```
 
 In the editor: open `Assets/Scenes/Boot.unity` and press Play. `Tools ▸ Echo Maze ▸ Build Everything`
@@ -160,16 +221,25 @@ rebuilds the generated scenes after a merge.
 For a screenshot from a terminal — the player renders, the editor cannot do this headless:
 
 ```
-./Builds/echo-maze -echo-shot Screenshots/menu.png -echo-quit
-./Builds/echo-maze -echo-calibrate -echo-shot Screenshots/calibration.png -echo-quit
-./Builds/echo-maze -echo-start-run -echo-shot Screenshots/level01_ping.png -echo-ping -echo-quit
-./Builds/echo-maze -echo-start-run -echo-pause -echo-shot Screenshots/pause.png -echo-quit
-./Builds/echo-maze -echo-complete -echo-shot Screenshots/victory.png -echo-quit
+P=./Builds/StandaloneLinux64/echo-maze.x86_64
+$P -echo-shot Screenshots/menu.png -echo-quit
+$P -echo-shot-at 4.2 -echo-shot Screenshots/menu_wave.png -echo-quit
+$P -echo-calibrate -echo-shot Screenshots/calibration.png -echo-quit
+$P -echo-start-run -echo-shot Screenshots/level01_ping.png -echo-ping -echo-quit
+$P -echo-start-run -echo-pause -echo-shot Screenshots/pause.png -echo-quit
+$P -echo-start-run -echo-pause -echo-shot-at 0.5 -echo-shot Screenshots/pause_fade.png -echo-quit
+$P -echo-complete -echo-shot-at 0 -echo-shot Screenshots/victory_typing.png -echo-quit
+$P -echo-complete -echo-complete-lead 2.2 -echo-shot Screenshots/victory.png -echo-quit
 ```
 
 `-echo-start-run` takes the real menu path (so `GameFlow` is subscribed), `-echo-complete` ends the chapter,
 `-echo-pause` and `-echo-calibrate` open the two panels no terminal click could otherwise reach, and
 `-echo-quit` closes the player. Without `-echo-shot` the debug hook does nothing.
+`-echo-shot-at <seconds>` moves the capture off its 2 s default, which matters now that the screens animate:
+the entrance is still writing the menu under about 1.5 s, an emissive wave crosses the 3D diorama on a ~4 s
+interval, the pause panel is mid-fade at half a second, and the victory summary is still typing at 0 s. A
+capture meant to prove a finished layout should stay on the default; one meant to prove the motion should
+name its time.
 
 ---
 
