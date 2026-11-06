@@ -1002,10 +1002,12 @@ namespace EchoMaze.EditorTools
             Text subtitle = EnsureLabel(content, "Subtitle", "a maze you see by sound", 24, CyanFaint,
                                         new Vector2(0f, 205f), new Vector2(1000f, 50f));
 
-            Button start = EnsureButton(content, "Start", "begin", new Vector2(0f, 40f), new Vector2(520f, 84f));
-            Button calibrate = EnsureButton(content, "Calibrate", "tune your voice", new Vector2(0f, -64f),
+            Button start = EnsureButton(content, "Start", "begin", new Vector2(0f, 70f), new Vector2(520f, 84f));
+            Button guide = EnsureButton(content, "Guide", "how to play", new Vector2(0f, -36f),
+                                        new Vector2(520f, 68f));
+            Button calibrate = EnsureButton(content, "Calibrate", "tune your voice", new Vector2(0f, -126f),
                                             new Vector2(520f, 68f));
-            Button quit = EnsureButton(content, "Quit", "quit", new Vector2(0f, -150f), new Vector2(520f, 68f));
+            Button quit = EnsureButton(content, "Quit", "quit", new Vector2(0f, -212f), new Vector2(520f, 68f));
             Text status = EnsureLabel(content, "Status", "", 24, CyanMild, new Vector2(0f, -280f),
                                       new Vector2(1400f, 44f));
             // Full alpha, not CyanFaint: the legend is the one label that states information nobody may
@@ -1037,13 +1039,14 @@ namespace EchoMaze.EditorTools
             var entrance = SceneKit.EnsureComponent<MenuEntrance>(canvas.gameObject);
             SceneKit.SetReferenceArray(entrance, "elements", new UnityEngine.Object[]
             {
-                heading.transform, subtitle.transform, start.transform, calibrate.transform,
-                quit.transform, status.transform, legend.transform
+                heading.transform, subtitle.transform, start.transform, guide.transform,
+                calibrate.transform, quit.transform, status.transform, legend.transform
             });
 
             var menu = canvas.GetComponent<MainMenu>() ?? canvas.gameObject.AddComponent<MainMenu>();
             SceneKit.SetReference(menu, "director", director);
             SceneKit.SetReference(menu, "startButton", start);
+            SceneKit.SetReference(menu, "guideButton", guide);
             SceneKit.SetReference(menu, "calibrateButton", calibrate);
             SceneKit.SetReference(menu, "quitButton", quit);
             SceneKit.SetReference(menu, "statusLabel", status);
@@ -1058,7 +1061,66 @@ namespace EchoMaze.EditorTools
 
             var calibrationView = EnsureCalibration(calibration, calibrationPanel);
             SceneKit.SetReference(calibrationView, "calibration", calibration);
+
+            // The guide is made after the calibration page so that it draws over it: "how do I play" is the
+            // question a player asks while the meter is on the screen, and a page that let the live mic meter
+            // blink through the copy would be a page nobody finishes reading.
+            // Named "Guide" like the button that opens it, the way "Card" and "Close" are reused across the
+            // panels of this file: they sit under different parents, and renaming one here would leave the
+            // object the last rebuild made in the scene with nobody left to look for it.
+            GameObject guidePage = FindOrCreateChild(canvas.transform, "Guide");
+            guidePage.SetActive(false);
+            SceneKit.SetReference(menu, "guidePanel", EnsureGuide(guidePage));
             return menu;
+        }
+
+        /// <summary>
+        /// The field guide page, on the same card and in the same colours as the calibration page: a bright
+        /// full-screen dim, because this too has to blank out live UI sitting under it in the menu canvas.
+        /// </summary>
+        static GuidePanel EnsureGuide(GameObject root)
+        {
+            Transform content = root.transform;
+
+            var pageGroup = SceneKit.EnsureComponent<CanvasGroup>(root);
+            pageGroup.alpha = 1f;
+            pageGroup.interactable = true;
+            pageGroup.blocksRaycasts = true;
+
+            EnsureImage(content, "dim", EnsureSolidSprite(), Image.Type.Simple, Vector2.zero, Vector2.zero,
+                        new Color(0f, 0f, 0f, 0.96f), true, 0);
+
+            EnsureCard(content, new Vector2(0f, 0f), new Vector2(1180f, 800f));
+            EnsureDivider(content, "Divider", new Vector2(0f, 275f), new Vector2(980f, 2f));
+
+            Text title = EnsureLabel(content, "Title", "", 34, Cyan, new Vector2(0f, 320f),
+                                     new Vector2(1000f, 60f), TextAnchor.MiddleCenter, true);
+
+            // Upper-left, and the copy in GuidePages is broken by hand: an auto-wrapped monospace paragraph
+            // re-flows on every machine that is missing a glyph, and the page's whole job is to be read once
+            // and remembered as a shape.
+            Text body = EnsureLabel(content, "Body", "", 22, CyanMild, new Vector2(0f, -20f),
+                                    new Vector2(1040f, 530f), TextAnchor.UpperLeft, false);
+            body.lineSpacing = 1.25f;
+
+            Button prev = EnsureButton(content, "Prev", "< prev", new Vector2(-350f, -300f),
+                                       new Vector2(220f, 56f));
+            Text counter = EnsureLabel(content, "Counter", "", 20, CyanFaint, new Vector2(0f, -300f),
+                                       new Vector2(300f, 40f));
+            Button next = EnsureButton(content, "Next", "next >", new Vector2(350f, -300f),
+                                       new Vector2(220f, 56f));
+            Button close = EnsureButton(content, "Close", "back  (Esc)", new Vector2(0f, -360f),
+                                        new Vector2(300f, 56f));
+
+            var view = SceneKit.EnsureComponent<GuidePanel>(root);
+            SceneKit.SetReference(view, "group", pageGroup);
+            SceneKit.SetReference(view, "titleLabel", title);
+            SceneKit.SetReference(view, "bodyLabel", body);
+            SceneKit.SetReference(view, "counterLabel", counter);
+            SceneKit.SetReference(view, "prevButton", prev);
+            SceneKit.SetReference(view, "nextButton", next);
+            SceneKit.SetReference(view, "closeButton", close);
+            return view;
         }
 
         static CalibrationPanel EnsureCalibration(VoiceCalibration calibration, GameObject root)

@@ -16,8 +16,9 @@ namespace EchoMaze.DebugTools
     /// a headless editor run renders nothing. This hook lets one command produce the PNG that a human then
     /// looks at: <c>-echo-shot file.png</c> grabs the screen, <c>-echo-scene Level01_Maze</c> skips the menu
     /// clicks nobody is making, <c>-echo-ping</c> emits one echo so the frame being captured has something
-    /// in it, and <c>-echo-pause</c> / <c>-echo-calibrate</c> open the two panels that only a click would
-    /// otherwise ever show. Without the first argument it does nothing at all, so it is inert in normal play.
+    /// in it, and <c>-echo-pause</c>, <c>-echo-calibrate</c> and <c>-echo-guide-page 4</c> open the panels
+    /// that only a click would otherwise ever show. Without the first argument it does nothing at all, so it
+    /// is inert in normal play.
     /// </summary>
     public static class DevScreenCapture
     {
@@ -31,6 +32,7 @@ namespace EchoMaze.DebugTools
             public bool complete;
             public bool pause;
             public bool calibrate;
+            public int guidePage = -1;
             public float completeLeadSeconds = 0.4f;
             public float pingLeadSeconds = 0.45f;
             public float panelLeadSeconds = 0.25f;
@@ -75,6 +77,19 @@ namespace EchoMaze.DebugTools
                     if (menu != null)
                     {
                         menu.OpenCalibration();
+                    }
+
+                    yield return new WaitForSecondsRealtime(panelLeadSeconds);
+                }
+
+                // The guide is six cards, and a single capture of the first one proves only that the page
+                // opens. The page number lets one command photograph any card in the build.
+                if (guidePage >= 0)
+                {
+                    MainMenu guideMenu = FindAnyObjectByType<MainMenu>();
+                    if (guideMenu != null)
+                    {
+                        guideMenu.OpenGuide(guidePage);
                     }
 
                     yield return new WaitForSecondsRealtime(panelLeadSeconds);
@@ -173,6 +188,12 @@ namespace EchoMaze.DebugTools
             runner.complete = System.Array.IndexOf(args, "-echo-complete") >= 0;
             runner.pause = System.Array.IndexOf(args, "-echo-pause") >= 0;
             runner.calibrate = System.Array.IndexOf(args, "-echo-calibrate") >= 0;
+            string guide = Value("-echo-guide-page");
+            if (guide != null)
+            {
+                runner.guidePage = int.TryParse(guide, NumberStyles.Integer, CultureInfo.InvariantCulture,
+                                                 out int page) ? page : 0;
+            }
             runner.startRun = System.Array.IndexOf(args, "-echo-start-run") >= 0 ||
                               (runner.complete && string.IsNullOrEmpty(runner.scene));
         }

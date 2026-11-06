@@ -357,6 +357,7 @@ Kept to a minimum. Bottom right: ECHO COOLDOWN ring — bottom centre: the text 
 ### Menus
 
 - **Main menu:** a conventional menu: PLAY, CALIBRATE MIC, CREDITS, QUIT. The background is an echo arc drifting slowly.
+- **Field guide:** a page in the main menu, not a document outside the game. Six cards, one per subject: how the wave is read, the waves you can make, moving and what it costs, what lives in the dark, the rest of the room, and your voice. It states only what the build actually does, and names what is coming as coming. Opened by a click or by the arrow keys.
 - **Pause:** RESUME, CALIBRATE MIC, QUIT and a TIP box.
 - **Microphone calibration:** live waveform, sensitivity and noise-threshold sliders, TEST button. This is the only settings screen.
 - **Victory:** a short text.

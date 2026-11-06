@@ -7,8 +7,8 @@ using UnityEngine.UI;
 namespace EchoMaze.UI
 {
     /// <summary>
-    /// The page the game opens on: start, calibrate, quit, and one line telling you what the machine thinks
-    /// your voice is.
+    /// The page the game opens on: start, the field guide, calibrate, quit, and one line telling you what
+    /// the machine thinks your voice is.
     ///
     /// The status line is the reason this class touches the director at all. On Linux the capture device is a
     /// different answer on every machine, and a player who cannot tell whether the game hears them has no way
@@ -21,17 +21,25 @@ namespace EchoMaze.UI
     {
         [SerializeField] EchoDirector director;
         [SerializeField] Button startButton;
+        [SerializeField] Button guideButton;
         [SerializeField] Button calibrateButton;
         [SerializeField] Button quitButton;
         [SerializeField] Text statusLabel;
         [Tooltip("The page the calibrate button opens, so the menu does not have to know how calibration works.")]
         [SerializeField] GameObject calibrationPanel;
+        [Tooltip("The field guide, for the same reason: the menu opens it and knows nothing about pages.")]
+        [SerializeField] GuidePanel guidePanel;
 
         void Awake()
         {
             if (startButton != null)
             {
                 startButton.onClick.AddListener(BeginRun);
+            }
+
+            if (guideButton != null)
+            {
+                guideButton.onClick.AddListener(() => OpenGuide());
             }
 
             if (calibrateButton != null)
@@ -47,6 +55,11 @@ namespace EchoMaze.UI
             if (calibrationPanel != null)
             {
                 calibrationPanel.SetActive(false);
+            }
+
+            if (guidePanel != null)
+            {
+                guidePanel.gameObject.SetActive(false);
             }
 
             if (director != null)
@@ -91,6 +104,14 @@ namespace EchoMaze.UI
             {
                 calibrationPanel.SetActive(true);
             }
+        }
+
+        /// <summary>Opens the field guide, optionally at a named page. The page argument exists for the
+        /// terminal capture hook, which has to be able to photograph the fifth card without clicking four
+        /// buttons it cannot reach from a command line.</summary>
+        public void OpenGuide(int page = 0)
+        {
+            guidePanel?.Open(page);
         }
     }
 }

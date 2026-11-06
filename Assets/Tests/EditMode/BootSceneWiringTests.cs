@@ -123,5 +123,46 @@ namespace EchoMaze.Tests
             Assert.IsFalse(root.activeSelf,
                            "the calibration page ships unfolded, so the game opens on a meter instead of a title");
         }
+
+        [Test]
+        public void AGeneratedMenuScene_HasExactlyOneGuidePage()
+        {
+            // The same failure the calibration page had: the bootstrap runs once per rebuild, so a guide
+            // made by AddComponent instead of by find-or-create is a stack of folded pages in the YAML and
+            // looks perfectly fine on screen.
+            Assert.AreEqual(1, Count<GuidePanel>(),
+                            "the bootstrap adds a guide page every time it runs instead of finding the one " +
+                            "already in the scene");
+
+            GuidePanel panel = Single<GuidePanel>(out GameObject root);
+            Assert.IsNotNull(panel, "the menu scene has no field guide, so HOW TO PLAY opens nothing");
+            Assert.AreEqual("Guide", root.name);
+            Assert.IsFalse(root.activeSelf, "the guide ships unfolded, so the game opens on a page of copy");
+
+            MainMenu menu = Single<MainMenu>(out GameObject menuRoot);
+            Assert.AreSame(menuRoot.transform, root.transform.parent,
+                           "the guide is a sibling of the canvas instead of a child of it, so the raycaster " +
+                           "on the menu cannot reach its buttons");
+        }
+
+        [Test]
+        public void AGeneratedMenuScene_SerializesTheGuidePageAsRealReferences()
+        {
+            GuidePanel panel = Single<GuidePanel>(out _);
+            Assert.IsNotNull(panel);
+
+            // A {fileID: 0} here is a page that opens blank: the labels exist, nothing writes into them,
+            // and the menu button that opened it looks like it works.
+            Assert.IsInstanceOf<Text>(Reference(panel, "titleLabel"), "the page title is not wired");
+            Assert.IsInstanceOf<Text>(Reference(panel, "bodyLabel"), "the page body is not wired");
+            Assert.IsInstanceOf<Text>(Reference(panel, "counterLabel"), "the page counter is not wired");
+            Assert.IsInstanceOf<Button>(Reference(panel, "prevButton"), "the guide cannot go back");
+            Assert.IsInstanceOf<Button>(Reference(panel, "nextButton"), "the guide cannot go forward");
+            Assert.IsInstanceOf<Button>(Reference(panel, "closeButton"), "the guide has no way out");
+
+            SerializedObject so = new SerializedObject(panel);
+            Assert.IsNotNull(so.FindProperty("group").objectReferenceValue,
+                             "the page has no CanvasGroup, so it appears and disappears with no fade");
+        }
     }
 }

@@ -55,6 +55,11 @@ WASD move · mouse aim · Space shout (hold to charge) · F pulse
 Shift move silently · E open a door / take the exit · Esc pause
 ```
 
+The **how to play** page on that menu is the same information as a guide rather than a document outside the
+game: six cards — reading the dark, the waves you can make, moving and what it costs, what lives in the dark,
+the rest of the room, and your voice. The wording lives in `Assets/Scripts/Runtime/UI/GuidePages.cs`, and
+`GuidePageTests` fails the suite if a reworded card no longer fits the generated page.
+
 Listen mode (`Ctrl`) and the decoy marble are **M2** work and are deliberately not on the menu yet. The maze
 has no enemy; the Crawler is in `Level02_Corridor`, which is not part of the run until the hunt systems land.
 `Level03_Sump` does not exist yet. The build is produced with the platform set to **Linux64**.

@@ -33,6 +33,9 @@ Before opening Unity, the clone can be checked from the shell: `cat ProjectSetti
 ## In-game checklist (from week 3)
 
 - [ ] Microphone calibration: the live waveform moves, the TEST button fires a real ping, settings survive a restart
+- [ ] Field guide: **how to play** opens from the menu, all six cards fit inside the frame at 1080p and on
+      the smallest window the game allows, `←` `→` and the two buttons step past both ends, and `Esc` returns
+      to the menu. Nothing on a card describes a mechanic the build does not have.
 - [ ] Calibration inside the dark: the ≈5 s silence at the start of level 1 sets a gate that neither a quiet room nor normal speech breaks
 - [ ] Pause: sound stops, microphone closes, the menu works with both keyboard and mouse (EventSystem on `InputSystemUIInputModule`)
 - [ ] Death: one touch kills, "YOU WERE HEARD" appears, retry returns in under 2 s to the last sanctuary with **that section's state reset** (doors, enemies, marble count)
