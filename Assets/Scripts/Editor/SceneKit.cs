@@ -922,7 +922,10 @@ namespace EchoMaze.EditorTools
             body.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
 
             var collider = EnsureComponent<CircleCollider2D>(player);
-            collider.radius = 0.25f;
+            // The pose art silhouette reaches ~0.447 m from centre (Docs/ISSUES.md #4), so the hitbox must
+            // reach the silhouette edge or the drawn body visibly sinks into walls and the wall is hidden
+            // inside the character instead of sitting at the touch point.
+            collider.radius = 0.447f;
 
             EnsureComponent<Player>(player);
 

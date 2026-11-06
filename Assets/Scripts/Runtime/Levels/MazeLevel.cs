@@ -74,11 +74,11 @@ namespace EchoMaze.Levels
 
             if (cameraRig != null)
             {
-                // Half the map, so the clamp is the authored rectangle rather than the drawn one: a level's
-                // outer wall is one cell thick and the camera should stop at the inside face of it.
+                // Half the map (outer wall edge): when the player is pressed against a wall, frame that
+                // wall's outer edge at the screen edge — the touch point — rather than stopping at the
+                // wall's inner face and leaving the wall cut off / overlapping the body.
                 cameraRig.SetBounds(new Vector2(grid.Width * cellSize * 0.5f,
-                                                grid.Height * cellSize * 0.5f)
-                                            - new Vector2(cellSize * 0.5f, cellSize * 0.5f));
+                                                grid.Height * cellSize * 0.5f));
             }
         }
 
