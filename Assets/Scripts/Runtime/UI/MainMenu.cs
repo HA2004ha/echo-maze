@@ -1,6 +1,7 @@
 using EchoMaze.Core;
 using EchoMaze.Gameplay;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace EchoMaze.UI
@@ -54,6 +55,18 @@ namespace EchoMaze.UI
                 // calibration page can work, and so the gate opening on a door slam in the next room does
                 // not fire a ping against a pose nobody has set yet.
                 director.EmitEnabled = false;
+            }
+        }
+
+        void Start()
+        {
+            // Gamepad and keyboard navigation start from nothing, and an EventSystem with no selection
+            // shows no highlight and submits no button — the first frame of a pad user on the menu is
+            // otherwise a dead screen. The menu's own first entry point is the beginning of the run.
+            if (EventSystem.current != null && EventSystem.current.currentSelectedGameObject == null &&
+                startButton != null)
+            {
+                EventSystem.current.SetSelectedGameObject(startButton.gameObject);
             }
         }
 

@@ -277,6 +277,16 @@ The level file, the door, the sanctuary and the checkpoint remain valid chapter-
 **Rule:** a chapter is in `chapterScenes` only when a player can finish it **and** its systems are the ones
 the GDD describes. A preview room is a scene, not a chapter.
 
+## 2026-11-06 — The interface takes the GDD's identity, in generated sprites and a committed TTF
+
+**Decision:** the menu, pause, victory, calibration, HUD and death screens were rebuilt visually inside the same generator code (`UiKit.cs`, `SceneKit.EnsureDeathNotice`): Share Tech Mono from `Assets/Art/Fonts` (the GDD's own naming), procedurally generated 9-slice line frames with corner brackets, a radial vignette wash, echo rings behind the title, and a ColorBlock whose idle tint sits below 1 so hover can brighten a white-base sprite. **Every `Ensure*` path now re-asserts the complete style on existing scene objects, not just the wiring** — the death notice's bare early-return and `EnsurePanel`'s `wash == null` guard were the last two instances of the bug class that left old styling alive after the generator changed.
+
+**Reason:** the panels were Unity's default font on flat black rectangles, which the GDD's line-drawing identity never asked for. A generated UI is the one place where a style change can be made to land everywhere at once, so leaving any path repair-only would reintroduce drift the same week. 9-slice rather than scaled solids because corner brackets must not stretch, and the sprites are written PNGs with GUIDs for the same reason `UI_solid.png` always was: a runtime-created sprite saves as a hole.
+
+**Cost:** three things to honour. The TTF's `.meta` is part of the repo — a fresh GUID silently orphaned every scene's font reference, because legacy Text falls back without an error (see TEAM_SETUP §4). Letter-spacing on headings is an ASCII-space `Track()` transform, legal only on static display copy, since legacy Text has no tracking API and Unicode thin spaces would put the headings through per-machine glyph fallback. And UI glow is a single `Shadow` per heading because a Screen Space - Overlay canvas never passes through the camera's Bloom — the Bloom the GDD describes is the world's, not the menu's.
+
+**Rule:** the interface vocabulary lives in `UiKit` constants (palette, type sizes, ColorBlock); a screen that hand-picks a color or a font is a screen that will drift. Camera Bloom is not a UI feature and stays out of the UI argument.
+
 ## Under decision
 
 - **Does a human read wall / pillar / corner / hollow / Crawler from the arcs alone, at these thresholds?** Everything above is counted in samples; none of it is seen in eyes. This is the week-2 go/no-go and only the readability session on Linux can close it.

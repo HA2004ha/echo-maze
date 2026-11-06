@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using EchoMaze.Core;
 using EchoMaze.Gameplay;
+using EchoMaze.UI;
 
 namespace EchoMaze.DebugTools
 {
@@ -14,8 +15,9 @@ namespace EchoMaze.DebugTools
     /// checked in the <b>player build</b>, because URP strips and screen-space decisions only exist there, and
     /// a headless editor run renders nothing. This hook lets one command produce the PNG that a human then
     /// looks at: <c>-echo-shot file.png</c> grabs the screen, <c>-echo-scene Level01_Maze</c> skips the menu
-    /// clicks nobody is making, and <c>-echo-ping</c> emits one echo so the frame being captured has something
-    /// in it. Without the first argument it does nothing at all, so it is inert in normal play.
+    /// clicks nobody is making, <c>-echo-ping</c> emits one echo so the frame being captured has something
+    /// in it, and <c>-echo-pause</c> / <c>-echo-calibrate</c> open the two panels that only a click would
+    /// otherwise ever show. Without the first argument it does nothing at all, so it is inert in normal play.
     /// </summary>
     public static class DevScreenCapture
     {
@@ -27,8 +29,11 @@ namespace EchoMaze.DebugTools
             public bool ping;
             public bool startRun;
             public bool complete;
+            public bool pause;
+            public bool calibrate;
             public float completeLeadSeconds = 0.4f;
             public float pingLeadSeconds = 0.45f;
+            public float panelLeadSeconds = 0.25f;
             public bool quitAfter;
 
             System.Collections.IEnumerator Run()
@@ -49,6 +54,31 @@ namespace EchoMaze.DebugTools
                 // Realtime waits throughout: the victory panel pauses the game with Time.timeScale = 0,
                 // and a scaled coroutine would sit there forever before taking the picture.
                 yield return new WaitForSecondsRealtime(delaySeconds);
+
+                // The panels a mouse user opens with clicks the terminal cannot make: Esc and the
+                // calibrate button. Both go through the public surface, not a private field, so the
+                // picture shows the same state a click would.
+                if (pause)
+                {
+                    LevelSession paused = FindAnyObjectByType<LevelSession>();
+                    if (paused != null)
+                    {
+                        paused.SetPaused(true);
+                    }
+
+                    yield return new WaitForSecondsRealtime(panelLeadSeconds);
+                }
+
+                if (calibrate)
+                {
+                    MainMenu menu = FindAnyObjectByType<MainMenu>();
+                    if (menu != null)
+                    {
+                        menu.OpenCalibration();
+                    }
+
+                    yield return new WaitForSecondsRealtime(panelLeadSeconds);
+                }
 
                 if (complete)
                 {
@@ -132,6 +162,8 @@ namespace EchoMaze.DebugTools
             runner.ping = System.Array.IndexOf(args, "-echo-ping") >= 0;
             runner.quitAfter = System.Array.IndexOf(args, "-echo-quit") >= 0;
             runner.complete = System.Array.IndexOf(args, "-echo-complete") >= 0;
+            runner.pause = System.Array.IndexOf(args, "-echo-pause") >= 0;
+            runner.calibrate = System.Array.IndexOf(args, "-echo-calibrate") >= 0;
             runner.startRun = System.Array.IndexOf(args, "-echo-start-run") >= 0 ||
                               (runner.complete && string.IsNullOrEmpty(runner.scene));
         }

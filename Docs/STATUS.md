@@ -161,12 +161,15 @@ For a screenshot from a terminal — the player renders, the editor cannot do th
 
 ```
 ./Builds/echo-maze -echo-shot Screenshots/menu.png -echo-quit
+./Builds/echo-maze -echo-calibrate -echo-shot Screenshots/calibration.png -echo-quit
 ./Builds/echo-maze -echo-start-run -echo-shot Screenshots/level01_ping.png -echo-ping -echo-quit
+./Builds/echo-maze -echo-start-run -echo-pause -echo-shot Screenshots/pause.png -echo-quit
 ./Builds/echo-maze -echo-complete -echo-shot Screenshots/victory.png -echo-quit
 ```
 
 `-echo-start-run` takes the real menu path (so `GameFlow` is subscribed), `-echo-complete` ends the chapter,
-and `-echo-quit` closes the player. Without `-echo-shot` the debug hook does nothing.
+`-echo-pause` and `-echo-calibrate` open the two panels no terminal click could otherwise reach, and
+`-echo-quit` closes the player. Without `-echo-shot` the debug hook does nothing.
 
 ---
 

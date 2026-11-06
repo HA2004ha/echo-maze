@@ -1043,38 +1043,33 @@ namespace EchoMaze.EditorTools
         }
 
         /// <summary>
-        /// The lose screen: a black overlay with the GDD's wording. Screen Space - Overlay draws above the
+        /// The lose screen: a vignette wash with the GDD's wording. Screen Space - Overlay draws above the
         /// wave whatever the sorting layers do, and no EventSystem is needed because nothing is clickable:
         /// the retry is on a timer.
+        ///
+        /// Re-asserts through UiKit on every run, the same doctrine the panels follow — the old shape
+        /// early-returned on an existing object, which is exactly how a generated scene kept a style the
+        /// generator had already left behind.
         /// </summary>
         public static GameObject EnsureDeathNotice()
         {
-            GameObject existing = FindIncludingInactive("Death Notice");
-            if (existing != null)
+            GameObject canvasObject = FindIncludingInactive("Death Notice");
+            if (canvasObject == null)
             {
-                return existing;
+                canvasObject = new GameObject("Death Notice");
             }
 
-            var canvasObject = new GameObject("Death Notice");
-            var canvas = canvasObject.AddComponent<Canvas>();
+            var canvas = canvasObject.GetComponent<Canvas>() ?? canvasObject.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             canvas.sortingOrder = 100;
 
-            var background = new GameObject("Blackout");
-            background.transform.SetParent(canvasObject.transform, false);
-            var backgroundImage = background.AddComponent<Image>();
-            backgroundImage.color = Color.black;
-            Stretch(background);
-
-            var label = new GameObject("Label");
-            label.transform.SetParent(canvasObject.transform, false);
-            var text = label.AddComponent<Text>();
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            text.text = "YOU WERE HEARD";
-            text.alignment = TextAnchor.MiddleCenter;
-            text.color = new Color(0.498f, 0.914f, 0.941f, 1f);
-            text.fontSize = 44;
-            Stretch(label);
+            UiKit.EnsureImage(canvasObject.transform, "Blackout", UiKit.EnsureVignetteSprite(),
+                              Image.Type.Simple, Vector2.zero, Vector2.zero,
+                              new Color(0f, 0f, 0f, 0.86f), true);
+            Text label = UiKit.EnsureLabel(canvasObject.transform, "Label", UiKit.Track("YOU WERE HEARD"),
+                                           48, UiKit.Cyan, Vector2.zero, Vector2.zero,
+                                           TextAnchor.MiddleCenter, true);
+            Stretch(label.gameObject);
 
             canvasObject.SetActive(false);
             return canvasObject;
