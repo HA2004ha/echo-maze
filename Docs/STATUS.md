@@ -169,16 +169,20 @@ two are separated by a measurement that does not involve painting by hand:
    at the menu's `Awake`, and the cycle is 2.6 s of dark followed by 1.6 s of band. A single early capture
    proves nothing; a burst across 8–13 s covers at least one full cycle.
 
-### 2. The controls legend needed its own dim
+### 2. The controls legend needed its own ground, not a bigger dim
 
 The vignette wash is transparent in the centre by design, and the phase-3 dim column (`UI_dim.png`, α0.55)
 covers the title and buttons — but the legend at y −360 sits below that ellipse, over the diorama's glowing
-trim, and went unreadable. Fixed with a second generated sprite, `UI_legend_band.png`: a 64×256 vertical
-fade laid under the legend in `UiKit.EnsureMainMenu`. **Seen and confirmed** in
-`Screenshots/final_menu_3.0.png` and `final_menu_10.0.png`: both WASD lines read clearly where before the
-trim's glow washed them out, and the same two frames show the corners clean at two different rotation
-angles with no wall past the frame. Neither frame caught the wave mid-band, which is item 1 above and is the
-reason that item stays open rather than being called a capture-timing miss.
+trim, and went unreadable. Two fixes, both generated: a 64×256 vertical fade (`UI_legend_band.png`) at black
+α0.75 under the legend, and `UiKit.EnsureTextShadow` — a dark drop shadow (black α0.92 at 0,−2) on the label
+itself, whose glyph colour went from `CyanFaint` α0.45 to full `Cyan`. The band alone was tried first and was
+not enough: a translucent glyph lets the light through the letters, which nothing behind it can take back.
+
+**Seen and confirmed** in `Screenshots/legend_final_crop.png` (and the full frame
+`Screenshots/legend_final_3.png`): both WASD lines read clearly over the trim bar that passes straight
+through them, at two different rotation angles with the corners clean and no wall past the frame. Neither
+frame caught the wave mid-band, which is item 1 above and is the reason that item stays open rather than
+being called a capture-timing miss.
 
 ---
 
