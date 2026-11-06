@@ -5,7 +5,7 @@
 The project is pinned to `6000.6.3f1` (`ProjectSettings/ProjectVersion.txt`). This is **a signal, not a coercion**: if you open the project with a newer editor, the editor upgrades the YAML files one way and older versions can no longer open them. So:
 
 - Unity Hub ▸ **Install Unity** ▸ version **6000.6.3f1**
-- Module checkboxes: on Linux **Linux Build Support** (this is the delivery target — the whole team develops and tests on Linux); **Windows Build Support (Mono)** only if someone outside the team needs to run a build
+- Module checkboxes: on Linux **Linux Build Support** (this is the delivery target — the whole team develops and tests on Linux); **Windows Build Support (Mono)** too (amended 2026-10-30: Windows is a delivery target)
 - Do **not** use editors 6000.7, a different 6000.6.x patch, or 2022.x for this repo. If you must test with another version, work in a separate scratch clone and **do not push**.
 - After the first open: import takes a few minutes. Do not click anywhere until it finishes, and do not press any button in `Window ▸ Package Manager ▸ Updates`.
 - **Input System (new) is the only active mode** (`activeInputHandler: 1`). Old code written against `Input.GetAxis` or `Input.mousePosition` will not compile/run in this project.

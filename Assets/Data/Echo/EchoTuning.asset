@@ -72,7 +72,19 @@ MonoBehaviour:
   footstepLoudness: 0.12
   bumpLoudness: 0.04
   rho: 0.8
-  crawlerSpeedMultiplier: 0.65
+  crawlerPatrolSpeedMultiplier: 0.4
+  crawlerChaseSpeedMultiplier: 0.8
+  crawlerStepInterval: 1.5
+  crawlerStepVolume: 1
+  roarIntervalMin: 10
+  roarIntervalMax: 15
+  roarWaveRadius: 5
+  roarWaveSeconds: 1.2
+  roarHearDistance: 12
+  roarVolume: 0.8
+  deathSoundVolume: 1
+  hollowHearingMultiplier: 0.15
+  hollowBreaksAbove: 0.25
   arcsPerPing: 3
   arcInterval: 0.12
   brightnessBase: 0.4
@@ -94,3 +106,15 @@ MonoBehaviour:
   weakPulseRadius: 1.5
   weakPulseRays: 97
   weakPulseCooldown: 1.2
+  wallMemoryCapacity: 1500
+  wallMemoryMergeDistance: 0.15
+  wallMemorySegmentLength: 1
+  wallMemoryColor: {r: 0.38, g: 0.78, b: 1, a: 1}
+  wallMemoryAlpha: 0.45
+  wallMemoryThicknessScale: 0.6
+  wallMemoryFadeInSeconds: 0.25
+  trailSeconds: 4
+  trailStepDistance: 0.35
+  trailColor: {r: 0.95, g: 0.88, b: 0.72, a: 1}
+  trailMaxAlpha: 0.35
+  trailDotSize: 0.09

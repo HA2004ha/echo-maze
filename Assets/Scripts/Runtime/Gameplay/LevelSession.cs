@@ -36,13 +36,24 @@ namespace EchoMaze.Gameplay
         /// </summary>
         public event Action<string> Noticed;
 
+        /// <summary>
+        /// A <see cref="Noticed"/> that asks to stay up for a given number of seconds: the chapter-one hints,
+        /// which are longer than a checkpoint line. Same HUD label, same listener.
+        /// </summary>
+        public event Action<string, float> Hinted;
+
         /// <summary>Raised on pause and on resume: the panel is the only listener and it needs both edges.</summary>
         public event Action<bool> PauseToggled;
 
         /// <summary>Raised when the exit is reached. Only GameFlow listens.</summary>
         public event Action Completed;
 
-        public Vector2 Checkpoint => hasCheckpoint ? checkpoint : playerPlace;
+        /// <summary>
+        /// Where a death sends the player: the last sanctuary, or until there is one the spawn captured in
+        /// <c>Awake</c>. It used to fall back to the player's *current* position, which is where they had just
+        /// died (Docs/ISSUES.md #9).
+        /// </summary>
+        public Vector2 Checkpoint => checkpoint;
         public string ChapterTitle => chapterTitle;
         public bool IsPaused => paused;
         public bool IsComplete { get; private set; }
@@ -56,10 +67,10 @@ namespace EchoMaze.Gameplay
         /// <summary>Seconds of unscaled play since the chapter opened, for the end-of-run panel.</summary>
         public float ElapsedSeconds { get; private set; }
 
-        Vector2 playerPlace => player != null ? player.Position : Vector2.zero;
-
         void Awake()
         {
+            // The spawn: MazeLevel (execution order -20) has already placed the player on the 'P' cell, and
+            // Level02's builder serialises the player on its spawn.
             checkpoint = player != null ? player.Position : Vector2.zero;
 
             if (director != null)
@@ -131,6 +142,12 @@ namespace EchoMaze.Gameplay
             Notice("the room remembers you");
         }
 
+        /// <summary>A line for the HUD that stays up for <paramref name="seconds"/> instead of the default.</summary>
+        public void Hint(string text, float seconds)
+        {
+            Hinted?.Invoke(text, seconds);
+        }
+
         /// <summary>One line for the HUD. A level says things; only the interface has to know how.</summary>
         public void Notice(string text)
         {
@@ -181,6 +198,14 @@ namespace EchoMaze.Gameplay
         {
             if (IsComplete)
             {
+                return;
+            }
+
+            // A scene played straight from the editor has no GameFlow, so nothing would show the victory
+            // panel and the game would just freeze. Say so and keep playing.
+            if (GameFlow.Active == null)
+            {
+                Hint("You found the way out. (Start from Boot to play the whole run.)", 5f);
                 return;
             }
 

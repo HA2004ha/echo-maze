@@ -2768,6 +2768,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: EchoMaze.Runtime::EchoMaze.Gameplay.GameFlow
   chapterScenes:
   - Level01_Maze
+  - Level02_Corridor
   menuScene: Boot
 --- !u!4 &1019267625
 Transform:

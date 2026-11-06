@@ -16,6 +16,7 @@ impression and gets moved back to the report.
 | 6 | Moving the mouse across **due left** spins the character the long way round the compass — five pose changes for two degrees of cursor | Medium — it is the `Atan2` seam, and due left is the one direction on the fan that sits on it, so the gesture that read as broken was only ever broken on the left half | **closed** — the aim ease was `Mathf.LerpAngle` fed radians and it is a degrees API; `PlayerFacing.SmoothTowards` replaces it (`e7b4461`), three EditMode cases pin it (`c770cd4`), with a before/after pose trace | week 3, done 2026-10-29 |
 | 7 | The Linux player had **no Bloom**, and the editor could not reproduce it | Medium-high — the arcs are the game; a hard-edged line is a different game | **closed** — the volume profile serialised a `{fileID: 0}` instead of the Bloom component, so URP stripped the shader at build time; `EnsureVolumeProfile` now writes the component into the asset and repairs a loaded hole | week 3, done 2026-10-29 |
 | 8 | The tutorial's **closed door could be walked through** | High — it is the one piece of level geometry that teaches a decision; walking through it skips the level's lesson | **closed** — the two echo panels were laid *along* the corridor and left a `1.6 m` hole; they are now `0.8 m` panels with a `0.4 m` slit inside the cell, plus a body blocker on `Default`, a layer outside the echo mask | week 3, done 2026-10-29 |
+| 9 | Dying **before any sanctuary** respawned the player where they died, not at the level start | High — in a one-hit game it turns every early death into a free teleport and skips the lesson of the opening | **closed** — `LevelSession.Checkpoint` fell back to the player's *current* position; it now returns the spawn captured in `Awake`; `RespawnTests` (session and no-session paths) pin it | week 3, done 2026-10-30 |
 
 ---
 
@@ -487,6 +488,35 @@ does not include (`EchoDirector.echoLayerMask` is serialised as `960` in both ch
 still unreachable with the door shut and reachable with it open (`MazeGridTests.Level01_TheDoorGatesTheExit`);
 and the rebuilt level is captured after the change. **Closed 2026-10-29** in the same commit that updates
 the milestone docs.
+
+---
+
+## 9 — Dying before the first sanctuary respawned you where you died
+
+**Seen:** 2026-10-30, by the lead, in play: die before reaching any sanctuary and the retry puts the body
+back at the spot of the death instead of at the level start.
+
+**Measurement.** Read, not run (Unity is not launched on the machine that wrote the fix; the test below is
+the measurement and has to be run in the editor). `LevelSession.Checkpoint` was
+`hasCheckpoint ? checkpoint : playerPlace`, and `playerPlace` is `player.Position` — the *current* position.
+`RestartFromCheckpoint` runs after the body has been left where it died (`Player.Die` only stops it), so
+until a `Sanctuary` called `SetCheckpoint` the "checkpoint" was the death point itself. The `checkpoint`
+field that `Awake` fills with the spawn was never read in that state. Order checked: `MazeLevel` has
+`[DefaultExecutionOrder(-20)]` and `PlaceAt`s the player on the `P` cell in its own `Awake`, so the session's
+`Awake` (order 0) already sees the spawn; `Level02` serialises the player on its spawn in the scene, so the
+same capture is right there.
+
+**The other path.** `RunController.roomStart` (captured in its `Awake`, used when there is no session) is
+*not* affected: it is a field, not a live read. Both chapter scenes have a session
+(`LevelSceneKit.BuildChrome`), so Level02 goes through the session path and was hit by the same bug; the
+no-session path is the blockout rigs'.
+
+**The fix.** `Checkpoint => checkpoint`, with `playerPlace` deleted. `hasCheckpoint` stays: it still
+de-duplicates the "the room remembers you" notice.
+
+**Acceptance:** `RespawnTests.WithASession_DyingBeforeAnySanctuary_RespawnsAtTheSpawn` and
+`RespawnTests.WithoutASession_DyingBeforeAnySanctuary_RespawnsAtTheSpawn` move the player away, kill it,
+wait for the retry and assert it is back within `0.05 m` of the spawn. **Closed 2026-10-30.**
 
 ---
 

@@ -23,7 +23,7 @@ namespace EchoMaze.Gameplay
                  "enemy-free tutorial and, for this milestone, the whole run. The corridor is built and " +
                  "playable from the editor, but it joins this list when the hunt systems land, so finishing " +
                  "the maze is a victory instead of a corridor with no ending.")]
-        [SerializeField] string[] chapterScenes = { "Level01_Maze" };
+        [SerializeField] string[] chapterScenes = { "Level01_Maze", "Level02_Corridor" };
         [SerializeField] string menuScene = "Boot";
 
         int chapterIndex = -1;

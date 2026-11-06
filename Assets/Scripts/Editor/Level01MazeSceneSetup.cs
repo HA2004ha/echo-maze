@@ -64,6 +64,9 @@ namespace EchoMaze.EditorTools
                                                                          15f * CellSize * 0.5f),
                                                              CameraSize, "chapter one  ·  the maze");
 
+            // The tutorial space is the only one that teaches the controls on screen.
+            LevelSceneKit.EnsureHints(director, player, marks, session);
+
             // The rig's clamp is overwritten by the level from the grid it actually read; what is wired here
             // is the object, so the camera follows from the first frame rather than after the first ping.
             var rig = UnityEngine.Object.FindAnyObjectByType<PlayerCameraRig>();

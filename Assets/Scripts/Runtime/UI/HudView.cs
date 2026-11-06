@@ -62,6 +62,7 @@ namespace EchoMaze.UI
             if (session != null)
             {
                 session.Noticed += Notice;
+                session.Hinted += Notice;
             }
 
             if (director == null)
@@ -98,7 +99,10 @@ namespace EchoMaze.UI
         }
 
         /// <summary>Show a line for a few seconds. The level's own events call this; nothing else needs to.</summary>
-        public void Notice(string text)
+        public void Notice(string text) => Notice(text, noticeSeconds);
+
+        /// <summary>The same line for a chosen time, which is what the chapter-one hints need.</summary>
+        public void Notice(string text, float seconds)
         {
             if (noticeLabel == null)
             {
@@ -106,7 +110,7 @@ namespace EchoMaze.UI
             }
 
             noticeLabel.text = text;
-            noticeUntil = Time.unscaledTime + noticeSeconds + titleFadeSeconds;
+            noticeUntil = Time.unscaledTime + seconds + titleFadeSeconds;
             Color color = noticeLabel.color;
             color.a = 1f;
             noticeLabel.color = color;

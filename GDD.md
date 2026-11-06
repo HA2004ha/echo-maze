@@ -2,11 +2,11 @@
 
 **Project name:** Echo — **code name:** `echo-maze`
 **Document version:** 3.0 (complete rewrite; supersedes 1.0, 1.1 and 2.0)
-**Engine:** Unity 2D (pinned version: `6000.6.3f1` — see [TEAM_SETUP.md](TEAM_SETUP.md))
-**Target platform:** Linux (PC) with a microphone and headphones *(amended 2026-10-28: the team has no Windows machine, and the microphone was measured working in the Linux editor — see [Docs/MIC_TEST_MATRIX.md](Docs/MIC_TEST_MATRIX.md) row 1)*
+**Engine:** Unity 2D (pinned version: `6000.6.3f1` — see [TEAM_SETUP.md](Docs/TEAM_SETUP.md))
+**Target platform:** Windows and Linux (PC) with a microphone and headphones *(amended 2026-10-30: Windows is a delivery target again, next to Linux — see the 2026-10-30 entry in [Docs/DESIGN_DECISIONS.md](Docs/DESIGN_DECISIONS.md))* *(earlier amendment 2026-10-28: the team has no Windows machine, and the microphone was measured working in the Linux editor — see [Docs/MIC_TEST_MATRIX.md](Docs/MIC_TEST_MATRIX.md) row 1)*
 **Language:** English only
 
-> This file is the open-source version of the document the team wrote initially. The reference images of the original document are not in the repo and have been dropped. Technical decisions are in [DESIGN_DECISIONS.md](DESIGN_DECISIONS.md), balancing parameters in [TUNING.md](TUNING.md), the schedule in [PLAN.md](PLAN.md), and the list of things deliberately not built in [SCOPE_CUTS.md](SCOPE_CUTS.md).
+> This file is the open-source version of the document the team wrote initially. The reference images of the original document are not in the repo and have been dropped. Technical decisions are in [DESIGN_DECISIONS.md](Docs/DESIGN_DECISIONS.md), balancing parameters in [TUNING.md](Docs/TUNING.md), the schedule in [PLAN.md](Docs/PLAN.md), and the list of things deliberately not built in [SCOPE_CUTS.md](Docs/SCOPE_CUTS.md).
 >
 > **What changed from 1.1:** surface materials were removed; the game is built around one trade-off and one loop (explore, hide, exploit); enemies cannot be killed, only escaped; enemy hearing is a suspicion meter; the world has noise, doors, hollows and sanctuary rooms; the health bar was replaced by one-hit death with checkpoints; the game is 3 levels with an enemy-free maze as the tutorial; and the document now contains the game theory framing and the verification plan.
 
@@ -252,6 +252,8 @@ Every room or junction has its own constant sound: a ticking clock, a dripping p
 
 After each ping, the wall points that were hit stay visible as a very faint trace for about 10 to 15 seconds, far fainter and longer-lived than the arcs. The player can run along what they just saw. It shows **walls only, never enemies**, and is suppressed in noise zones. It must stay faint, or it weakens both the maze and the fear.
 
+*Note: the permanent touch memory (2026-10-30) is separate from this 10–15 s ping trace.*
+
 ### The escape rules (level design contract)
 
 1. **Every area where a chase can happen has a loop** the player can circle around, so there is always somewhere to run.
@@ -394,7 +396,7 @@ The `ScriptedEchoSource` can drive a **bot** that pings at a chosen rate and fol
 | Parameter | Starting value |
 |---|---|
 | Walk speed / Shift speed / Listen speed | about 2.5 m/s / 1.0 m/s / 1.0 m/s |
-| Enemy speeds | Crawler about 0.65× walk, Spike about 1.3× walk, Absorber about 0.4× walk |
+| Enemy speeds | Crawler about 0.4× walk on patrol and 0.8× on a hunt (amended 2026-10-30; was 0.65×), Spike about 1.3× walk, Absorber about 0.4× walk |
 | Reach `R(L)` | from about 2 m (whisper) to 6.5 m (shout) |
 | Cone half-angle | 32° (optionally 20° to 45° with loudness) |
 | Rays per ping | 100 to 200 |
@@ -446,7 +448,7 @@ These are the decisions taken during planning, layered on this document, and liv
 4. **Sound input comes from an abstract layer, `IEchoSource`**, with three implementations: real microphone, simulated, and scripted (for tests and the bot). Reason: Unity editor microphone support on Linux cannot be relied on.
 5. **Arcs are drawn with a fixed-capacity Mesh and one hand-written shader**, not LineRenderer: per-sample thickness and colour are required, and each sample must be able to break the line.
 6. **The fracture mask is computed once per ping** and every arc of that same ping reads from it, so the pattern of segments stays coherent while it collapses toward the player.
-7. **The build is a Linux x86_64 build from the Linux editor** (Linux Build Support module; the whole team develops and tests on Linux). A Windows Mono build remains possible from the same editor if an external tester needs one.
+7. **The build is a Linux x86_64 build from the Linux editor** (Linux Build Support module; the whole team develops and tests on Linux). *(Amended 2026-10-30: a Windows x86_64 Mono build from the same editor is a delivery build too, not an optional extra.)*
 8. **Audio arrives incrementally**: placeholder sounds early, a full pass in the last week.
 9. **Surface materials were removed** and brightness comes from geometry.
 10. **Pitch detection is not used anywhere in this term's scope**: it is unreliable across people and microphones. Any pitch-based idea is limited to a coarse low/high split and stays in "later".

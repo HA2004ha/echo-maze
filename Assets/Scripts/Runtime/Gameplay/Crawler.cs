@@ -19,6 +19,12 @@ namespace EchoMaze.Gameplay
     [RequireComponent(typeof(Rigidbody2D))]
     public sealed class Crawler : MonoBehaviour
     {
+        /// <summary>
+        /// Mixed into <see cref="seed"/> for the roar clock, so the roar has its own stream: drawing roar
+        /// intervals from pauseRandom would have shifted every patrol pause the moment roars were added.
+        /// </summary>
+        const int RoarSeedSalt = 0x0a12;
+
         enum Mode
         {
             Patrol,
@@ -45,9 +51,9 @@ namespace EchoMaze.Gameplay
         [Tooltip("A hunt is abandoned after this long, because with no pathfinding it is probably pressed " +
                  "against a wall by now.")]
         [SerializeField, Range(0.5f, 15f)] float huntSeconds = 4f;
-        [Tooltip("Multiplies the profile's footstep interval: the Crawler drags, so its rhythm must not be " +
-                 "the player's.")]
-        [SerializeField, Range(0.2f, 4f)] float stepRhythm = 1.35f;
+        [Tooltip("The giant stomp played on every footstep through the roar's AudioSource. Wired by the scene " +
+                 "builder; empty means the steps are still reported as noise, just not heard.")]
+        [SerializeField] AudioClip stepClip;
 
         Rigidbody2D body;
         Vector2 startPosition;
@@ -58,9 +64,15 @@ namespace EchoMaze.Gameplay
         Vector2 huntTarget;
         float nextStepTime;
         System.Random pauseRandom;
+        System.Random roarRandom;
+        float nextRoarTime;
+        AudioSource roarVoice;
 
         public Vector2 Position => transform.position;
         public bool IsHunting => mode == Mode.Investigate;
+
+        /// <summary><c>Time.time</c> of the next roar, so a test can check the schedule without waiting it out.</summary>
+        public float NextRoarTime => nextRoarTime;
 
         EchoTuningProfile Profile => director != null ? director.Profile : null;
 
@@ -69,6 +81,8 @@ namespace EchoMaze.Gameplay
             body = GetComponent<Rigidbody2D>();
             startPosition = transform.position;
             pauseRandom = new System.Random(seed);
+            roarVoice = GetComponent<AudioSource>();
+            ResetRoarClock();
 
             if (director == null)
             {
@@ -97,6 +111,47 @@ namespace EchoMaze.Gameplay
             {
                 director.NoiseEmitted -= OnNoise;
             }
+        }
+
+        void Update()
+        {
+            EchoTuningProfile profile = Profile;
+            if (profile == null || Time.time < nextRoarTime)
+            {
+                return;
+            }
+
+            nextRoarTime = Time.time + NextRoarDelay(roarRandom, profile.roarIntervalMin, profile.roarIntervalMax);
+            Roar(profile);
+        }
+
+        /// <summary>
+        /// The roar is seen and heard but is not a noise: it goes to the director as a ripple, never through
+        /// ReportNoise, so it cannot wake anything and the week 3 NoiseBoard will not have to filter it out.
+        /// The audio range is read from the profile on every roar, so an inspector tweak is heard at once.
+        /// </summary>
+        void Roar(EchoTuningProfile profile)
+        {
+            director.EmitRipple(transform.position);
+
+            if (roarVoice != null && roarVoice.clip != null)
+            {
+                roarVoice.maxDistance = profile.roarHearDistance;
+                roarVoice.PlayOneShot(roarVoice.clip, profile.roarVolume);
+            }
+        }
+
+        /// <summary>Uniform in [min, max]; a reversed pair is read as its own range rather than a negative wait.</summary>
+        static float NextRoarDelay(System.Random random, float min, float max) =>
+            Mathf.Lerp(Mathf.Min(min, max), Mathf.Max(min, max), (float)random.NextDouble());
+
+        void ResetRoarClock()
+        {
+            roarRandom = new System.Random(seed ^ RoarSeedSalt);
+            EchoTuningProfile profile = Profile;
+            nextRoarTime = profile == null
+                ? float.PositiveInfinity
+                : Time.time + NextRoarDelay(roarRandom, profile.roarIntervalMin, profile.roarIntervalMax);
         }
 
         void FixedUpdate()
@@ -141,24 +196,69 @@ namespace EchoMaze.Gameplay
                 return;
             }
 
-            float speed = profile.walkSpeed * profile.crawlerSpeedMultiplier;
-            body.linearVelocity = to / distance * speed;
-            EmitStep(profile);
+            // "Chase" is the week-2 Investigate stub until EnemyBrain lands; it is the only hurry there is.
+            float multiplier = mode == Mode.Investigate
+                ? profile.crawlerChaseSpeedMultiplier
+                : profile.crawlerPatrolSpeedMultiplier;
+            body.linearVelocity = SlideAlongWalls(to / distance) * (profile.walkSpeed * multiplier);
+            EmitStep(profile, multiplier);
         }
 
-        void EmitStep(EchoTuningProfile profile)
+        static readonly ContactFilter2D castFilter = new ContactFilter2D { useTriggers = false };
+        static readonly RaycastHit2D[] castHits = new RaycastHit2D[8];
+
+        /// <summary>
+        /// Without pathfinding a straight walk into a wall stops dead, which left the Crawler wedged in the
+        /// hollow it had chased the player to. If the body would hit a wall within a step, walk along that
+        /// wall instead: slow, dumb, and enough to find the mouth of a pocket and walk back out of it.
+        /// The player is not a wall — touching it must still kill.
+        /// </summary>
+        Vector2 SlideAlongWalls(Vector2 direction)
+        {
+            int count = body.Cast(direction, castFilter, castHits, 0.35f);
+            for (int i = 0; i < count; i++)
+            {
+                if (castHits[i].collider.GetComponentInParent<Player>() != null)
+                {
+                    continue;
+                }
+
+                Vector2 normal = castHits[i].normal;
+                Vector2 along = new Vector2(-normal.y, normal.x);
+                return Vector2.Dot(along, direction) < 0f ? -along : along;
+            }
+
+            return direction;
+        }
+
+        /// <summary>
+        /// Seconds between steps at a given speed. The stride is fixed by the patrol (interval × patrol
+        /// speed), so a faster Crawler takes the same steps more often instead of longer ones — the rhythm
+        /// alone tells the player it is hunting. Any speed unit works as long as both speeds share it.
+        /// </summary>
+        public static float StepInterval(float patrolInterval, float patrolSpeed, float speed) =>
+            patrolInterval * patrolSpeed / speed;
+
+        void EmitStep(EchoTuningProfile profile, float speedMultiplier)
         {
             if (director == null || Time.time < nextStepTime)
             {
                 return;
             }
 
-            nextStepTime = Time.time + profile.footstepInterval * stepRhythm;
+            nextStepTime = Time.time + StepInterval(profile.crawlerStepInterval,
+                                                    profile.crawlerPatrolSpeedMultiplier, speedMultiplier);
 
-            // Week 2 has no ear for this yet: the player hears enemy footsteps when landmark audio lands in
-            // week 4. It is emitted now because the noise stream is the only honest place for it, and the
-            // day 5 debug window reads it back as a position.
+            // The noise stream is unchanged by the stomp: the clip is for the player's ears, the report is
+            // what the week 3 NoiseBoard and the day 5 debug window read, at the player's footstep loudness.
             director.ReportNoise(transform.position, profile.footstepLoudness);
+
+            // No per-step pitch jitter: PlayOneShot has no pitch of its own, and bending source.pitch would
+            // also bend a roar still in flight on the same source.
+            if (roarVoice != null && stepClip != null)
+            {
+                roarVoice.PlayOneShot(stepClip, profile.crawlerStepVolume);
+            }
         }
 
         void OnNoise(Vector2 position, float loudness)
@@ -178,11 +278,17 @@ namespace EchoMaze.Gameplay
                 return;
             }
 
-            if (distance > ArcMath.HearingRadius(loudness, profile))
+            // A quiet sound made inside a hollow barely carries, unless the Crawler is already hunting.
+            float cover = Hollow.HearingScale(Hollow.AnyContains(position), loudness, IsHunting, profile);
+            if (distance > ArcMath.HearingRadius(loudness, profile) * cover)
             {
                 return;
             }
 
+            // A step booked at the slow patrol beat would make the first hunting step up to 1.5 s late, so
+            // the hunt pulls it in to its own, shorter beat the moment it starts.
+            nextStepTime = Mathf.Min(nextStepTime, Time.time + StepInterval(profile.crawlerStepInterval,
+                profile.crawlerPatrolSpeedMultiplier, profile.crawlerChaseSpeedMultiplier));
             huntTarget = position;
             huntDeadline = Time.time + huntSeconds;
             mode = Mode.Investigate;
@@ -203,7 +309,8 @@ namespace EchoMaze.Gameplay
 
         /// <summary>
         /// Puts the creature back the way the run started: same spawn, same first leg, and a fresh RNG on
-        /// the same seed, so the retry patrols identically instead of differently.
+        /// the same seed, so the retry patrols identically instead of differently. The roar clock restarts on
+        /// its own seed too, so the first roar of a retry comes after the same wait as the first roar of the run.
         /// </summary>
         public void ResetRun()
         {
@@ -215,6 +322,7 @@ namespace EchoMaze.Gameplay
             huntDeadline = 0f;
             nextStepTime = 0f;
             pauseRandom = new System.Random(seed);
+            ResetRoarClock();
         }
 
         int NextLeg() => (leg + 1) % patrolPoints.Length;

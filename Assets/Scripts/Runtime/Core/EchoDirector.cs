@@ -48,6 +48,13 @@ namespace EchoMaze.Core
 
         readonly List<PingRecord> pool = new List<PingRecord>(4);
 
+        /// <summary>
+        /// Creature ripples: an origin and a birth time on <see cref="Clock"/>, NaN when the slot is free. Fixed and tiny: a roar is rare, and
+        /// a fifth simultaneous one would only replace the oldest, which has nearly faded anyway.
+        /// </summary>
+        readonly Vector2[] rippleOrigins = new Vector2[4];
+        readonly float[] rippleBirths = { float.NaN, float.NaN, float.NaN, float.NaN };
+
         IEchoSource source;
         ContactFilter2D echoFilter;
         RaycastHit2D[] rayBuffer;
@@ -80,6 +87,9 @@ namespace EchoMaze.Core
         public float CurrentLoudness => source != null ? source.Loudness : 0f;
         public float RawLoudness => source != null ? source.RawRms : 0f;
         public int LivePingCount { get; private set; }
+
+        /// <summary>Creature ripples drawn this frame. Separate from LivePingCount: a roar is not a ping.</summary>
+        public int LiveRippleCount { get; private set; }
         public int LastRayCount { get; private set; }
 
         /// <summary>
@@ -236,6 +246,57 @@ namespace EchoMaze.Core
             NoiseEmitted?.Invoke(position, Mathf.Clamp01(loudness));
         }
 
+        /// <summary>
+        /// A creature's call made visible: a warm ring growing out of <paramref name="origin"/> and fading.
+        /// Deliberately not a ping — it casts no rays, so it says where the creature is and nothing about the
+        /// walls; it takes no slot in the player's pool and no cooldown; and it is not a noise, so nothing
+        /// that listens to <see cref="NoiseEmitted"/> hears it.
+        /// </summary>
+        public void EmitRipple(Vector2 origin)
+        {
+            int slot = 0;
+            for (int i = 0; i < rippleBirths.Length; i++)
+            {
+                if (float.IsNaN(rippleBirths[i]))
+                {
+                    slot = i;
+                    break;
+                }
+
+                if (rippleBirths[i] < rippleBirths[slot])
+                {
+                    slot = i;
+                }
+            }
+
+            rippleOrigins[slot] = origin;
+            rippleBirths[slot] = Clock;
+        }
+
+        void AdvanceRipples(IEchoRenderer renderer)
+        {
+            LiveRippleCount = 0;
+            float life = Mathf.Max(0.01f, profile.roarWaveSeconds);
+            for (int i = 0; i < rippleBirths.Length; i++)
+            {
+                if (float.IsNaN(rippleBirths[i]))
+                {
+                    continue;
+                }
+
+                float t = (Clock - rippleBirths[i]) / life;
+                if (t >= 1f)
+                {
+                    rippleBirths[i] = float.NaN;
+                    continue;
+                }
+
+                LiveRippleCount++;
+                renderer?.AddConeOutline(rippleOrigins[i], 0f, Mathf.PI, profile.roarWaveRadius * t, 1f - t,
+                                         profile.creatureArcColor, profile);
+            }
+        }
+
         void EmitPing(float loudness, Vector2 origin, float aim)
         {
             Emit(loudness, origin, aim, ArcMath.PingRadius(loudness, profile),
@@ -388,12 +449,13 @@ namespace EchoMaze.Core
                     float carrier = ArcMath.BaseRadius(ping.radius, profile.waveSpeed, age);
                     renderer?.AddConeOutline(ping.origin, ping.aimAngleRad, ping.coneHalfRad,
                                              ArcMath.EmissionRadius(age, profile.waveSpeed, carrier),
-                                             ArcMath.EmissionAlpha(age, profile), profile);
+                                             ArcMath.EmissionAlpha(age, profile), profile.arcColor, profile);
                 }
 
                 LivePingCount++;
             }
 
+            AdvanceRipples(renderer);
             renderer?.EndFrame();
         }
 
