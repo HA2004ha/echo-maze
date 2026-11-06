@@ -237,6 +237,27 @@ namespace EchoMaze.EditorTools
         }
 
         /// <summary>
+        /// A dark drop shadow on a label that has to stay readable over something we do not control.
+        /// This is the opposite job from <see cref="ApplyText"/>'s glow, which is a cyan Bloom
+        /// substitute: here the effect colour is near black, so the shadow is not decoration but the
+        /// glyphs' own ground — it travels with the text, which a painted band behind it cannot do.
+        /// Call it after EnsureLabel, never before: a rebuild with <c>glow: false</c> deletes any
+        /// Shadow it finds, and that is the behaviour that keeps the two effects from ever coexisting.
+        /// </summary>
+        public static Shadow EnsureTextShadow(Text label, Color effectColor, Vector2 effectDistance)
+        {
+            Shadow shadow = label.GetComponent<Shadow>();
+            if (shadow == null)
+            {
+                shadow = label.gameObject.AddComponent<Shadow>();
+            }
+
+            shadow.effectColor = effectColor;
+            shadow.effectDistance = effectDistance;
+            return shadow;
+        }
+
+        /// <summary>
         /// The find-or-create-and-style path every label goes through now. A named child that exists but
         /// has no Text on it is not trusted — it is replaced, the way <see cref="EnsureEventSystem"/>
         /// replaces a legacy input module instead of hoping it is the right one.
@@ -987,16 +1008,24 @@ namespace EchoMaze.EditorTools
             Button quit = EnsureButton(content, "Quit", "quit", new Vector2(0f, -150f), new Vector2(520f, 68f));
             Text status = EnsureLabel(content, "Status", "", 24, CyanMild, new Vector2(0f, -280f),
                                       new Vector2(1400f, 44f));
+            // Full alpha, not CyanFaint: the legend is the one label that states information nobody may
+            // guess, and it sits over the frame that never stops glowing. A 45%-transparent glyph lets
+            // that light through the letters themselves, which no shadow behind them can take back.
             Text legend = EnsureLabel(content, "Legend",
                                       "WASD move   mouse aim   Space shout (hold to charge)   F pulse\n" +
                                       "Shift silent   E door / exit   Esc pause",
-                                      20, CyanFaint, new Vector2(0f, -360f), new Vector2(1600f, 80f));
+                                      20, Cyan, new Vector2(0f, -360f), new Vector2(1600f, 80f));
 
             // The band goes in after the labels exist so its position in the draw order is the last
             // slot before them; it dims everything above it, which is why nothing visible is on it.
             EnsureImage(content, "legendband", EnsureLegendBandSprite(), Image.Type.Simple,
                         new Vector2(0f, -350f), new Vector2(1700f, 340f),
                         new Color(0f, 0f, 0f, 0.75f), false, 5);
+
+            // The band darkens what the legend sits on; it cannot darken the glyph strokes themselves,
+            // and a 20pt monospace over a wall that is lit is exactly the case where that matters. The
+            // shadow is the part of the ground that moves with the text.
+            EnsureTextShadow(legend, new Color(0f, 0f, 0f, 0.92f), new Vector2(0f, -2f));
 
             // The rings breathe and the page writes itself: both drivers sit on the canvas rather than
             // on the Content child so a hide of the menu never freezes a fade halfway through its own
