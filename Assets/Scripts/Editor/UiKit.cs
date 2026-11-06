@@ -41,7 +41,7 @@ namespace EchoMaze.EditorTools
         const string DimPath = "Assets/Art/Sprites/UI/UI_dim.png";
         const string LegendBandPath = "Assets/Art/Sprites/UI/UI_legend_band.png";
         const string RingPath = "Assets/Art/Sprites/UI/UI_ring_thin.png";
-        const string FontPath = "Assets/Art/Fonts/ShareTechMono-Regular.ttf";
+        const string FontPath = "Assets/Resources/Fonts/ShareTechMono-Regular.ttf";
         const int SolidTexels = 4;
 
         // One const so the crispness experiment (HintedSmooth versus Smooth) is one line, not a hunt.

@@ -43,9 +43,13 @@ namespace EchoMaze.UI
             Cursor.lockState = CursorLockMode.None;
             EventSystem.current?.SetSelectedGameObject(null);
 
-            foreach (Text text in FindObjectsByType<Text>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-                if (text.font != null) { font = text.font; break; }
-            if (font == null) font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            font = Resources.Load<Font>("Fonts/ShareTechMono-Regular");
+            if (font == null)
+            {
+                foreach (Text text in FindObjectsByType<Text>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                    if (text.font != null) { font = text.font; break; }
+                if (font == null) font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            }
             foreach (Canvas existing in FindObjectsByType<Canvas>(FindObjectsSortMode.None))
             {
                 if (!existing.enabled) continue;
@@ -191,7 +195,7 @@ namespace EchoMaze.UI
             RectTransform line = Element("Divider", root, new Vector2(0.055f, y), new Vector2(0.945f, y));
             line.sizeDelta = new Vector2(0f, 1f);
             Image image = line.gameObject.AddComponent<Image>();
-            image.color = new Color32(204, 213, 204, 255);
+            image.color = new Color32(60, 80, 85, 255);
             image.raycastTarget = false;
         }
 

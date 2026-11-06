@@ -9,9 +9,9 @@ namespace EchoMaze.UI
 {
     public sealed class VictoryMapGraphic : MaskableGraphic
     {
-        public static readonly Color Paper = new Color32(239, 242, 237, 255);
-        public static readonly Color Ink = new Color32(43, 61, 64, 255);
-        public static readonly Color Muted = new Color32(104, 121, 119, 255);
+        public static readonly Color Paper = new Color32(8, 12, 16, 255);
+        public static readonly Color Ink = new Color32(127, 233, 240, 255);
+        public static readonly Color Muted = new Color32(138, 160, 184, 255);
         public static readonly Color Teal = new Color32(30, 141, 121, 255);
         public static readonly Color Amber = new Color32(180, 124, 44, 255);
         public static readonly Color Coral = new Color32(195, 86, 79, 255);
@@ -60,9 +60,9 @@ namespace EchoMaze.UI
 
             Box((Vector2)bounds.center + Vector2.down * unit * 0.12f,
                 (Vector2)bounds.size + Vector2.one * unit * 0.8f, unit * 0.3f,
-                new Color32(217, 224, 216, 255));
+                new Color32(18, 24, 32, 255));
             Box(bounds.center, (Vector2)bounds.size + Vector2.one * unit * 0.8f,
-                unit * 0.3f, new Color32(251, 252, 248, 255));
+                unit * 0.3f, new Color32(24, 30, 32, 255));
 
             if (maze != null && maze.Grid != null)
             {
@@ -70,7 +70,7 @@ namespace EchoMaze.UI
                     for (int x = 0; x < maze.Grid.Width; x++)
                         if (!maze.Grid.IsWall(x, y))
                             Box(maze.Grid.WorldOfCell(x, y), Vector2.one * unit * 0.94f,
-                                unit * 0.08f, new Color32(241, 244, 237, 255));
+                                unit * 0.08f, new Color32(16, 22, 26, 255));
             }
 
             foreach (NoisyFloor floor in FindObjectsByType<NoisyFloor>(FindObjectsSortMode.None))
@@ -105,7 +105,7 @@ namespace EchoMaze.UI
                 {
                     Vector2 p = collider.bounds.center;
                     float r = collider.bounds.extents.x;
-                    Disc(p + Vector2.down * unit * 0.08f, r, new Color32(184, 195, 187, 255));
+                    Disc(p + Vector2.down * unit * 0.08f, r, new Color32(20, 26, 32, 255));
                     Disc(p, r, Muted);
                     Ring(p, r * 0.67f, unit * 0.025f, new Color32(218, 227, 218, 255));
                 }
@@ -115,7 +115,7 @@ namespace EchoMaze.UI
                     Vector2 size = collider.bounds.size;
                     bool crate = collider.gameObject.name.StartsWith("Box");
                     Color tint = crate ? new Color32(168, 150, 119, 255) : Ink;
-                    Box(p + Vector2.down * unit * 0.08f, size, unit * 0.045f, new Color32(174, 188, 180, 255));
+                    Box(p + Vector2.down * unit * 0.08f, size, unit * 0.045f, new Color32(18, 24, 32, 255));
                     Box(p, size, unit * 0.045f, tint);
                     if (crate)
                     {
@@ -128,7 +128,7 @@ namespace EchoMaze.UI
                     {
                         Box(p + new Vector2(0f, size.y * 0.5f - unit * 0.06f),
                             new Vector2(Mathf.Max(0.02f, size.x - unit * 0.1f), unit * 0.025f), 0f,
-                            new Color32(94, 112, 110, 255));
+                            new Color32(22, 28, 32, 255));
                     }
                 }
             }
