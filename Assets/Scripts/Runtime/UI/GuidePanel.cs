@@ -26,6 +26,7 @@ namespace EchoMaze.UI
         [SerializeField] Text titleLabel;
         [SerializeField] Text bodyLabel;
         [SerializeField] Text counterLabel;
+        [SerializeField] GuideDiagram diagram;
         [SerializeField] Button prevButton;
         [SerializeField] Button nextButton;
         [SerializeField] Button closeButton;
@@ -125,6 +126,7 @@ namespace EchoMaze.UI
         void Render()
         {
             GuidePage current = GuidePages.At(page);
+            if (diagram != null) diagram.ShowPage(page);
             if (titleLabel != null)
             {
                 titleLabel.text = current.Title;

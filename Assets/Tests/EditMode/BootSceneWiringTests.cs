@@ -156,6 +156,11 @@ namespace EchoMaze.Tests
             Assert.IsInstanceOf<Text>(Reference(panel, "titleLabel"), "the page title is not wired");
             Assert.IsInstanceOf<Text>(Reference(panel, "bodyLabel"), "the page body is not wired");
             Assert.IsInstanceOf<Text>(Reference(panel, "counterLabel"), "the page counter is not wired");
+            var diagram = Reference(panel, "diagram") as GuideDiagram;
+            Assert.IsNotNull(diagram, "the moving illustration is not wired");
+            Assert.IsInstanceOf<Text>(Reference(diagram, "caption"));
+            Assert.IsFalse(diagram.raycastTarget);
+            Assert.AreEqual(1, panel.GetComponentsInChildren<GuideDiagram>(true).Length);
             Assert.IsInstanceOf<Button>(Reference(panel, "prevButton"), "the guide cannot go back");
             Assert.IsInstanceOf<Button>(Reference(panel, "nextButton"), "the guide cannot go forward");
             Assert.IsInstanceOf<Button>(Reference(panel, "closeButton"), "the guide has no way out");

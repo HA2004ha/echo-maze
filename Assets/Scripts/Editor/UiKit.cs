@@ -1090,7 +1090,9 @@ namespace EchoMaze.EditorTools
             EnsureImage(content, "dim", EnsureSolidSprite(), Image.Type.Simple, Vector2.zero, Vector2.zero,
                         new Color(0f, 0f, 0f, 0.96f), true, 0);
 
-            EnsureCard(content, new Vector2(0f, 0f), new Vector2(1180f, 800f));
+            EnsureImage(content, "ReadingGround", EnsureSolidSprite(), Image.Type.Simple,
+                        Vector2.zero, new Vector2(1712f, 792f), new Color(0.008f, 0.018f, 0.022f, 1f), false, 1);
+            EnsureCard(content, new Vector2(0f, 0f), new Vector2(1720f, 800f));
             EnsureDivider(content, "Divider", new Vector2(0f, 275f), new Vector2(980f, 2f));
 
             Text title = EnsureLabel(content, "Title", "", 34, Cyan, new Vector2(0f, 320f),
@@ -1099,9 +1101,23 @@ namespace EchoMaze.EditorTools
             // Upper-left, and the copy in GuidePages is broken by hand: an auto-wrapped monospace paragraph
             // re-flows on every machine that is missing a glyph, and the page's whole job is to be read once
             // and remembered as a shape.
-            Text body = EnsureLabel(content, "Body", "", 22, CyanMild, new Vector2(0f, -20f),
+            Text body = EnsureLabel(content, "Body", "", 22, CyanMild, new Vector2(-270f, -20f),
                                     new Vector2(1040f, 530f), TextAnchor.UpperLeft, false);
             body.lineSpacing = 1.25f;
+
+            EnsureDivider(content, "DiagramDivider", new Vector2(285f, 0f), new Vector2(1f, 510f));
+            EnsureLabel(content, "DiagramTitle", "FIELD STUDY / IN MOTION", 20, Cyan,
+                        new Vector2(555f, 228f), new Vector2(480f, 40f));
+            Text caption = EnsureLabel(content, "DiagramCaption", "", 19, Warm,
+                        new Vector2(555f, -228f), new Vector2(490f, 64f));
+            GameObject diagramRoot = FindOrCreateChild(content, "Diagram");
+            var diagram = SceneKit.EnsureComponent<GuideDiagram>(diagramRoot);
+            diagram.raycastTarget = false;
+            var diagramRect = diagram.rectTransform;
+            diagramRect.anchorMin = diagramRect.anchorMax = new Vector2(0.5f, 0.5f);
+            diagramRect.anchoredPosition = new Vector2(555f, 0f);
+            diagramRect.sizeDelta = new Vector2(460f, 360f);
+            SceneKit.SetReference(diagram, "caption", caption);
 
             Button prev = EnsureButton(content, "Prev", "< prev", new Vector2(-350f, -300f),
                                        new Vector2(220f, 56f));
@@ -1113,6 +1129,7 @@ namespace EchoMaze.EditorTools
                                         new Vector2(300f, 56f));
 
             var view = SceneKit.EnsureComponent<GuidePanel>(root);
+            SceneKit.SetReference(view, "diagram", diagram);
             SceneKit.SetReference(view, "group", pageGroup);
             SceneKit.SetReference(view, "titleLabel", title);
             SceneKit.SetReference(view, "bodyLabel", body);

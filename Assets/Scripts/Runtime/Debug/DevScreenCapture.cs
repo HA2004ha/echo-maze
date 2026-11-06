@@ -182,6 +182,13 @@ namespace EchoMaze.DebugTools
                 runner.completeLeadSeconds = float.Parse(completeLead, CultureInfo.InvariantCulture);
             }
 
+            string panelLead = Value("-echo-panel-lead");
+            if (float.TryParse(panelLead, NumberStyles.Float, CultureInfo.InvariantCulture, out float seconds)
+                && !float.IsNaN(seconds) && !float.IsInfinity(seconds) && seconds >= 0f)
+            {
+                runner.panelLeadSeconds = seconds;
+            }
+
             string[] args = System.Environment.GetCommandLineArgs();
             runner.ping = System.Array.IndexOf(args, "-echo-ping") >= 0;
             runner.quitAfter = System.Array.IndexOf(args, "-echo-quit") >= 0;

@@ -1,5 +1,8 @@
 using EchoMaze.UI;
 using NUnit.Framework;
+using System.Reflection;
+using UnityEngine;
+using UnityEngine.UI;
 
 namespace EchoMaze.Tests
 {
@@ -75,6 +78,43 @@ namespace EchoMaze.Tests
             Assert.AreEqual(GuidePages.Count - 1, GuidePages.Clamp(GuidePages.Count + 3));
             Assert.AreEqual("1 / " + GuidePages.Count, GuidePages.Counter(-1));
             Assert.IsInstanceOf<GuidePage>(GuidePages.At(9999));
+        }
+
+        [TestCase(0)]
+        [TestCase(1)]
+        [TestCase(2)]
+        [TestCase(3)]
+        [TestCase(4)]
+        [TestCase(5)]
+        public void Diagram_HasBoundedGeometryThroughoutItsLoop(int page)
+        {
+            var go = new GameObject("diagram", typeof(RectTransform));
+            try
+            {
+                var diagram = go.AddComponent<GuideDiagram>();
+                diagram.rectTransform.sizeDelta = new Vector2(460, 360);
+                diagram.ShowPage(page);
+                var flags = BindingFlags.Instance | BindingFlags.NonPublic;
+                var populate = typeof(GuideDiagram).GetMethod("OnPopulateMesh", flags | BindingFlags.DeclaredOnly);
+                var clock = typeof(GuideDiagram).GetField("elapsed", flags);
+                using (var vertices = new VertexHelper())
+                {
+                    for (int frame = 0; frame <= 60; frame++)
+                    {
+                        clock.SetValue(diagram, frame * 0.1f);
+                        populate.Invoke(diagram, new object[] { vertices });
+                        Assert.Greater(vertices.currentVertCount, 200);
+                        var vertex = new UIVertex();
+                        for (int i = 0; i < vertices.currentVertCount; i++)
+                        {
+                            vertices.PopulateUIVertex(ref vertex, i);
+                            Assert.That(vertex.position.x, Is.InRange(-230f, 230f));
+                            Assert.That(vertex.position.y, Is.InRange(-180f, 180f));
+                        }
+                    }
+                }
+            }
+            finally { Object.DestroyImmediate(go); }
         }
 
         static string Body()
