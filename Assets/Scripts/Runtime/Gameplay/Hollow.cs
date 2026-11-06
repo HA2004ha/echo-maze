@@ -38,6 +38,8 @@ namespace EchoMaze.Gameplay
         Bounds area;
         bool inside;
 
+        public Bounds Area => area;
+
         void OnEnable()
         {
             area = new Bounds(centre, size);

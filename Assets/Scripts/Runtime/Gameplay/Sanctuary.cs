@@ -19,6 +19,8 @@ namespace EchoMaze.Gameplay
         Bounds area;
         bool inside;
 
+        public Bounds Area => area;
+
         public void Build(Player watched, LevelSession owningSession, Vector2 centre, Vector2 size)
         {
             player = watched;

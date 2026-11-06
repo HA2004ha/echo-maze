@@ -35,7 +35,7 @@ namespace EchoMaze.Gameplay
         /// <summary>Raised after a chapter scene is live and its session is bound, with the 1-based chapter number.</summary>
         public event Action<int> ChapterStarted;
 
-        /// <summary>Raised when the last chapter's exit is reached. The victory panel listens; nothing else ends a run.</summary>
+        /// <summary>Raised after the last chapter's map is dismissed.</summary>
         public event Action RunCompleted;
 
         public int ChapterCount => chapterScenes.Length;
@@ -147,6 +147,15 @@ namespace EchoMaze.Gameplay
                 pings += session.PingCount;
                 deaths += session.DeathCount;
                 seconds += session.ElapsedSeconds;
+            }
+        }
+
+        public void ContinueAfterVictory()
+        {
+            LevelSession session = FindAnyObjectByType<LevelSession>();
+            if (!IsRunning || session == null || !session.IsComplete)
+            {
+                return;
             }
 
             if (chapterIndex + 1 >= chapterScenes.Length)

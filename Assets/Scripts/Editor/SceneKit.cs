@@ -1373,7 +1373,7 @@ namespace EchoMaze.EditorTools
         public static LevelExit EnsureLevelExit(GameObject probe, LevelSession session)
         {
             LevelExit exit = probe.GetComponent<LevelExit>() ?? probe.AddComponent<LevelExit>();
-            exit.Build(session);
+            SetReference(exit, "session", session);
             return exit;
         }
 

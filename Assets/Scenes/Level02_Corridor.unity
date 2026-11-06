@@ -2491,6 +2491,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e983e49f50ef0fdb9de5350d960c4cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: EchoMaze.Runtime::EchoMaze.Gameplay.LevelExit
+  session: {fileID: 1381382037}
   prompt: E   OUT
 --- !u!61 &894980194
 BoxCollider2D:

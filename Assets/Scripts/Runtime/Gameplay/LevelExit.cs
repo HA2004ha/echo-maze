@@ -14,7 +14,7 @@ namespace EchoMaze.Gameplay
     [DisallowMultipleComponent]
     public sealed class LevelExit : MonoBehaviour, IInteractable
     {
-        LevelSession session;
+        [SerializeField] LevelSession session;
 
         [Tooltip("The prompt E answers. Persian and English both belong to the team's copy pass; this is " +
                  "the string the HUD prints, not a key.")]

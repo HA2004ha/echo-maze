@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using EchoMaze.Core;
+using EchoMaze.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -114,7 +115,7 @@ namespace EchoMaze.Gameplay
         /// </summary>
         public void SetPaused(bool value)
         {
-            if (paused == value)
+            if (paused == value || (IsComplete && !value))
             {
                 return;
             }
@@ -193,25 +194,17 @@ namespace EchoMaze.Gameplay
             }
         }
 
-        /// <summary>The exit was reached: the world stops, the counters freeze, and the flow is told.</summary>
         public void Complete()
         {
-            if (IsComplete)
+            if (IsComplete || (player != null && !player.IsAlive))
             {
-                return;
-            }
-
-            // A scene played straight from the editor has no GameFlow, so nothing would show the victory
-            // panel and the game would just freeze. Say so and keep playing.
-            if (GameFlow.Active == null)
-            {
-                Hint("You found the way out. (Start from Boot to play the whole run.)", 5f);
                 return;
             }
 
             IsComplete = true;
             SetPaused(true);
             Completed?.Invoke();
+            gameObject.AddComponent<VictoryMapView>().Show(this, player);
         }
 
         void OnPing(PingRecord ping) => PingCount++;

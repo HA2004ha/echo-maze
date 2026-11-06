@@ -25,6 +25,8 @@ namespace EchoMaze.Gameplay
         float nextNoiseAt;
         bool inside;
 
+        public Bounds Area => area;
+
         /// <summary>Raised every time the floor reports a step, for the HUD's "you are being loud" cue.</summary>
         public event Action Noised;
 

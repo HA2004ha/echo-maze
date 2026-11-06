@@ -46,9 +46,9 @@ namespace EchoMaze.Tests.PlayMode
             crawler.transform.position = player.transform.position;
             Physics2D.SyncTransforms();
 
-            for (int frame = 0; frame < 120 && player.IsAlive; frame++)
+            for (int step = 0; step < 10 && player.IsAlive; step++)
             {
-                yield return null;
+                yield return new WaitForFixedUpdate();
             }
 
             Assert.IsFalse(player.IsAlive, "two bodies in the same place and nobody died");
