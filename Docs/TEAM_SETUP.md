@@ -58,9 +58,13 @@ Verification — `git config --get-regexp 'merge\.'` only proves three lines exi
 2. Open the scene `Assets/Scenes/Level02_Corridor.unity` — from week 2 that is the room the game is actually about: an enclosed `7 × 5` blockout with a patrolling Crawler in it, and it is the scene a build boots into. `Assets/Scenes/Sandbox.unity` stays as the math playground (three test objects, no gameplay), and `Assets/Scenes/Boot.unity` comes when the menu and options land in week 3.
 3. Play. Controls: WASD to move, mouse for aim direction, `Space` for the manual echo (hold it to charge), `Shift` for silent movement, `F` for the 360° weak pulse. Touch a wall and it marks; the Crawler kills on contact and the room restarts in about a second.
 4. **The microphone works on Linux, in the editor.** `Level02_Corridor` and `Sandbox` both save `sourceMode = Microphone`, and on 2026-10-28 the editor on this team's machine listed three devices, captured real samples and opened the gate on voice — the result is row 1 of [MIC_TEST_MATRIX.md](MIC_TEST_MATRIX.md). If your machine has no usable input, or its default input is a `Monitor of …` alias the code cannot recognise, `EchoDirector` falls back to the simulated source with a Console warning and the game stays playable on `Space`. Measure your own machine with **`Tools ▸ Echo ▸ Mic Probe`** and record it in the matrix. What is *not* yet proven is the **player build's** audio backend (row 2), which no editor session can answer.
-5. **The interface font is a committed asset.** `Assets/Art/Fonts/ShareTechMono-Regular.ttf` (with its `.meta` and `OFL.txt`) is what every label in the game renders in. If a `git` operation loses the TTF, the bootstrap logs the error and keeps working in the fallback font — restore it with
-   `curl -fL -o Assets/Art/Fonts/ShareTechMono-Regular.ttf https://raw.githubusercontent.com/google/fonts/main/ofl/sharetechmono/ShareTechMono-Regular.ttf`
-   and **never regenerate its `.meta`**: every scene's `Text` references the font by that GUID, and legacy Text answers a missing one by falling back silently.
+5. **The interface font is a committed asset.** `Assets/Resources/Fonts/ShareTechMono-Regular.ttf` (with its `.meta`; `OFL.txt` sits beside it at `Assets/Art/Fonts/OFL.txt`) is what every label in the game renders in. If a `git` operation loses the TTF, the bootstrap logs the error and keeps working in the fallback font — restore it with
+
+```
+curl -fL -o Assets/Resources/Fonts/ShareTechMono-Regular.ttf https://raw.githubusercontent.com/google/fonts/main/ofl/sharetechmono/ShareTechMono-Regular.ttf
+```
+
+and **never regenerate its `.meta`**: every scene's `Text` references the font by that GUID, and legacy Text answers a missing one by falling back silently.
 
 ## 4a) The editor from the command line (without opening a window)
 
