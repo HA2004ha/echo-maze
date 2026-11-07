@@ -68,5 +68,5 @@ Tick items here as they land; the reasoning stays in PLAN.md.
 
 - [ ] Readability session: 3 new players name 3 of {wall, pillar, corner, hollow, Crawler} from arcs alone
 - [ ] Mic voice tests: whisper vs shout, latency, noisy room (matrix rows 3, 5–9)
-- [ ] Decide `ISSUES.md` #4: art wider than hitbox (rescale art / grow hitbox / accept)
+- [x] `ISSUES.md` #4 closed: player collider now matches the art silhouette (grew the hitbox; accepted side-profile float documented in `TUNING.md`)
 - [ ] Fresh-clone check by a teammate using only the README

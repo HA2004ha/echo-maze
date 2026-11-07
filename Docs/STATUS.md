@@ -2,7 +2,7 @@
 
 **Last updated:** 2026-11-08
 **Current milestone:** **M1 — a complete playable shape** (menu → ten chapters → victory)
-**Next milestone:** **M2 — the hunt and the rest of the maze language** (NoiseBoard, suspicion, Listen mode, hollow, memory trace)
+**Next milestone:** **M2 — the hunt and the rest of the maze language** (NoiseBoard, suspicion, Listen mode, hollow, memory trace, sanctuary give-up, Spike, marble, fear, noise zones)
 
 This file is the short answer to "how far did we get". [PLAN.md](PLAN.md) is the schedule and the
 reasoning; this file is the state. Update it at the end of every working stage, in the same commit as the
@@ -21,11 +21,7 @@ Boot (menu) ──begin──▶ chapters page ──▶ I the maze ──▶ II
        (device picker)     every room is a text file; the scene that plays it is generated
 ```
 
-A player can start the game from the menu, pick the microphone in-game, see the whole story as one rail on
-the chapters page, and walk ten rooms from the enemy-free maze down to the sump — every one of them ending on
-the victory panel, every one of them remembering its own best run. That is the milestone this stage asked
-for: **the shape is complete and the story has a middle**, not a mechanics playground with one room at its
-end.
+A player can start the game from the menu, pick the microphone in-game, see the whole story as one rail on the chapters page, and walk ten rooms from the enemy-free maze down to the sump — every one of them ending on the victory panel, every one of them remembering its own best run. That is the milestone this stage asked for: **the shape is complete and the story has a middle**, not a mechanics playground with one room at its end.
 
 `Sandbox` is the ray-fan lab, not the game. The other nine scenes in `Assets/Scenes` are chapters.
 [Docs/LEVELS.md](LEVELS.md) is the level file: the ladder, the map legend, and the three edits that add a
@@ -162,15 +158,28 @@ chapter.
 
 These are deliberately listed so the next stage does not mistake a built room for a finished system:
 
-- **No `NoiseBoard`.** Noise is still reported directly to the director; there is no single stream every
-  listener subscribes to, and no `HeardBy` pure function yet.
+- **`NoiseBoard` is not built yet.** Noise is still reported directly to the director; there is no single
+  stream every listener subscribes to, and no `HeardBy` pure function yet. Walls, closed doors and noise
+  zones do not attenuate hearing.
 - **No suspicion meter and no `EnemyBrain`.** The Crawler in `Level02_Corridor` still uses the week-2
-  proximity/hunt stub. It is not in the playable run.
-- **No Listen mode, no hollow rule, no memory trace.** `Ctrl` and the marble are **not** advertised on the
-  menu until they exist.
+  proximity/hunt stub (`Investigate` = walk to the noise, `huntSeconds` deadline, then give up). It is not
+  in the playable run as a chapter yet.
+- **Hollows and wall memory are built.** `Hollow` is a safe spot (hearing × `hollowHearingMultiplier` =
+  0.15 for quiet sounds, breaks above `hollowBreaksAbove` = 0.25 loudness, ignored by an enemy already
+  chasing) with "You are hidden" / "You are exposed" HUD notices. `WallMemory` remembers every wall the
+  player touched as permanent neon lines, never re-read from colliders, so an opened door leaves a
+  remembered wall where there is now an entrance. `Ctrl` / Listen mode and the marble are still not
+  advertised on the menu.
+- **No Listen mode.** `Ctrl` does nothing yet; warm enemy ripples and cool landmark ripples are M2.
 - **No landmark audio, no exit hum.** The exit is found geometrically, not by its sound.
-- **Section reset** exists as hooks for doors and enemy rewinds; a full reset of authored state is still
-  week 4 work.
+- **Chapter-one hints are built.** `LevelHints` feeds five one-shot lines (Space charge, F pulse, wall
+  memory, Shift silence, E door) through `HintQueue` into the HUD notice label, once each per run. Only the
+  maze turns them on; the Corridor leaves them off.
+- **Death snarl.** `DeathSnarl` plays `Death_snarl.wav` flat at the moment of death, tracked by
+  `DeathSnarlTests`.
+- **Section reset** exists as hooks: doors reset via `Door.ResetToStart`, Crawlers are re-found and rewound
+  at retry via `FindObjectsByType<Crawler>` (so no cached array reaches into destroyed objects). A full
+  authored-state reset (marble count, noise-zone state, etc.) is still week 4 work.
 - **Readability and `ρ`** are still measured on the corridor, not on the maze with a creature in it.
 
 ---
