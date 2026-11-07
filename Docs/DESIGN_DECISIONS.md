@@ -260,9 +260,10 @@ it is in. The name `SmoothTowards` is a grep, not a proof.
 
 ## 2026-10-29 — The run is one chapter until the hunt exists
 
-**Decision:** `GameFlow.chapterScenes` is `{ Level01_Maze }` for this milestone. `Level02_Corridor` stays in
-the build and in the editor, but it is not a chapter a run can enter. The maze exit therefore ends the run
-and shows the victory panel.
+**Decision:** `GameFlow.chapterScenes` is `{ Level01_Maze, Level02_Corridor }` for this milestone. Level 01
+is the GDD's enemy-free tutorial and the whole playable run; level 02 stays in the build and in the editor
+but runs the week-2 Crawler hearing stub until `EnemyBrain` lands, so finishing the maze is a victory
+instead of a corridor with no ending.
 
 **Reason:** the stage's goal was the **shape** of the game — menu, a real level, a victory — not a second
 room with no ending. The corridor is a week-2 blockout with the Crawler's suspicion still a stub; chaining it
@@ -271,9 +272,9 @@ that ends at the maze is honest about what exists, and the victory panel reads t
 the corridor later makes it say "2 rooms" with no panel change.
 
 **Cost:** one line of the level list is a **scope promise**, not a permanent architecture. The corridor must
-re-enter the list in the same change that removes the hearing stub and gives it a loop, a hollow and a wake
-trigger (M2). Until then, a tester who wants to see the Crawler opens `Level02_Corridor` from the editor.
-The level file, the door, the sanctuary and the checkpoint remain valid chapter-one content.
+re-enter the list as a real chapter in the same change that removes the hearing stub and gives it a loop, a
+hollow and a wake trigger (M2). Until then, a tester who wants to see the Crawler opens `Level02_Corridor`
+from the editor. The level file, the door, the sanctuary and the checkpoint remain valid chapter-one content.
 
 **Rule:** a chapter is in `chapterScenes` only when a player can finish it **and** its systems are the ones
 the GDD describes. A preview room is a scene, not a chapter.
@@ -334,7 +335,7 @@ the GDD describes. A preview room is a scene, not a chapter.
 
 ## 2026-11-06 — The interface takes the GDD's identity, in generated sprites and a committed TTF
 
-**Decision:** the menu, pause, victory, calibration, HUD and death screens were rebuilt visually inside the same generator code (`UiKit.cs`, `SceneKit.EnsureDeathNotice`): Share Tech Mono from `Assets/Art/Fonts` (the GDD's own naming), procedurally generated 9-slice line frames with corner brackets, a radial vignette wash, echo rings behind the title, and a ColorBlock whose idle tint sits below 1 so hover can brighten a white-base sprite. **Every `Ensure*` path now re-asserts the complete style on existing scene objects, not just the wiring** — the death notice's bare early-return and `EnsurePanel`'s `wash == null` guard were the last two instances of the bug class that left old styling alive after the generator changed.
+**Decision:** the menu, pause, victory, calibration, HUD and death screens were rebuilt visually inside the same generator code (`UiKit.cs`, `SceneKit.EnsureDeathNotice`): Share Tech Mono from `Assets/Resources/Fonts` (the GDD's own naming), procedurally generated 9-slice line frames with corner brackets, a radial vignette wash, echo rings behind the title, and a ColorBlock whose idle tint sits below 1 so hover can brighten a white-base sprite. **Every `Ensure*` path now re-asserts the complete style on existing scene objects, not just the wiring** — the death notice's bare early-return and `EnsurePanel`'s `wash == null` guard were the last two instances of the bug class that left old styling alive after the generator changed.
 
 **Reason:** the panels were Unity's default font on flat black rectangles, which the GDD's line-drawing identity never asked for. A generated UI is the one place where a style change can be made to land everywhere at once, so leaving any path repair-only would reintroduce drift the same week. 9-slice rather than scaled solids because corner brackets must not stretch, and the sprites are written PNGs with GUIDs for the same reason `UI_solid.png` always was: a runtime-created sprite saves as a hole.
 
@@ -392,6 +393,18 @@ the GDD describes. A preview room is a scene, not a chapter.
 ## Under decision
 
 - **Does a human read wall / pillar / corner / hollow / Crawler from the arcs alone, at these thresholds?** Everything above is counted in samples; none of it is seen in eyes. This is the week-2 go/no-go and only the readability session on Linux can close it.
+
+## 2026-11-07 — The player collider matches the art silhouette (issue 4 closed)
+
+**Decision:** the player's `CircleCollider2D` radius was grown so the hitbox matches the drawn figure (`0.447` m sideways, `0.494` m up-down) rather than staying at `0.25` m, and `TouchMarks.silhouetteClearance` (0.24 m) pushes the mark onto the wall instead of into the torso.
+**Reason:** the hitbox was half the drawn width, so the character sank into walls and the touch mark / echo arc disagreed about where the surface was — issue 1's root cause. Growing the collider is a balance change (gaps were sized for 0.5 m), but the alternative (accepting the mismatch) left the arc and mark on different surfaces, which breaks the level's honest reading.
+**Cost:** every gap in both blockouts was measured against a 0.5 m body and must be re-checked against the wider hitbox; `TouchMarks.silhouetteClearance` stays a single number for poses that are not one width (the side profile is narrower, so the mark floats ~17 px sideways). The residual is documented in `TUNING.md`.
+
+## 2026-11-07 — The victory map is revealed after a win, with a dark theme
+
+**Decision:** reaching the exit now shows a revealed map of the chapter (`VictoryMapView` + `VictoryMapGraphic`) drawn over a darkened victory panel, and the win screen adopts the dark sonar-terminal theme instead of the flat black rectangle.
+**Reason:** the GDD's victory is "a short text", but the map gives the player a concrete record of the route they just navigated by sound, and a black victory screen read as unfinished next to the generated UI. The map is generated from the level's authored geometry (walls, door, sanctuary, exit) rather than painted by hand.
+**Cost:** a new render path and a set of `VictoryMapFitTests`/`VictoryMapRevealTests`; the map must stay dim enough not to compete with the arcs in the next chapter.
 
 ## Resolved in week 2
 

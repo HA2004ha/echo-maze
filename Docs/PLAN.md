@@ -7,10 +7,17 @@
 
 This file is the **living project history**: at the end of each day the ticked items and the week's status are recorded and committed here, and at the end of each week that same commit is tagged `v0.x`. Technical decisions: [DESIGN_DECISIONS.md](DESIGN_DECISIONS.md). Balancing parameters: [TUNING.md](TUNING.md).
 
-## Project status — 2026-10-29
+## Project status — 2026-11-07
 
-**The short version lives in [STATUS.md](STATUS.md): menu → one real level → victory is playable; the hunt
-systems are next.** This plan remains the schedule and the reasoning behind it.
+**The short version lives in [STATUS.md](STATUS.md): M1 is complete (menu → maze → victory) and the build
+now also carries the Crawler's roar and footsteps, hollows, permanent wall memory, the footprint trail,
+chapter-one hints, the field guide, the sonar-terminal UI, the lit 3D menu diorama, and a player collider
+that matches the art silhouette (closes ISSUES #4). `GameFlow.chapterScenes` declares both
+`Level01_Maze` and `Level02_Corridor`, but the corridor still runs the week-2 Crawler hearing stub until
+`EnemyBrain` lands (M2).**
+
+Only tag `v0.1-sandbox` exists; `v0.2-first-room` through `v0.5-submission` are not yet cut. Cut them as
+each milestone's evidence is committed.
 
 | Stage | What is done | What is not done yet |
 |---|---|---|
@@ -19,9 +26,11 @@ systems are next.** This plan remains the schedule and the reasoning behind it.
 | **M2 / next** | — | `NoiseBoard` + `HeardBy`, suspicion / `EnemyBrain`, Listen mode, hollow, memory trace, landmark audio, the corridor as chapter two |
 
 **The scope decision of this stage:** the run is **one chapter**, not two. `Level02_Corridor` is built and
-playable in the editor, but it joins `GameFlow.chapterScenes` only when the hunt systems make it a chapter
-rather than a preview. That is what turns "the maze exit" into a victory instead of a corridor with no
-ending. When chapter two lands, the victory panel automatically says "2 rooms" because it reads the list.
+playable in the editor, and `GameFlow.chapterScenes` already declares both `Level01_Maze` and
+`Level02_Corridor` — but the corridor is a chapter in name only: it still runs the week-2 Crawler hearing
+stub until `EnemyBrain` lands (M2). That is what turns "the maze exit" into a victory instead of a corridor
+with no ending. When chapter two lands for real, the victory panel automatically says "2 rooms" because it
+reads the list.
 
 ## What changed in the plan, and why
 
