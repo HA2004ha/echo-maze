@@ -1102,13 +1102,41 @@ namespace EchoMaze.EditorTools
         /// true regardless of the player: the numerals, the chapter names, and the sentence joining each
         /// room to the next.
         /// </summary>
+        /// <summary>
+        /// The story page: ten chapters as one rail, and the selected one read out beside it.
+        ///
+        /// A rail rather than a list of rows, because the story is ten rooms long and ten rows cannot be
+        /// seen at once — and seeing the whole descent, sealed rooms included, is the reason the page
+        /// exists. The nodes are generated from <see cref="ChapterCatalog.Count"/> rather than from fixed
+        /// slots, so a chapter added to the catalogue gets a node by re-running the bootstrap.
+        ///
+        /// Every word that depends on the player — walked, open, sealed, the record, which node is lit —
+        /// is written by <see cref="ChapterSelectPanel"/> at runtime, because a scene that stored a save
+        /// file would be a scene that ships somebody's progress.
+        /// </summary>
         static ChapterSelectPanel EnsureChapterSelect(GameObject root)
         {
             Transform content = root.transform;
-            const float rowSpacing = 190f;
-            const float firstRow = 145f;
-            const float nodeX = -588f;   // row left edge (−650) plus the marker's 62 px inset
-            const float textX = -528f;   // where a row's title starts, measured from the row's centre
+
+            // The page used to be rows of prose between two nodes. Find-or-create keeps anything it is not
+            // told about, so those thread segments and their captions were still drawn underneath the rail —
+            // the one kind of stale object a generated scene cannot repair by rebuilding its own layout.
+            for (int i = 1; i <= 40; i++)
+            {
+                foreach (string stale in new[] { "Thread " + i, "ThreadText " + i })
+                {
+                    Transform child = content.Find(stale);
+                    if (child != null)
+                    {
+                        Object.DestroyImmediate(child.gameObject);
+                    }
+                }
+            }
+
+            const float railX = -520f;
+            const float firstRow = 236f;
+            const float rowSpacing = 60f;
+            const float dossierX = 150f;
 
             var pageGroup = SceneKit.EnsureComponent<CanvasGroup>(root);
             pageGroup.alpha = 1f;
@@ -1117,112 +1145,200 @@ namespace EchoMaze.EditorTools
 
             // Opaque, not 0.96: at the diorama's brightest the menu's own title and buttons still read
             // through a four-percent window as grey ghosts under the card, and a reading page whose
-            // background is somebody else's menu is a page nobody trusts. It also swallows the clicks
-            // the guide lets through to the buttons behind it.
+            // background is somebody else's menu is a page nobody trusts.
             Image dim = EnsureImage(content, "dim", EnsureSolidSprite(), Image.Type.Simple, Vector2.zero,
                                     Vector2.zero, Color.black, true, 0);
             dim.raycastTarget = true;
 
             EnsureCard(content, new Vector2(0f, -8f), new Vector2(1460f, 830f));
-            EnsureLabel(content, "Heading", Track("THE DESCENT"), 40, Cyan, new Vector2(0f, 352f),
+            EnsureLabel(content, "Heading", Track("THE DESCENT"), 40, Cyan, new Vector2(0f, 354f),
                         new Vector2(1200f, 70f), TextAnchor.MiddleCenter, true);
-            Text subtitle = EnsureLabel(content, "Subtitle", "", 22, CyanFaint, new Vector2(0f, 300f),
-                                        new Vector2(1200f, 40f));
-            EnsureDivider(content, "Divider", new Vector2(0f, 268f), new Vector2(1180f, 2f));
+            Text subtitle = EnsureLabel(content, "Subtitle", "", 22, CyanFaint, new Vector2(0f, 310f),
+                                        new Vector2(1240f, 34f));
+            EnsureDivider(content, "Divider", new Vector2(0f, 282f), new Vector2(1240f, 2f));
 
-            // The thread goes in first so the node markers cover its ends: a line drawn over the nodes
-            // reads as a table, and a line behind them reads as a route.
-            Sprite solid = EnsureSolidSprite();
-            for (int gap = 0; gap < ChapterSelectPanel.Capacity - 1; gap++)
-            {
-                float middle = firstRow - rowSpacing * (gap + 0.5f);
-                EnsureImage(content, "Thread " + (gap + 1), solid, Image.Type.Simple,
-                            new Vector2(nodeX, middle), new Vector2(2f, rowSpacing), CyanFaint);
+            int count = Mathf.Max(1, ChapterCatalog.Count);
+            float lastRow = firstRow - rowSpacing * (count - 1);
 
-                // The sentence that joins this room to the next. It sits in the gap the line crosses, so
-                // the page tells the story in the same direction the nodes are read.
-                // Anchored to the centre of the page, not to its left edge: a thread sentence that
-                // starts at the canvas's x zero is a sentence whose first half is off-screen.
-                Text thread = EnsureAnchoredLabel(content, "ThreadText " + (gap + 1), 18, CyanMild,
-                                                  new Vector2(0.5f, 0.5f), new Vector2(0f, 0.5f),
-                                                  new Vector2(-520f, middle), new Vector2(1120f, 30f),
-                                                  TextAnchor.MiddleLeft);
-                thread.text = ChapterCatalog.At(gap).Thread;
-            }
+            // The thread goes in first so the node markers cover it: a line drawn over the nodes reads as
+            // a table, and a line behind them reads as a route.
+            EnsureImage(content, "Rail", EnsureSolidSprite(), Image.Type.Simple,
+                        new Vector2(railX, (firstRow + lastRow) * 0.5f),
+                        new Vector2(2f, firstRow - lastRow + 22f), CyanFaint);
 
             Sprite node = EnsureNodeSprite();
-            int count = ChapterSelectPanel.Capacity;
             var buttons = new Button[count];
             var numerals = new Text[count];
-            var titles = new Text[count];
-            var subtitles = new Text[count];
-            var states = new Text[count];
-            var records = new Text[count];
             var markers = new Image[count];
-
             for (int i = 0; i < count; i++)
             {
-                Button row = EnsureButton(content, "Chapter " + (i + 1), "",
-                                          new Vector2(0f, firstRow - rowSpacing * i),
-                                          new Vector2(1300f, 120f));
+                float y = firstRow - rowSpacing * i;
+                Button row = EnsureRailNode(content, "Chapter " + (i + 1), new Vector2(railX, y),
+                                            new Vector2(220f, 52f));
                 buttons[i] = row;
 
-                // The stock hover grow is 4%, and 4% of a 1300 px row is 50 px of travel into a 70 px
-                // gap. A row is a line of a page, not a button shape, so it brightens and barely moves.
-                var feedback = row.GetComponent<UIButtonFeedback>();
-                if (feedback != null)
-                {
-                    SceneKit.SetFloat(feedback, "hoverScale", 1.012f);
-                }
-
-                markers[i] = EnsureImage(row.transform, "Marker", node, Image.Type.Simple,
-                                         Vector2.zero, new Vector2(66f, 66f), CyanMild);
-                var markerRect = markers[i].rectTransform;
-                markerRect.anchorMin = new Vector2(0f, 0.5f);
-                markerRect.anchorMax = new Vector2(0f, 0.5f);
-                markerRect.anchoredPosition = new Vector2(62f, 0f);
-                markerRect.sizeDelta = new Vector2(66f, 66f);
-
-                numerals[i] = EnsureAnchoredLabel(row.transform, "Numeral", 20, Cyan,
-                                                  new Vector2(0f, 0.5f), new Vector2(0.5f, 0.5f),
-                                                  new Vector2(62f, 0f), new Vector2(66f, 66f),
-                                                  TextAnchor.MiddleCenter);
-                titles[i] = EnsureAnchoredLabel(row.transform, "Title", 30, Cyan,
-                                                new Vector2(0f, 0.5f), new Vector2(0f, 0.5f),
-                                                new Vector2(122f, 21f), new Vector2(760f, 42f),
-                                                TextAnchor.MiddleLeft);
-                subtitles[i] = EnsureAnchoredLabel(row.transform, "Subtitle", 18, CyanFaint,
-                                                   new Vector2(0f, 0.5f), new Vector2(0f, 0.5f),
-                                                   new Vector2(122f, -21f), new Vector2(880f, 30f),
-                                                   TextAnchor.MiddleLeft);
-                states[i] = EnsureAnchoredLabel(row.transform, "State", 20, Cyan,
-                                                new Vector2(1f, 0.5f), new Vector2(1f, 0.5f),
-                                                new Vector2(-40f, 19f), new Vector2(440f, 32f),
-                                                TextAnchor.MiddleRight);
-                records[i] = EnsureAnchoredLabel(row.transform, "Record", 17, CyanFaint,
-                                                 new Vector2(1f, 0.5f), new Vector2(1f, 0.5f),
-                                                 new Vector2(-40f, -19f), new Vector2(520f, 30f),
-                                                 TextAnchor.MiddleRight);
+                // 13 px inside a 50 px ring, because the numerals run to four characters: "VIII" set at the
+                // neighbouring labels' 16 px is wider than the bead it is supposed to be riding.
+                markers[i] = EnsureImage(row.transform, "Marker", node, Image.Type.Simple, Vector2.zero,
+                                         new Vector2(50f, 50f), CyanMild);
+                numerals[i] = EnsureLabel(row.transform, "Numeral", ChapterCatalog.At(i, null).Numeral, 13,
+                                          Cyan, Vector2.zero, new Vector2(50f, 50f));
             }
 
-            Text status = EnsureLabel(content, "Status", "", 20, CyanFaint, new Vector2(0f, -320f),
-                                      new Vector2(1200f, 30f));
-            Button back = EnsureButton(content, "Back", "back  (Esc)", new Vector2(0f, -372f),
+            // The column that separates the route from the room it describes. Without it the dossier reads
+            // as part of the rail, and the eye keeps trying to attach the paragraph to a node.
+            EnsureDivider(content, "Column", new Vector2(-380f, -30f), new Vector2(1f, 548f));
+
+            GameObject dossierObject = FindOrCreateChild(content, "Dossier");
+            Transform dossier = dossierObject.transform;
+
+            // Pinned to the page's own centre before anything is placed inside it: every label in the
+            // dossier is positioned from its parent's centre, so a group that came back a few centimetres
+            // off — which is what a child created by find-or-create can do — moves the whole column.
+            var dossierRect = (RectTransform)dossier;
+            dossierRect.anchorMin = Vector2.zero;
+            dossierRect.anchorMax = Vector2.one;
+            dossierRect.pivot = new Vector2(0.5f, 0.5f);
+            dossierRect.offsetMin = Vector2.zero;
+            dossierRect.offsetMax = Vector2.zero;
+            dossierRect.localPosition = Vector3.zero;
+            dossierRect.localScale = Vector3.one;
+
+            var dossierGroup = SceneKit.EnsureComponent<CanvasGroup>(dossierObject);
+            dossierGroup.alpha = 1f;
+            dossierGroup.interactable = true;
+            dossierGroup.blocksRaycasts = true;
+
+            Text numeral = EnsureLabel(dossier, "Numeral", "", 20, CyanFaint, new Vector2(dossierX, 228f),
+                                       new Vector2(840f, 30f));
+            Text title = EnsureLabel(dossier, "Title", "", 46, Cyan, new Vector2(dossierX, 176f),
+                                     new Vector2(880f, 64f), TextAnchor.MiddleCenter, true);
+            Text grade = EnsureLabel(dossier, "Grade", "", 18, CyanMild, new Vector2(dossierX, 126f),
+                                     new Vector2(900f, 28f));
+            EnsureDivider(dossier, "Divider", new Vector2(dossierX, 100f), new Vector2(780f, 2f));
+            Text body = EnsureLabel(dossier, "Body", "", 23, CyanMild, new Vector2(dossierX, 52f),
+                                    new Vector2(840f, 84f));
+            body.lineSpacing = 1.2f;
+            Text thread = EnsureLabel(dossier, "Thread", "", 19, CyanFaint, new Vector2(dossierX, -30f),
+                                      new Vector2(840f, 66f));
+            thread.lineSpacing = 1.2f;
+            Text record = EnsureLabel(dossier, "Record", "", 19, CyanFaint, new Vector2(dossierX, -96f),
+                                      new Vector2(880f, 30f));
+            Button play = EnsureButton(dossier, "Play", "walk this room", new Vector2(dossierX, -176f),
+                                       new Vector2(500f, 80f));
+            Transform playLabelObject = play.transform.Find("Label");
+            Text playLabel = playLabelObject != null ? playLabelObject.GetComponent<Text>() : null;
+            EnsureLabel(dossier, "Hint", "up/down choose    enter start    esc back", 16, CyanFaint,
+                        new Vector2(dossierX, -244f), new Vector2(840f, 26f));
+
+            // Outside the dossier group: the way out and the scoreboard must not fade with the paragraph
+            // that is being replaced.
+            Button back = EnsureButton(content, "Back", "back  (Esc)", new Vector2(dossierX, -300f),
                                        new Vector2(320f, 52f));
+            Text status = EnsureLabel(content, "Status", "", 18, CyanFaint, new Vector2(dossierX, -352f),
+                                      new Vector2(900f, 26f));
+
+            // The pulse is drawn over the rail on purpose: a light that walks the thread to the node you
+            // chose, and a ring that opens where it lands. Layered last so it is never hidden by the node
+            // it is travelling to.
+            var pulse = SceneKit.EnsureComponent<ChapterRailPulse>(root);
+            Image travelling = EnsureImage(content, "Travelling", EnsureSolidSprite(), Image.Type.Simple,
+                                           new Vector2(railX, firstRow), new Vector2(9f, 9f), Cyan);
+            Image halo = EnsureImage(content, "Halo", node, Image.Type.Simple,
+                                     new Vector2(railX, firstRow), new Vector2(120f, 120f),
+                                     new Color(Cyan.r, Cyan.g, Cyan.b, 0f));
+            SceneKit.SetFloat(pulse, "railX", railX);
+            SceneKit.SetReference(pulse, "travelling", travelling);
+            SceneKit.SetReference(pulse, "halo", halo);
 
             var panel = SceneKit.EnsureComponent<ChapterSelectPanel>(root);
             SceneKit.SetReference(panel, "group", pageGroup);
             SceneKit.SetReference(panel, "subtitleLabel", subtitle);
             SceneKit.SetReference(panel, "statusLabel", status);
+            SceneKit.SetReferenceArray(panel, "railButtons", ToObjects(buttons));
+            SceneKit.SetReferenceArray(panel, "railNumerals", ToObjects(numerals));
+            SceneKit.SetReferenceArray(panel, "railMarkers", ToObjects(markers));
+            SceneKit.SetReference(panel, "dossierGroup", dossierGroup);
+            SceneKit.SetReference(panel, "dossierNumeral", numeral);
+            SceneKit.SetReference(panel, "dossierTitle", title);
+            SceneKit.SetReference(panel, "dossierGrade", grade);
+            SceneKit.SetReference(panel, "dossierBody", body);
+            SceneKit.SetReference(panel, "dossierThread", thread);
+            SceneKit.SetReference(panel, "dossierRecord", record);
+            SceneKit.SetReference(panel, "playButton", play);
+            SceneKit.SetReference(panel, "playLabel", playLabel);
             SceneKit.SetReference(panel, "backButton", back);
-            SceneKit.SetReferenceArray(panel, "rowButtons", ToObjects(buttons));
-            SceneKit.SetReferenceArray(panel, "rowNumerals", ToObjects(numerals));
-            SceneKit.SetReferenceArray(panel, "rowTitles", ToObjects(titles));
-            SceneKit.SetReferenceArray(panel, "rowSubtitles", ToObjects(subtitles));
-            SceneKit.SetReferenceArray(panel, "rowStates", ToObjects(states));
-            SceneKit.SetReferenceArray(panel, "rowRecords", ToObjects(records));
-            SceneKit.SetReferenceArray(panel, "rowMarkers", ToObjects(markers));
+            SceneKit.SetReference(panel, "pulse", pulse);
             return panel;
+        }
+
+        /// <summary>
+        /// A node on the rail: a transparent target with a ring inside it, not a framed button.
+        ///
+        /// Ten brackets stacked down the page read as a table with ten rows; ten beads on a line read as a
+        /// route, which is the whole point of the page. Hover is the only feedback, so it is the grow from
+        /// <see cref="UIButtonFeedback"/> — with its glow switched off, because the frame is invisible and a
+        /// lit rectangle behind every ring would be the table again.
+        /// </summary>
+        static Button EnsureRailNode(Transform parent, string name, Vector2 anchored, Vector2 size)
+        {
+            Transform existing = parent.Find(name);
+            Button button = existing != null ? existing.GetComponent<Button>() : null;
+            if (button == null)
+            {
+                if (existing != null)
+                {
+                    Object.DestroyImmediate(existing.gameObject);
+                }
+
+                var go = new GameObject(name);
+                go.transform.SetParent(parent, false);
+                go.AddComponent<Image>();
+                button = go.AddComponent<Button>();
+            }
+
+            // The row this node used to be carried four labels of its own; a bead on a rail has room for a
+            // numeral and nothing else, and they would be drawn at the old row's offsets if left alone.
+            foreach (string stale in new[] { "Title", "Subtitle", "State", "Record" })
+            {
+                Transform child = button.transform.Find(stale);
+                if (child != null)
+                {
+                    Object.DestroyImmediate(child.gameObject);
+                }
+            }
+
+            var frame = button.GetComponent<Image>();
+            frame.sprite = null;
+            frame.type = Image.Type.Simple;
+            frame.raycastTarget = true;
+            frame.color = new Color(0f, 0f, 0f, 0f);
+
+            var rect = frame.rectTransform;
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = anchored;
+            rect.sizeDelta = size;
+
+            button.targetGraphic = frame;
+            button.transition = Selectable.Transition.None;
+            // The idle tint has to be transparent as well as the image: UIButtonFeedback repaints the frame
+            // from the block's normal colour on every frame it ramps, and the default white would flash a
+            // solid square behind the ring the moment the pointer leaves.
+            ColorBlock colors = button.colors;
+            colors.normalColor = new Color(0f, 0f, 0f, 0f);
+            colors.highlightedColor = colors.normalColor;
+            colors.selectedColor = colors.normalColor;
+            colors.pressedColor = colors.normalColor;
+            colors.disabledColor = colors.normalColor;
+            colors.fadeDuration = 0.08f;
+            button.colors = colors;
+
+            var feedback = SceneKit.EnsureComponent<UIButtonFeedback>(button.gameObject);
+            SceneKit.SetReference(feedback, "frame", frame);
+            SceneKit.SetFloat(feedback, "glowStrength", 0f);
+            SceneKit.SetFloat(feedback, "hoverScale", 1.12f);
+            return button;
         }
 
         static UnityEngine.Object[] ToObjects<T>(T[] items) where T : UnityEngine.Object

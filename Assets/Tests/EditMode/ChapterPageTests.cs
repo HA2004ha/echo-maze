@@ -25,7 +25,7 @@ namespace EchoMaze.Tests
         [Test]
         public void EveryChapterInTheCatalogue_HasWordsOfItsOwn()
         {
-            Assert.Greater(ChapterCatalog.Count, 0, "the story has no chapters");
+            Assert.GreaterOrEqual(ChapterCatalog.Count, 10, "the story is supposed to be ten rooms long");
 
             for (int i = 0; i < ChapterCatalog.Count; i++)
             {
@@ -37,6 +37,13 @@ namespace EchoMaze.Tests
                 Assert.IsFalse(string.IsNullOrEmpty(chapter.Opening), chapter.Scene + " has no opening line");
                 Assert.IsFalse(string.IsNullOrEmpty(chapter.Thread), chapter.Scene + " does not lead anywhere");
                 Assert.IsFalse(string.IsNullOrEmpty(chapter.Debrief), chapter.Scene + " has nothing to leave behind");
+
+                if (chapter.HasGrid)
+                {
+                    Assert.IsFalse(string.IsNullOrEmpty(chapter.GridPath), chapter.Scene + " has no map");
+                    Assert.IsTrue(chapter.GridPath.StartsWith("Assets/Data/Levels/"),
+                                  chapter.Scene + " reads its map from outside Assets/Data/Levels");
+                }
             }
         }
 
@@ -69,7 +76,7 @@ namespace EchoMaze.Tests
         [Test]
         public void ASceneTheCatalogueDoesNotKnow_StillGetsAReadableNode()
         {
-            ChapterStory chapter = ChapterCatalog.At(9, "Level09_Unknown");
+            ChapterStory chapter = ChapterCatalog.At(ChapterCatalog.Count, "Level09_Unknown");
             Assert.AreEqual("Level09_Unknown", chapter.Scene);
             Assert.IsFalse(string.IsNullOrEmpty(chapter.Title),
                            "a chapter added to the flow before the catalogue must not draw a blank row");

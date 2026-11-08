@@ -38,7 +38,8 @@ namespace EchoMaze.UI
                 case 2: caption.text = Phase < 0.5f ? "walking : footsteps make noise" : "shift : slower, silent steps"; break;
                 case 3: caption.text = "crawler / spike / absorber\nsignatures - not all in the run"; break;
                 case 4: caption.text = Phase < 0.5f ? "e : open the door" : "sanctuary : new checkpoint"; break;
-                default: caption.text = "illustration / not live input\nnoise floor < gate < your voice"; break;
+                case 5: caption.text = "illustration / not live input\nnoise floor < gate < your voice"; break;
+                default: caption.text = Phase < 0.5f ? "one rail / ten rooms" : "the pulse walks the thread to your room"; break;
             }
         }
 
@@ -58,9 +59,59 @@ namespace EchoMaze.UI
                 case 2: Footsteps(); break;
                 case 3: Creatures(); break;
                 case 4: Door(); break;
-                default: Microphone(); break;
+                case 5: Microphone(); break;
+                default: Descent(); break;
             }
             mesh = null;
+        }
+
+        /// <summary>
+        /// The chapters page in miniature: one thread, ten beads, three of them behind the player, and a
+        /// pulse walking down to the room being chosen. The prose beside the thread is drawn as three bars
+        /// rather than words — at this size the words would be a smear, and the point is the shape of the
+        /// page, not its copy.
+        /// </summary>
+        void Descent()
+        {
+            const int rooms = 10;
+            const float top = 150f;
+            const float bottom = -150f;
+            const float x = -110f;
+            const int walked = 3;
+
+            float step = (top - bottom) / (rooms - 1);
+            Line(new Vector2(x, bottom), new Vector2(x, top), new Color(Ink.r, Ink.g, Ink.b, 0.3f), 2);
+
+            for (int i = 0; i < rooms; i++)
+            {
+                Vector2 node = new Vector2(x, top - step * i);
+                bool chosen = i == walked;
+                Color c = i <= walked ? Ink : new Color(Ink.r, Ink.g, Ink.b, 0.28f);
+                Arc(node, chosen ? 13f : 8f, 0, 360, c);
+                if (i < walked)
+                {
+                    Dot(node, new Color(Warm.r, Warm.g, Warm.b, 0.55f), 3);
+                }
+            }
+
+            float t = Mathf.Repeat(Phase * 1.3f, 1f);
+            float eased = 1f - Mathf.Pow(1f - t, 3f);
+            float y = Mathf.Lerp(top - step * (walked - 1), top - step * walked, eased);
+            Dot(new Vector2(x, y), Ink, 5);
+
+            Color prose = new Color(Ink.r, Ink.g, Ink.b, 0.45f);
+            float[] widths = { 150f, 205f, 170f };
+            for (int i = 0; i < widths.Length; i++)
+            {
+                float row = 92f - i * 28f;
+                Line(new Vector2(0f, row), new Vector2(widths[i], row), prose, 3);
+            }
+
+            // The ring the pulse lands in, on the room it describes rather than on the prose.
+            float breathe = 0.5f + 0.5f * Mathf.Sin(elapsed * 2.2f);
+            Color halo = Ink;
+            halo.a = Mathf.Lerp(0.05f, 0.22f, breathe);
+            Arc(new Vector2(x, top - step * walked), Mathf.Lerp(18f, 26f, breathe), 0, 360, halo);
         }
 
         void Echo()

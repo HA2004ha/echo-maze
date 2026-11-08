@@ -130,8 +130,8 @@ namespace EchoMaze.UI
                 "a roar is a warm ring rather than a wave: where the creature is,\n" +
                 "and nothing about the walls.\n" +
                 "\n" +
-                "the maze you start in has nothing in it. the crawler waits in the\n" +
-                "corridor, which is not part of the run yet, and the rest is coming."),
+                "the maze you start in has nothing in it. the crawler is chapter two,\n" +
+                "and the rooms after it keep going down. all of it is in the build."),
 
             new GuidePage("the rest of the room",
                 "  door         two line fragments with a slit between them.\n" +
@@ -166,6 +166,24 @@ namespace EchoMaze.UI
                 "\n" +
                 "headphones and a microphone. shouting is a trade that goes both\n" +
                 "ways: what you hear, the room hears too."),
+
+            // Appended, not inserted: the diagram is drawn per page index, and putting this card before
+            // "your voice" would hand the microphone diagram to the wrong card.
+            new GuidePage("the descent",
+                "the menu's chapters page is the whole story as one rail. each node is\n" +
+                "a room; the room you have earned is open, the ones behind you carry\n" +
+                "their best walk, and the ones ahead stay sealed until you have walked\n" +
+                "the one before them.\n" +
+                "\n" +
+                "  choose     click a node, or up and down. the page reads it out on\n" +
+                "             the right before you commit to it.\n" +
+                "  start      the big button, or enter. the first line on the menu\n" +
+                "             says continue once there is something to continue.\n" +
+                "  records    waves, retries and time are kept per room, and only a\n" +
+                "             faster walk replaces the number.\n" +
+                "\n" +
+                "ten rooms. the first has nothing in it that reacts to you. the last\n" +
+                "is the only place in the game with a light in it."),
         };
 
         public static GuidePage[] All => all;
@@ -175,7 +193,7 @@ namespace EchoMaze.UI
         public static GuidePage At(int index) => all[Clamp(index)];
 
         /// <summary>The page after the last is the first, and the page before the first is the last: the
-        /// guide is a loop of six cards, and a next button that stops working is read as a broken build.</summary>
+        /// guide is a loop of cards, and a next button that stops working is read as a broken build.</summary>
         public static int Next(int index) => (Clamp(index) + 1) % all.Length;
 
         public static int Previous(int index) =>

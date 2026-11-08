@@ -159,14 +159,25 @@ namespace EchoMaze.Tests
             Assert.IsInstanceOf<Text>(Reference(panel, "statusLabel"), "the scoreboard is not wired");
             Assert.IsInstanceOf<Button>(Reference(panel, "backButton"), "the page has no way out");
 
-            foreach (string field in new[]
-                     {
-                         "rowButtons", "rowNumerals", "rowTitles", "rowSubtitles", "rowStates",
-                         "rowRecords", "rowMarkers"
-                     })
+            foreach (string field in new[] { "railButtons", "railNumerals", "railMarkers" })
             {
                 AssertEveryRowWired(so, field);
             }
+
+            foreach (string field in new[]
+                     {
+                         "dossierGroup", "dossierNumeral", "dossierTitle", "dossierGrade", "dossierBody",
+                         "dossierThread", "dossierRecord", "pulse"
+                     })
+            {
+                Assert.IsNotNull(Reference(panel, field),
+                                 "the dossier's " + field + " is not wired, so that half of the page is empty");
+            }
+
+            Assert.IsInstanceOf<Button>(Reference(panel, "playButton"),
+                                        "the dossier has no way into the room it describes");
+            Assert.IsInstanceOf<Text>(Reference(panel, "playLabel"),
+                                      "the play button cannot say sealed");
 
             MainMenu menu = Single<MainMenu>(out _);
             Assert.IsInstanceOf<Button>(Reference(menu, "chaptersButton"),
@@ -189,8 +200,9 @@ namespace EchoMaze.Tests
             SerializedProperty scenes = so.FindProperty("chapterScenes");
             Assert.IsNotNull(scenes);
             Assert.Greater(scenes.arraySize, 0, "the run has no chapters in it");
-            Assert.LessOrEqual(scenes.arraySize, ChapterSelectPanel.Capacity,
-                               "the run has more chapters than the story page has rows");
+            Assert.AreEqual(ChapterCatalog.Count, scenes.arraySize,
+                            "the run and the catalogue disagree about how many chapters there are, so the " +
+                            "story page would have a node with no room behind it");
 
             for (int i = 0; i < scenes.arraySize; i++)
             {
@@ -205,8 +217,8 @@ namespace EchoMaze.Tests
         {
             SerializedProperty property = owner.FindProperty(field);
             Assert.IsNotNull(property, "the chapter page has no " + field);
-            Assert.AreEqual(ChapterSelectPanel.Capacity, property.arraySize,
-                            field + " is not one entry per generated row");
+            Assert.AreEqual(ChapterCatalog.Count, property.arraySize,
+                            field + " is not one entry per chapter in the catalogue");
             for (int i = 0; i < property.arraySize; i++)
             {
                 Assert.IsNotNull(property.GetArrayElementAtIndex(i).objectReferenceValue,

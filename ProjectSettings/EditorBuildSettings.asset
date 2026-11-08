@@ -15,6 +15,30 @@ EditorBuildSettings:
     path: Assets/Scenes/Level02_Corridor.unity
     guid: 455404fea754d43baa78b04d7a08ad94
   - enabled: 1
+    path: Assets/Scenes/Level03_FloodedWing.unity
+    guid: 26a8fe84ed2f4c0b790b05353e2bd1fd
+  - enabled: 1
+    path: Assets/Scenes/Level04_ListeningRoom.unity
+    guid: aac943c5c8048735a9526b7c42094f6d
+  - enabled: 1
+    path: Assets/Scenes/Level05_SumpStairs.unity
+    guid: c4ee4d68fa838c9b4a34c0cfd02fca5d
+  - enabled: 1
+    path: Assets/Scenes/Level06_BoilerRun.unity
+    guid: 6ab0a207d2e952067a5c7e4ee55878c2
+  - enabled: 1
+    path: Assets/Scenes/Level07_DryWell.unity
+    guid: bd66a43816e03b7e0b72f5349eb8fd8a
+  - enabled: 1
+    path: Assets/Scenes/Level08_ColdStore.unity
+    guid: f7683525c45f0930ea53eb210e01e7e9
+  - enabled: 1
+    path: Assets/Scenes/Level09_Floodgate.unity
+    guid: f2ae0d86c56b47311bffe6f04c908252
+  - enabled: 1
+    path: Assets/Scenes/Level10_Sump.unity
+    guid: 5ed7a5af348575176b7b29ba129d6cb9
+  - enabled: 1
     path: Assets/Scenes/Sandbox.unity
     guid: 8c9cfa26abfee488c85f1582747f6a02
   m_configObjects:
