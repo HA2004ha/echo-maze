@@ -221,8 +221,14 @@ namespace EchoMaze.Audio
             ? "mic:" + ShortName(deviceName)
             : "mic offline (" + (failure ?? "not opened") + ")";
 
+        /// <summary>
+        /// The device name as the menu prints it. It used to be cut at eighteen characters, which turned the
+        /// default Linux device into "Default Input Devi..." — a player could not tell that line from one
+        /// that had failed to open. The menu label has room for a real name now, so the cut is generous and
+        /// falls back to the same marker.
+        /// </summary>
         static string ShortName(string name) =>
             string.IsNullOrEmpty(name) ? "?"
-            : name.Length <= 18 ? name : name.Substring(0, 18) + "...";
+            : name.Length <= 34 ? name : name.Substring(0, 31) + "...";
     }
 }

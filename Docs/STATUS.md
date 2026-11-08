@@ -148,6 +148,16 @@ chapter.
 
 ---
 
+### The first screen, read as a player (2026-11-08)
+
+- A review of the menu, the hints and the chapters page, written from the player build rather than from the
+  code, is [UX_PASS.md](UX_PASS.md). Three things were fixed with it: the button column now sits on the same
+  card the other screens are printed on (it used to sit on the lit diorama, with the table's far wall running
+  through every button's interior), the microphone line keeps 34 characters instead of being cut to
+  `mic:Default Input Devi...`, and chapter one's hints were rewritten from shouting capitals into the
+  lower-case voice the rest of the game speaks in. The controls legend's band went to α0.82.
+- Verified in `Screenshots/menu_ux_pass.png` (player build, 1920×1080) and by the EditMode suite.
+
 ## What is real, and what is still a promise
 
 These are deliberately listed so the next stage does not mistake a built room for a finished system:

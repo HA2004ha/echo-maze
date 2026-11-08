@@ -1003,6 +1003,29 @@ namespace EchoMaze.EditorTools
             Text subtitle = EnsureLabel(content, "Subtitle", "a maze you see by sound", 24, CyanFaint,
                                         new Vector2(0f, 205f), new Vector2(1000f, 50f));
 
+            // The column's own ground: the card the pause, victory and chapters pages are already printed
+            // on, so the menu stops being the one screen whose buttons sit on geometry.
+            //
+            // A solid plate under the frame, not the panel's radial dim: that sprite is transparent in the
+            // middle by design (it is a vignette), and the first attempt at this used it and darkened
+            // nothing at all where the buttons are. The plate is opaque enough to take the table's wall
+            // edges out of the button interiors, and the frame on top of it keeps the page language — a
+            // hairline and corner brackets rather than a black rectangle. Both go in at index 2 and 3:
+            // above the wash and the text column, below every button that is made after them.
+            // Sized to the buttons and not a pixel more: the first version was 600 tall and its bottom
+            // hairline struck straight through the controls legend at y −360, which is the one line on this
+            // page that already has to fight a moving light. Top 168, bottom −310: clear of the subtitle at
+            // 205 and of the legend below it, with 22 px of air above the first button.
+            EnsureImage(content, "columnplate", EnsureSolidSprite(), Image.Type.Simple,
+                        new Vector2(0f, -71f), new Vector2(720f, 478f),
+                        new Color(0f, 0f, 0f, 0.62f), false, 2);
+            EnsureImage(content, "columnframe", EnsureFramePanelSprite(), Image.Type.Sliced,
+                        new Vector2(0f, -71f), new Vector2(720f, 478f), Color.white, false, 3);
+
+            // The subtitle sits exactly where the table's far rim is brightest. The plate does not reach it
+            // (it starts below the title), so the line gets the one ground that travels with it.
+            EnsureTextShadow(subtitle, new Color(0f, 0f, 0f, 0.9f), new Vector2(0f, -1f));
+
             // Five entries now, so the column starts higher and every gap is even: the start button is
             // the run, "chapters" is the story, and the last three are the room's own furniture.
             Button start = EnsureButton(content, "Start", "begin", new Vector2(0f, 104f), new Vector2(520f, 84f));
@@ -1015,8 +1038,11 @@ namespace EchoMaze.EditorTools
             Button quit = EnsureButton(content, "Quit", "quit", new Vector2(0f, -218f), new Vector2(520f, 68f));
             // Left where it was: the status line sits over the diorama's brightest trim at the bottom of
             // the frame, and one row lower is the difference between a faint line and no line at all.
-            Text status = EnsureLabel(content, "Status", "", 24, CyanMild, new Vector2(0f, -280f),
-                                      new Vector2(1400f, 44f));
+            // 21pt inside the plate's width rather than 24pt across the whole frame: the line is one long
+            // device name, and a name that runs off the plate is a name sitting back on the lit table.
+            Text status = EnsureLabel(content, "Status", "", 21, CyanMild, new Vector2(0f, -282f),
+                                      new Vector2(800f, 40f));
+            EnsureTextShadow(status, new Color(0f, 0f, 0f, 0.9f), new Vector2(0f, -1f));
             // Full alpha, not CyanFaint: the legend is the one label that states information nobody may
             // guess, and it sits over the frame that never stops glowing. A 45%-transparent glyph lets
             // that light through the letters themselves, which no shadow behind them can take back.
@@ -1029,7 +1055,7 @@ namespace EchoMaze.EditorTools
             // slot before them; it dims everything above it, which is why nothing visible is on it.
             EnsureImage(content, "legendband", EnsureLegendBandSprite(), Image.Type.Simple,
                         new Vector2(0f, -350f), new Vector2(1700f, 340f),
-                        new Color(0f, 0f, 0f, 0.75f), false, 5);
+                        new Color(0f, 0f, 0f, 0.82f), false, 5);
 
             // The band darkens what the legend sits on; it cannot darken the glyph strokes themselves,
             // and a 20pt monospace over a wall that is lit is exactly the case where that matters. The
