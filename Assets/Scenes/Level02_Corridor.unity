@@ -3808,6 +3808,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1381382038}
   - component: {fileID: 1381382037}
+  - component: {fileID: 1381382039}
   m_Layer: 0
   m_Name: Level Session
   m_TagString: Untagged
@@ -3846,6 +3847,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1381382039
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1381382036}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 998f67cb44162171fa2dee5cba11103f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: EchoMaze.Runtime::EchoMaze.Gameplay.ChapterOpening
+  session: {fileID: 1381382037}
+  delaySeconds: 4.2
+  showSeconds: 7
 --- !u!1 &1406965594
 GameObject:
   m_ObjectHideFlags: 0

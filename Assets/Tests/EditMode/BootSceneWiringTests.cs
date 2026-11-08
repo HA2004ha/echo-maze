@@ -6,6 +6,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using EchoMaze.Gameplay;
 using EchoMaze.UI;
 
 namespace EchoMaze.Tests
@@ -122,6 +123,95 @@ namespace EchoMaze.Tests
                            "raycaster on the menu cannot reach its buttons");
             Assert.IsFalse(root.activeSelf,
                            "the calibration page ships unfolded, so the game opens on a meter instead of a title");
+        }
+
+        [Test]
+        public void AGeneratedMenuScene_HasExactlyOneChapterPage()
+        {
+            // The page is made the same way the guide and the calibration page are, so it fails the same
+            // way if it is ever built with AddComponent instead of find-or-create: one folded page per
+            // rebuild, invisible on screen and plain in the YAML.
+            Assert.AreEqual(1, Count<ChapterSelectPanel>(),
+                            "the bootstrap adds a chapter page every time it runs instead of finding the one " +
+                            "already in the scene");
+
+            ChapterSelectPanel panel = Single<ChapterSelectPanel>(out GameObject root);
+            Assert.IsNotNull(panel, "the menu scene has no chapter page, so CHAPTERS opens nothing");
+            Assert.AreEqual("Chapters", root.name);
+            Assert.IsFalse(root.activeSelf, "the story page ships unfolded over the menu");
+
+            MainMenu menu = Single<MainMenu>(out GameObject menuRoot);
+            Assert.AreSame(menuRoot.transform, root.transform.parent,
+                           "the chapter page is a sibling of the canvas instead of a child of it, so the " +
+                           "raycaster on the menu cannot reach its rows");
+        }
+
+        [Test]
+        public void AGeneratedMenuScene_SerializesTheChapterPageAsRealReferences()
+        {
+            ChapterSelectPanel panel = Single<ChapterSelectPanel>(out _);
+            Assert.IsNotNull(panel);
+
+            var so = new SerializedObject(panel);
+            Assert.IsNotNull(so.FindProperty("group").objectReferenceValue,
+                             "the page has no CanvasGroup, so it appears and disappears with no fade");
+            Assert.IsInstanceOf<Text>(Reference(panel, "subtitleLabel"), "the page's own line is not wired");
+            Assert.IsInstanceOf<Text>(Reference(panel, "statusLabel"), "the scoreboard is not wired");
+            Assert.IsInstanceOf<Button>(Reference(panel, "backButton"), "the page has no way out");
+
+            foreach (string field in new[]
+                     {
+                         "rowButtons", "rowNumerals", "rowTitles", "rowSubtitles", "rowStates",
+                         "rowRecords", "rowMarkers"
+                     })
+            {
+                AssertEveryRowWired(so, field);
+            }
+
+            MainMenu menu = Single<MainMenu>(out _);
+            Assert.IsInstanceOf<Button>(Reference(menu, "chaptersButton"),
+                                        "the menu has no button that opens the story page");
+            Assert.IsInstanceOf<Text>(Reference(menu, "startLabel"),
+                                      "the start button cannot say continue");
+            Assert.AreSame(panel, Reference(menu, "chapterPanel"),
+                           "the menu's chapters button is wired to a page that is not in the scene");
+        }
+
+        [Test]
+        public void AGeneratedMenuScene_CoversEveryChapterOfTheRunOnThePage()
+        {
+            // The page is built from the catalogue and the run from the flow; this is the seam where a
+            // chapter can be added to one and not the other, which draws an empty row or hides a room.
+            GameFlow flow = Single<GameFlow>(out _);
+            Assert.IsNotNull(flow, "the menu scene has no GameFlow, so the run has no chapter list");
+
+            var so = new SerializedObject(flow);
+            SerializedProperty scenes = so.FindProperty("chapterScenes");
+            Assert.IsNotNull(scenes);
+            Assert.Greater(scenes.arraySize, 0, "the run has no chapters in it");
+            Assert.LessOrEqual(scenes.arraySize, ChapterSelectPanel.Capacity,
+                               "the run has more chapters than the story page has rows");
+
+            for (int i = 0; i < scenes.arraySize; i++)
+            {
+                string scene = scenes.GetArrayElementAtIndex(i).stringValue;
+                Assert.IsTrue(ChapterCatalog.ForScene(scene, out _),
+                              scene + " is in the run but has no words in ChapterCatalog, so its node " +
+                              "would be a placeholder");
+            }
+        }
+
+        static void AssertEveryRowWired(SerializedObject owner, string field)
+        {
+            SerializedProperty property = owner.FindProperty(field);
+            Assert.IsNotNull(property, "the chapter page has no " + field);
+            Assert.AreEqual(ChapterSelectPanel.Capacity, property.arraySize,
+                            field + " is not one entry per generated row");
+            for (int i = 0; i < property.arraySize; i++)
+            {
+                Assert.IsNotNull(property.GetArrayElementAtIndex(i).objectReferenceValue,
+                                 field + "[" + i + "] is not wired, so that row draws nothing");
+            }
         }
 
         [Test]

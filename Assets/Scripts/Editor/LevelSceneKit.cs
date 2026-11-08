@@ -30,6 +30,11 @@ namespace EchoMaze.EditorTools
             LevelSession session = SceneKit.EnsureLevelSession(player, runner, director, chapterTitle);
             SceneKit.SetReference(runner, "session", session);
 
+            // The story arrives on foot: one sentence, after the chapter title has faded, carried by the
+            // session's own hint channel. A room the catalogue does not know simply says nothing.
+            var opening = SceneKit.EnsureComponent<ChapterOpening>(session.gameObject);
+            SceneKit.SetReference(opening, "session", session);
+
             PlayerCameraRig rig = SceneKit.EnsureCameraRig(player, cameraBoundsHalf, cameraSize);
             UiKit.EnsureHud(director, player, session);
             UiKit.EnsurePausePanel(session);

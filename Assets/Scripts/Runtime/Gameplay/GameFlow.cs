@@ -48,6 +48,57 @@ namespace EchoMaze.Gameplay
         public string ChapterName(int index) =>
             index >= 0 && index < chapterScenes.Length ? chapterScenes[index] : "";
 
+        /// <summary>How many chapters of this run have already been survived, from the saved progress.</summary>
+        public int ChaptersWalked
+        {
+            get
+            {
+                int walked = 0;
+                for (int i = 0; i < chapterScenes.Length; i++)
+                {
+                    if (IsChapterComplete(i))
+                    {
+                        walked++;
+                    }
+                }
+
+                return walked;
+            }
+        }
+
+        public bool IsChapterComplete(int index) =>
+            index >= 0 && index < chapterScenes.Length &&
+            ChapterProgress.IsComplete(chapterScenes[index]);
+
+        /// <summary>
+        /// Chapter one is always open; every later room opens when the one before it has been survived. The
+        /// rule lives here and not on the page because it is the order of the story, and the order of the
+        /// story is this class's whole job.
+        /// </summary>
+        public bool IsUnlocked(int index) =>
+            index >= 0 && index < chapterScenes.Length && (index == 0 || IsChapterComplete(index - 1));
+
+        /// <summary>
+        /// Where a player who presses continue belongs: the first room they have opened and not yet walked,
+        /// or — with the whole story walked — the last room again, because replaying is the only thing left
+        /// to offer and starting from chapter one is not what a returning player meant.
+        /// </summary>
+        public int ContinueIndex
+        {
+            get
+            {
+                for (int i = 0; i < chapterScenes.Length; i++)
+                {
+                    if (IsUnlocked(i) && !IsChapterComplete(i))
+                    {
+                        return i;
+                    }
+                }
+
+                return chapterScenes.Length - 1;
+            }
+        }
+
         void Awake()
         {
             if (Active != null && Active != this)
@@ -72,13 +123,28 @@ namespace EchoMaze.Gameplay
         }
 
         /// <summary>From the menu: zero the counters and put the player in chapter one.</summary>
-        public void StartRun()
+        public void StartRun() => StartChapter(0);
+
+        /// <summary>
+        /// A run that begins at a chosen room — the chapter select's whole purpose. The totals are zeroed
+        /// as they are at chapter one: a run entered halfway still ends when the story does, and carrying
+        /// another run's waves into it would make the summary a lie.
+        /// </summary>
+        public void StartChapter(int index)
         {
+            if (index < 0 || index >= chapterScenes.Length || !IsUnlocked(index))
+            {
+                return;
+            }
+
             pings = 0;
             deaths = 0;
             seconds = 0f;
-            LoadChapter(0);
+            LoadChapter(index);
         }
+
+        /// <summary>The menu's continue: the furthest room the player has earned, not the first one.</summary>
+        public void ContinueRun() => StartChapter(ContinueIndex);
 
         public void LoadChapter(int index)
         {
@@ -147,6 +213,11 @@ namespace EchoMaze.Gameplay
                 pings += session.PingCount;
                 deaths += session.DeathCount;
                 seconds += session.ElapsedSeconds;
+
+                // The chapter's own numbers, not the run's: the node on the story page is about this room,
+                // and a best record that grew with every later chapter would be a record of nothing.
+                ChapterProgress.MarkComplete(ChapterName(chapterIndex), session.PingCount,
+                                             session.DeathCount, session.ElapsedSeconds);
             }
         }
 

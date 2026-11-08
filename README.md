@@ -25,8 +25,11 @@ Tools ▸ Echo Maze ▸ Build Everything        (generates settings, scenes, bui
 Assets/Scenes/Boot.unity ▸ Play             (PLAY ▸ Level01_Maze)
 ```
 
-`Boot` is the menu the game starts on; `Level01_Maze` is the one level the run currently finishes, and reaching
-its exit shows the victory panel. `Level02_Corridor` is built and playable from the editor as the week-4
+`Boot` is the menu the game starts on, and it carries the story's **chapters** page: each chapter is a node on
+one thread joined by the sentence that leads into the next room, walked ones are stamped with their best run,
+and the ones ahead are sealed until the room before them is finished. Progress is saved per scene in
+`PlayerPrefs`, so the first button becomes **continue** once there is something to continue. `Level01_Maze` is
+the one level the run currently finishes, and reaching its exit shows the victory panel. `Level02_Corridor` is built and playable from the editor as the week-4
 preview. `Sandbox` is the mechanical playground for the echo ray fan — it still works, it is just no longer what
 "run the game" means.
 

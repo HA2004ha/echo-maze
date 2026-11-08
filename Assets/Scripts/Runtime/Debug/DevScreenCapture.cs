@@ -32,6 +32,7 @@ namespace EchoMaze.DebugTools
             public bool complete;
             public bool pause;
             public bool calibrate;
+            public bool chapters;
             public int guidePage = -1;
             public float completeLeadSeconds = 0.4f;
             public float pingLeadSeconds = 0.45f;
@@ -90,6 +91,19 @@ namespace EchoMaze.DebugTools
                     if (guideMenu != null)
                     {
                         guideMenu.OpenGuide(guidePage);
+                    }
+
+                    yield return new WaitForSecondsRealtime(panelLeadSeconds);
+                }
+
+                // The story page, which is opened by a menu button a terminal cannot click. It is last of
+                // the panels so a capture of it cannot be a capture of the guide on top of it.
+                if (chapters)
+                {
+                    MainMenu chapterMenu = FindAnyObjectByType<MainMenu>();
+                    if (chapterMenu != null)
+                    {
+                        chapterMenu.OpenChapters();
                     }
 
                     yield return new WaitForSecondsRealtime(panelLeadSeconds);
@@ -195,6 +209,7 @@ namespace EchoMaze.DebugTools
             runner.complete = System.Array.IndexOf(args, "-echo-complete") >= 0;
             runner.pause = System.Array.IndexOf(args, "-echo-pause") >= 0;
             runner.calibrate = System.Array.IndexOf(args, "-echo-calibrate") >= 0;
+            runner.chapters = System.Array.IndexOf(args, "-echo-chapters") >= 0;
             string guide = Value("-echo-guide-page");
             if (guide != null)
             {

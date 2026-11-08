@@ -41,6 +41,7 @@ namespace EchoMaze.EditorTools
         const string DimPath = "Assets/Art/Sprites/UI/UI_dim.png";
         const string LegendBandPath = "Assets/Art/Sprites/UI/UI_legend_band.png";
         const string RingPath = "Assets/Art/Sprites/UI/UI_ring_thin.png";
+        const string NodePath = "Assets/Art/Sprites/UI/UI_node_marker.png";
         const string FontPath = "Assets/Resources/Fonts/ShareTechMono-Regular.ttf";
         const int SolidTexels = 4;
 
@@ -1002,12 +1003,18 @@ namespace EchoMaze.EditorTools
             Text subtitle = EnsureLabel(content, "Subtitle", "a maze you see by sound", 24, CyanFaint,
                                         new Vector2(0f, 205f), new Vector2(1000f, 50f));
 
-            Button start = EnsureButton(content, "Start", "begin", new Vector2(0f, 70f), new Vector2(520f, 84f));
-            Button guide = EnsureButton(content, "Guide", "how to play", new Vector2(0f, -36f),
+            // Five entries now, so the column starts higher and every gap is even: the start button is
+            // the run, "chapters" is the story, and the last three are the room's own furniture.
+            Button start = EnsureButton(content, "Start", "begin", new Vector2(0f, 104f), new Vector2(520f, 84f));
+            Button chapters = EnsureButton(content, "Chapters", "chapters", new Vector2(0f, 16f),
+                                           new Vector2(520f, 68f));
+            Button guide = EnsureButton(content, "Guide", "how to play", new Vector2(0f, -62f),
                                         new Vector2(520f, 68f));
-            Button calibrate = EnsureButton(content, "Calibrate", "tune your voice", new Vector2(0f, -126f),
+            Button calibrate = EnsureButton(content, "Calibrate", "tune your voice", new Vector2(0f, -140f),
                                             new Vector2(520f, 68f));
-            Button quit = EnsureButton(content, "Quit", "quit", new Vector2(0f, -212f), new Vector2(520f, 68f));
+            Button quit = EnsureButton(content, "Quit", "quit", new Vector2(0f, -218f), new Vector2(520f, 68f));
+            // Left where it was: the status line sits over the diorama's brightest trim at the bottom of
+            // the frame, and one row lower is the difference between a faint line and no line at all.
             Text status = EnsureLabel(content, "Status", "", 24, CyanMild, new Vector2(0f, -280f),
                                       new Vector2(1400f, 44f));
             // Full alpha, not CyanFaint: the legend is the one label that states information nobody may
@@ -1039,13 +1046,17 @@ namespace EchoMaze.EditorTools
             var entrance = SceneKit.EnsureComponent<MenuEntrance>(canvas.gameObject);
             SceneKit.SetReferenceArray(entrance, "elements", new UnityEngine.Object[]
             {
-                heading.transform, subtitle.transform, start.transform, guide.transform,
-                calibrate.transform, quit.transform, status.transform, legend.transform
+                heading.transform, subtitle.transform, start.transform, chapters.transform,
+                guide.transform, calibrate.transform, quit.transform, status.transform, legend.transform
             });
 
             var menu = canvas.GetComponent<MainMenu>() ?? canvas.gameObject.AddComponent<MainMenu>();
             SceneKit.SetReference(menu, "director", director);
             SceneKit.SetReference(menu, "startButton", start);
+            SceneKit.SetReference(menu, "chaptersButton", chapters);
+            SceneKit.SetReference(menu, "startLabel", start.transform.Find("Label") != null
+                                  ? start.transform.Find("Label").GetComponent<Text>()
+                                  : null);
             SceneKit.SetReference(menu, "guideButton", guide);
             SceneKit.SetReference(menu, "calibrateButton", calibrate);
             SceneKit.SetReference(menu, "quitButton", quit);
@@ -1071,7 +1082,234 @@ namespace EchoMaze.EditorTools
             GameObject guidePage = FindOrCreateChild(canvas.transform, "Guide");
             guidePage.SetActive(false);
             SceneKit.SetReference(menu, "guidePanel", EnsureGuide(guidePage));
+
+            // The story page last of all, so it draws over the guide and the calibration meter: a player
+            // who opens "chapters" from a menu that still has a page folded away behind it is asking for
+            // the top page, not for whichever one was made first.
+            GameObject chapterPage = FindOrCreateChild(canvas.transform, "Chapters");
+            chapterPage.SetActive(false);
+            SceneKit.SetReference(menu, "chapterPanel", EnsureChapterSelect(chapterPage));
             return menu;
+        }
+
+        /// <summary>
+        /// The story page: the chapters as nodes on one descending thread.
+        ///
+        /// The building code draws the thread and an empty node per row; every word that depends on the
+        /// player — complete, open, sealed, the best run, which row is lit — is written by
+        /// <see cref="ChapterSelectPanel"/> at runtime, because a scene that stored a save file would be a
+        /// scene that ships somebody's progress. What is authored here is the layout and the prose that is
+        /// true regardless of the player: the numerals, the chapter names, and the sentence joining each
+        /// room to the next.
+        /// </summary>
+        static ChapterSelectPanel EnsureChapterSelect(GameObject root)
+        {
+            Transform content = root.transform;
+            const float rowSpacing = 190f;
+            const float firstRow = 145f;
+            const float nodeX = -588f;   // row left edge (−650) plus the marker's 62 px inset
+            const float textX = -528f;   // where a row's title starts, measured from the row's centre
+
+            var pageGroup = SceneKit.EnsureComponent<CanvasGroup>(root);
+            pageGroup.alpha = 1f;
+            pageGroup.interactable = true;
+            pageGroup.blocksRaycasts = true;
+
+            // Opaque, not 0.96: at the diorama's brightest the menu's own title and buttons still read
+            // through a four-percent window as grey ghosts under the card, and a reading page whose
+            // background is somebody else's menu is a page nobody trusts. It also swallows the clicks
+            // the guide lets through to the buttons behind it.
+            Image dim = EnsureImage(content, "dim", EnsureSolidSprite(), Image.Type.Simple, Vector2.zero,
+                                    Vector2.zero, Color.black, true, 0);
+            dim.raycastTarget = true;
+
+            EnsureCard(content, new Vector2(0f, -8f), new Vector2(1460f, 830f));
+            EnsureLabel(content, "Heading", Track("THE DESCENT"), 40, Cyan, new Vector2(0f, 352f),
+                        new Vector2(1200f, 70f), TextAnchor.MiddleCenter, true);
+            Text subtitle = EnsureLabel(content, "Subtitle", "", 22, CyanFaint, new Vector2(0f, 300f),
+                                        new Vector2(1200f, 40f));
+            EnsureDivider(content, "Divider", new Vector2(0f, 268f), new Vector2(1180f, 2f));
+
+            // The thread goes in first so the node markers cover its ends: a line drawn over the nodes
+            // reads as a table, and a line behind them reads as a route.
+            Sprite solid = EnsureSolidSprite();
+            for (int gap = 0; gap < ChapterSelectPanel.Capacity - 1; gap++)
+            {
+                float middle = firstRow - rowSpacing * (gap + 0.5f);
+                EnsureImage(content, "Thread " + (gap + 1), solid, Image.Type.Simple,
+                            new Vector2(nodeX, middle), new Vector2(2f, rowSpacing), CyanFaint);
+
+                // The sentence that joins this room to the next. It sits in the gap the line crosses, so
+                // the page tells the story in the same direction the nodes are read.
+                // Anchored to the centre of the page, not to its left edge: a thread sentence that
+                // starts at the canvas's x zero is a sentence whose first half is off-screen.
+                Text thread = EnsureAnchoredLabel(content, "ThreadText " + (gap + 1), 18, CyanMild,
+                                                  new Vector2(0.5f, 0.5f), new Vector2(0f, 0.5f),
+                                                  new Vector2(-520f, middle), new Vector2(1120f, 30f),
+                                                  TextAnchor.MiddleLeft);
+                thread.text = ChapterCatalog.At(gap).Thread;
+            }
+
+            Sprite node = EnsureNodeSprite();
+            int count = ChapterSelectPanel.Capacity;
+            var buttons = new Button[count];
+            var numerals = new Text[count];
+            var titles = new Text[count];
+            var subtitles = new Text[count];
+            var states = new Text[count];
+            var records = new Text[count];
+            var markers = new Image[count];
+
+            for (int i = 0; i < count; i++)
+            {
+                Button row = EnsureButton(content, "Chapter " + (i + 1), "",
+                                          new Vector2(0f, firstRow - rowSpacing * i),
+                                          new Vector2(1300f, 120f));
+                buttons[i] = row;
+
+                // The stock hover grow is 4%, and 4% of a 1300 px row is 50 px of travel into a 70 px
+                // gap. A row is a line of a page, not a button shape, so it brightens and barely moves.
+                var feedback = row.GetComponent<UIButtonFeedback>();
+                if (feedback != null)
+                {
+                    SceneKit.SetFloat(feedback, "hoverScale", 1.012f);
+                }
+
+                markers[i] = EnsureImage(row.transform, "Marker", node, Image.Type.Simple,
+                                         Vector2.zero, new Vector2(66f, 66f), CyanMild);
+                var markerRect = markers[i].rectTransform;
+                markerRect.anchorMin = new Vector2(0f, 0.5f);
+                markerRect.anchorMax = new Vector2(0f, 0.5f);
+                markerRect.anchoredPosition = new Vector2(62f, 0f);
+                markerRect.sizeDelta = new Vector2(66f, 66f);
+
+                numerals[i] = EnsureAnchoredLabel(row.transform, "Numeral", 20, Cyan,
+                                                  new Vector2(0f, 0.5f), new Vector2(0.5f, 0.5f),
+                                                  new Vector2(62f, 0f), new Vector2(66f, 66f),
+                                                  TextAnchor.MiddleCenter);
+                titles[i] = EnsureAnchoredLabel(row.transform, "Title", 30, Cyan,
+                                                new Vector2(0f, 0.5f), new Vector2(0f, 0.5f),
+                                                new Vector2(122f, 21f), new Vector2(760f, 42f),
+                                                TextAnchor.MiddleLeft);
+                subtitles[i] = EnsureAnchoredLabel(row.transform, "Subtitle", 18, CyanFaint,
+                                                   new Vector2(0f, 0.5f), new Vector2(0f, 0.5f),
+                                                   new Vector2(122f, -21f), new Vector2(880f, 30f),
+                                                   TextAnchor.MiddleLeft);
+                states[i] = EnsureAnchoredLabel(row.transform, "State", 20, Cyan,
+                                                new Vector2(1f, 0.5f), new Vector2(1f, 0.5f),
+                                                new Vector2(-40f, 19f), new Vector2(440f, 32f),
+                                                TextAnchor.MiddleRight);
+                records[i] = EnsureAnchoredLabel(row.transform, "Record", 17, CyanFaint,
+                                                 new Vector2(1f, 0.5f), new Vector2(1f, 0.5f),
+                                                 new Vector2(-40f, -19f), new Vector2(520f, 30f),
+                                                 TextAnchor.MiddleRight);
+            }
+
+            Text status = EnsureLabel(content, "Status", "", 20, CyanFaint, new Vector2(0f, -320f),
+                                      new Vector2(1200f, 30f));
+            Button back = EnsureButton(content, "Back", "back  (Esc)", new Vector2(0f, -372f),
+                                       new Vector2(320f, 52f));
+
+            var panel = SceneKit.EnsureComponent<ChapterSelectPanel>(root);
+            SceneKit.SetReference(panel, "group", pageGroup);
+            SceneKit.SetReference(panel, "subtitleLabel", subtitle);
+            SceneKit.SetReference(panel, "statusLabel", status);
+            SceneKit.SetReference(panel, "backButton", back);
+            SceneKit.SetReferenceArray(panel, "rowButtons", ToObjects(buttons));
+            SceneKit.SetReferenceArray(panel, "rowNumerals", ToObjects(numerals));
+            SceneKit.SetReferenceArray(panel, "rowTitles", ToObjects(titles));
+            SceneKit.SetReferenceArray(panel, "rowSubtitles", ToObjects(subtitles));
+            SceneKit.SetReferenceArray(panel, "rowStates", ToObjects(states));
+            SceneKit.SetReferenceArray(panel, "rowRecords", ToObjects(records));
+            SceneKit.SetReferenceArray(panel, "rowMarkers", ToObjects(markers));
+            return panel;
+        }
+
+        static UnityEngine.Object[] ToObjects<T>(T[] items) where T : UnityEngine.Object
+        {
+            var objects = new UnityEngine.Object[items.Length];
+            for (int i = 0; i < items.Length; i++)
+            {
+                objects[i] = items[i];
+            }
+
+            return objects;
+        }
+
+        /// <summary>
+        /// A label with an explicit anchor and pivot, which is what a row needs and <see cref="EnsureLabel"/>'
+        /// centre-only rect cannot express: a title that starts at the same x as the node above it, or a
+        /// state that ends at the right edge of the row, has to be anchored to an edge rather than to the middle.
+        /// </summary>
+        static Text EnsureAnchoredLabel(Transform parent, string name, int fontSize, Color color,
+                                        Vector2 anchor, Vector2 pivot, Vector2 anchored, Vector2 size,
+                                        TextAnchor align)
+        {
+            Transform existing = parent.Find(name);
+            Text label = existing != null ? existing.GetComponent<Text>() : null;
+            if (label == null)
+            {
+                if (existing != null)
+                {
+                    Object.DestroyImmediate(existing.gameObject);
+                }
+
+                label = AddTextRaw(parent, name);
+            }
+
+            ApplyText(label, "", fontSize, color, anchored, size, align, false);
+            RectTransform rect = label.rectTransform;
+            rect.anchorMin = anchor;
+            rect.anchorMax = anchor;
+            rect.pivot = pivot;
+            rect.anchoredPosition = anchored;
+            rect.sizeDelta = size;
+            return label;
+        }
+
+        /// <summary>
+        /// A chapter node: a hairline ring with a tick crossing each axis, i.e. a point on a signal drawing
+        /// rather than a bullet. Drawn at 96 texels and shown at 66 so the hairline stays a hairline — the
+        /// menu's own ring sprite is 512 texels with a two-texel line and would be a quarter-pixel wide here.
+        /// </summary>
+        static Sprite EnsureNodeSprite()
+        {
+            var existing = AssetDatabase.LoadAssetAtPath<Sprite>(NodePath);
+            if (existing != null)
+            {
+                return existing;
+            }
+
+            SceneKit.EnsureFolder(System.IO.Path.GetDirectoryName(NodePath));
+            const int size = 96;
+            const float radius = 34f;
+            var texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            var pixels = new Color32[size * size];
+            float centre = (size - 1) * 0.5f;
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float dx = x - centre;
+                    float dy = y - centre;
+                    float d = Mathf.Sqrt(dx * dx + dy * dy);
+                    float alpha = Mathf.Clamp01(1f - Mathf.Abs(d - radius) / 1.4f);
+
+                    bool tick = (Mathf.Abs(dx) < 1f || Mathf.Abs(dy) < 1f) && d > radius + 3f && d < radius + 11f;
+                    if (tick)
+                    {
+                        alpha = Mathf.Max(alpha, 1f - Mathf.Clamp01((d - radius - 11f) / 1.5f));
+                    }
+
+                    pixels[y * size + x] = new Color32(255, 255, 255, (byte)(Mathf.Clamp01(alpha) * 255f));
+                }
+            }
+
+            texture.SetPixels32(pixels);
+            texture.Apply();
+            System.IO.File.WriteAllBytes(NodePath, texture.EncodeToPNG());
+            Object.DestroyImmediate(texture);
+            return ImportUiSprite(NodePath, 0);
         }
 
         /// <summary>

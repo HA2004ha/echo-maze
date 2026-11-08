@@ -66,6 +66,30 @@ rather than a preview. The same rule applies to `Sandbox`: it is the ray-fan lab
   or leaves a label unwired. `-echo-guide-page <n>` photographs any card from a terminal.
 - The victory panel prints the run's numbers: rooms, waves, times heard, and time.
 
+### The story page (2026-11-08)
+
+- `Boot` has a **chapters** page: every chapter is a node on one descending thread, joined by the sentence
+  that carries the story from one room to the next. A walked chapter is stamped **COMPLETE** with its best
+  run (time, waves, retries), the room the player has earned is **OPEN**, and everything past it is
+  **SEALED** — including the finale the build does not contain, drawn as the end of the thread rather than as
+  a button that plays a room that does not exist. Click a row (or ↑/↓ and Enter) to start that chapter.
+- Progress is `ChapterProgress`: one `PlayerPrefs` key per scene (`echo.story.<scene>.done/.best/.waves/.retries`),
+  keyed by scene name so a room inserted in the middle of the story cannot inherit somebody else's progress.
+  `GameFlow` owns the rule: chapter one is always open, a chapter opens when the one before it is walked, and
+  every finished chapter records its own numbers — not the run's totals.
+- The menu's first button says what it does: **begin** on a fresh profile, **continue · chapter II** after
+  chapter one, **walk it again** once everything is walked. `GameFlow.ContinueIndex` answers where that is.
+- Each level opens with one line of story, after the chapter title has faded: `ChapterOpening` reads
+  `ChapterCatalog.OpeningForScene` and sends it through `LevelSession.Hint`, so the sentence uses the HUD's
+  one notice label and there is no second text system.
+- Copy for all of it is `Assets/Scripts/Runtime/Gameplay/ChapterStory.cs` — one entry per chapter plus the
+  three strings of the sealed finale; a chapter added to the flow without an entry is caught by
+  `BootSceneWiringTests`, and the page's own rules are `ChapterPageTests`.
+- Verified 2026-11-08: EditMode **207 / 207** green; the page, the menu and a chapter's opening line captured
+  from the player (`Screenshots/chapters_fresh.png`, `chapters_progress.png`, `menu_five.png`,
+  `level_chapter_opening.png`). Captures come from `-echo-chapters`, which is a new flag on the terminal hook;
+  the fresh state is produced by removing the `echo.story.*` keys from the player's prefs.
+
 ### The level
 
 - `Level01_Maze` is **a text file, not hand-placed YAML**: `Assets/Data/Levels/Level01_Maze.txt`, a 21 × 15
