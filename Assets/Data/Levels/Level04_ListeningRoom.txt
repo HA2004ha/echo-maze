@@ -1,0 +1,28 @@
+; Echo Maze — first draft written by Tools/level_forge.py, then edited by hand.
+; One character per cell, 2.0 m per cell, the first grid row below is the TOP of the map.
+; Lines starting with ';' and blank lines are ignored by MazeGrid.Parse.
+;
+;   #  wall            .  floor           P  player spawn     E  level exit
+;   D  door (closed at the start; the route to E runs through one of them)
+;   S  sanctuary (checkpoint)            G  glass shards (a noisy floor)
+;   o  pillar (round signature)          b  box (the bright corner)
+;   C  crawler spawn                     c  crawler patrol waypoint
+;   h  hollow (cover, before you are found)
+;
+; Every cell that is not '#' must be reachable from P with the doors open, and E must be
+; unreachable with them closed — locked by ChapterLevelTests.
+#.###################
+#.#...........#.....#
+#.#.#####.#.#.#.#.#.#
+#...#...#.#.#.#.#.#.#
+#.###.#.#.#.#.###.#.#
+#.....#...#.#.#...#.#
+#####.#####.#S#.###.#
+#...#.#.....#.#.C.#.#
+#.#.###.#####.###.#.#
+#.#.#...#.G.#.#...#.#
+#G#.#.###.#.#.#.###.#
+#.#.#...#.#.#.#.#...#
+#G#.###.#.#.#.#.#.###
+#P#.....#.#.....#hDE#
+#####################

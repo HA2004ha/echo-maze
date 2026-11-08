@@ -26,6 +26,15 @@ namespace EchoMaze.Levels
         public const char Pillar = 'o';
         public const char Box = 'b';
 
+        /// <summary>Where a crawler starts. The creature itself is placed by the scene builder.</summary>
+        public const char Crawler = 'C';
+
+        /// <summary>A waypoint the crawler walks between, in file order. It is floor, not furniture.</summary>
+        public const char Patrol = 'c';
+
+        /// <summary>A hollow: a pocket of dead air that hides a quiet player. Floor with a field on it.</summary>
+        public const char Hollow = 'h';
+
         /// <summary>A comment line, so the file can carry its own legend.</summary>
         public const char Comment = ';';
 
@@ -128,6 +137,9 @@ namespace EchoMaze.Levels
                 case Glass:
                 case Pillar:
                 case Box:
+                case Crawler:
+                case Patrol:
+                case Hollow:
                     return true;
                 default:
                     return false;

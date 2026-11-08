@@ -20,7 +20,7 @@ namespace EchoMaze.EditorTools
             SandboxSceneSetup.ApplyProjectSettings();
 
             BootSceneSetup.Build();
-            Level01MazeSceneSetup.BuildLevel();
+            ChapterSceneSetup.BuildAll();
             Level02SceneSetup.BuildLevel();
             SandboxSceneSetup.BuildSandbox();
 

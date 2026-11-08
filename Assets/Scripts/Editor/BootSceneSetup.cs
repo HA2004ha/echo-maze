@@ -20,23 +20,30 @@ namespace EchoMaze.EditorTools
     {
         const string ScenePath = "Assets/Scenes/Boot.unity";
 
-        // The run is one chapter for this milestone: the maze is the level a player is meant to finish, and
-        // finishing it must show the victory panel. The corridor stays in the build as the week-4 room and
-        // is entered from the editor until its hunt systems make it a chapter rather than a preview.
-        public static readonly string[] Chapters = { "Level01_Maze", "Level02_Corridor" };
+        // The run is the catalogue's order, not a second list that has to be kept in step: a chapter added
+        // to ChapterCatalog is in the flow, in the build list and on the story page by the same edit. The
+        // corridor is chapter two and is hand-built, so it is in here without a grid file.
+        public static string[] Chapters => ChapterCatalog.SceneNames;
         const string MenuScene = "Boot";
 
         /// <summary>
-        /// Everything a player build needs, in load order: the menu, the two chapters, and the math
-        /// playground last so it stays reachable without becoming what the game boots into.
+        /// Everything a player build needs, in load order: the menu, every chapter, and the math playground
+        /// last so it stays reachable without becoming what the game boots into.
         /// </summary>
-        public static readonly string[] BuildScenes =
+        public static string[] BuildScenes
         {
-            "Assets/Scenes/Boot.unity",
-            "Assets/Scenes/Level01_Maze.unity",
-            "Assets/Scenes/Level02_Corridor.unity",
-            "Assets/Scenes/Sandbox.unity"
-        };
+            get
+            {
+                var paths = new System.Collections.Generic.List<string> { "Assets/Scenes/Boot.unity" };
+                foreach (string scene in Chapters)
+                {
+                    paths.Add("Assets/Scenes/" + scene + ".unity");
+                }
+
+                paths.Add("Assets/Scenes/Sandbox.unity");
+                return paths.ToArray();
+            }
+        }
 
         [MenuItem("Tools/Echo Maze/Build Boot Scene")]
         public static void Build()

@@ -1174,7 +1174,8 @@ namespace EchoMaze.EditorTools
         /// The Crawler's *body*, which is the whole point of it: two circle colliders with a gap, so the
         /// wave reads two bumps where a wall reads one line. Nothing here knows it is an enemy.
         /// </summary>
-        public static Crawler EnsureCrawler(Vector2 start, Vector2[] patrol, EchoDirector director, Player player)
+        public static Crawler EnsureCrawler(Vector2 start, Vector2[] patrol, EchoDirector director, Player player,
+                                           string name = "Crawler")
         {
             GameObject go = FindOrCreate("Crawler");
             go.transform.position = start;
@@ -1406,7 +1407,17 @@ namespace EchoMaze.EditorTools
                 canvasObject = new GameObject("Death Notice");
             }
 
-            var canvas = canvasObject.GetComponent<Canvas>() ?? canvasObject.AddComponent<Canvas>();
+            // Re-fetched rather than trusted: a Canvas added and written through in the same call can come
+            // back unevaluated and throw MissingComponentException for a component that does exist. This is
+            // the same rule EnsureComponent applies, and it is what made a freshly generated chapter scene
+            // fail to build while an older one, which already had its Canvas, built fine.
+            Canvas canvas = canvasObject.GetComponent<Canvas>();
+            if (canvas == null)
+            {
+                canvasObject.AddComponent<Canvas>();
+                canvas = canvasObject.GetComponent<Canvas>();
+            }
+
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             canvas.sortingOrder = 100;
 
