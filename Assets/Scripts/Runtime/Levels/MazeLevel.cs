@@ -65,7 +65,7 @@ namespace EchoMaze.Levels
 
             BuildWalls();
             BuildObstacles();
-            BuildDoors();
+            BuildDoors(spawn);
             BuildNoiseZones();
             BuildSanctuaries();
             BuildExit();
@@ -145,18 +145,43 @@ namespace EchoMaze.Levels
         }
 
         /// <summary>
-        /// A door is two blockers and a gap, laid across the direction the corridor runs. The axis is read
-        /// from the map rather than authored, because the one thing a designer should not have to remember is
-        /// which way this doorway faces.
+        /// A door cell holds a door and nothing else: the door builds its own leaf. This method only decides
+        /// which mouth of the corridor the leaf stands in, and which way the player comes at it, both read
+        /// from the map rather than authored — the one thing a designer should not have to remember is which
+        /// way this door swings.
+        ///
+        /// A doorway has to be a **straight** passage: one open neighbour on each side of the same axis and
+        /// walls on both flanks, so the leaf can close the corridor end flush between two wall faces. A door
+        /// on a corner has no such line to stand in; the builder used to put one there anyway, which is how
+        /// a leaf across one arm ended up beside a stub hanging into the other. That is a level-file mistake,
+        /// so it stops the build with an error instead of shipping geometry no corridor has.
         /// </summary>
-        void BuildDoors()
+        void BuildDoors(Vector2Int spawn)
         {
             Transform root = Child("Doors");
             int index = 0;
 
+            // Doors are closed while the map is walked, so this is the side of each door the player can
+            // reach: the corridor the door is at the end of. The leaf goes in that corridor's mouth.
+            HashSet<Vector2Int> spawnSide = grid.Reachable(spawn, doorsOpen: false);
+
             foreach (Vector2Int cell in grid.FindAll(MazeGrid.Door))
             {
-                bool alongX = !grid.IsWall(cell.x - 1, cell.y) && !grid.IsWall(cell.x + 1, cell.y);
+                bool openEastWest = !grid.IsWall(cell.x - 1, cell.y) && !grid.IsWall(cell.x + 1, cell.y);
+                bool openNorthSouth = !grid.IsWall(cell.x, cell.y - 1) && !grid.IsWall(cell.x, cell.y + 1);
+                bool wallFlanks = openEastWest
+                    ? grid.IsWall(cell.x, cell.y - 1) && grid.IsWall(cell.x, cell.y + 1)
+                    : grid.IsWall(cell.x - 1, cell.y) && grid.IsWall(cell.x + 1, cell.y);
+
+                if (openEastWest == openNorthSouth || !wallFlanks)
+                {
+                    Debug.LogError("door cell " + cell.x + "," + cell.y + " is not in a straight 1-cell " +
+                                   "corridor (open left/right = " + openEastWest + ", open down/up = " +
+                                   openNorthSouth + ", walls on both flanks = " + wallFlanks + "): a door " +
+                                   "closes the end of a corridor, so it needs exactly that. Fix the map.", this);
+                    continue;
+                }
+
                 Vector2 centre = grid.WorldOfCell(cell.x, cell.y);
 
                 GameObject go = new GameObject("Door " + index++);
@@ -168,54 +193,16 @@ namespace EchoMaze.Levels
                 probe.size = new Vector2(cellSize, cellSize) * 1.2f;
                 probe.isTrigger = true;
 
-                // The two echo fragments are the door's signature: two short lines with a gap, read by the
-                // fan from its own geometry. They are laid across the corridor and kept inside the cell —
-                // 0.6 m of panel either side of a 0.4 m slit — but the slit is narrower than the body, so a
-                // closed door is also a physical barrier. The old layout put the panels along the corridor
-                // and left a 1.6 m hole in the middle, which made the tutorial door something the player
-                // could simply walk through.
-                var blockers = new Collider2D[3];
-                for (int i = 0; i < 2; i++)
-                {
-                    float side = i == 0 ? -1f : 1f;
-                    float panelOffset = cellSize * 0.3f;
-                    float panelThickness = cellSize * 0.4f;
-
-                    Vector2 offset = alongX ? new Vector2(0f, side * panelOffset)
-                                            : new Vector2(side * panelOffset, 0f);
-                    Vector2 size = alongX ? new Vector2(cellSize, panelThickness)
-                                          : new Vector2(panelThickness, cellSize);
-
-                    GameObject fragment = new GameObject(go.name + " blocker " + i);
-                    fragment.transform.SetParent(go.transform, false);
-                    fragment.transform.position = (Vector2)go.transform.position + offset;
-                    fragment.layer = LayerMask.NameToLayer("EchoTarget");
-
-                    var collider = fragment.AddComponent<BoxCollider2D>();
-                    collider.size = size;
-
-                    var surface = fragment.AddComponent<EchoSurface>();
-                    surface.kind = SurfaceKind.Plain;
-                    surface.reflectivity = 1f;
-
-                    blockers[i] = collider;
-                }
-
-                // A door that is closed must stop the body, not only the rays. This collider is on Default,
-                // which is outside the echo mask (World | EchoTarget | Enemy | Absorber), so the wave still
-                // reads the slit between the two fragments while the player cannot fit through it. It is
-                // toggled with the others, so opening the door restores the whole cell.
-                GameObject bodyBlocker = new GameObject(go.name + " body blocker");
-                bodyBlocker.transform.SetParent(go.transform, false);
-                bodyBlocker.transform.position = go.transform.position;
-                bodyBlocker.layer = LayerMask.NameToLayer("Default");
-
-                var bodyCollider = bodyBlocker.AddComponent<BoxCollider2D>();
-                bodyCollider.size = new Vector2(cellSize, cellSize) * 0.9f;
-                blockers[2] = bodyCollider;
+                // Direction of travel from the corridor the player can reach into the door's cell. The other
+                // end of the cell is the new corridor, so the leaf and the swing both face that way.
+                var axis = openEastWest ? Vector2Int.right : Vector2Int.up;
+                bool approachFromNegative = spawnSide.Contains(cell - axis);
+                Vector2 intoCell = approachFromNegative || !spawnSide.Contains(cell + axis)
+                    ? (Vector2)axis
+                    : -(Vector2)axis;
 
                 var door = go.AddComponent<Door>();
-                door.Build(director, blockers, closedAtStart: true);
+                door.Build(director, player, true, intoCell, cellSize);
                 doors.Add(door);
 
                 session?.RegisterResetHook(door.ResetToStart);

@@ -83,6 +83,12 @@ namespace EchoMaze.Core
 
         /// <summary>The tuning asset in force, so the debug window and tests read the same numbers the director does.</summary>
         public EchoTuningProfile Profile => profile;
+
+        /// <summary>
+        /// The layers the fan measures. A door checks whether a ping reached it against this same mask, so
+        /// "the wave found it" and "the reveal allowed it" cannot drift apart.
+        /// </summary>
+        public int EchoLayerMask => echoLayerMask.value;
         public string SourceStatus => source != null ? source.Status : "none";
         public float CurrentLoudness => source != null ? source.Loudness : 0f;
         public float RawLoudness => source != null ? source.RawRms : 0f;
