@@ -36,7 +36,7 @@ The tester only sees the arcs and has to say what is in front of them. At least 
 | Wall (flat and long, broken) | | |
 | Box / corner (hot-spot) | | |
 | Hollow / alcove | | |
-| Door (two fragments and a gap; closed = a wall) | | |
+| Door (the corridor's end: one line while shut, a clear opening once open) — and, since 2026-11-10, an amber hinged leaf once a ping or the player's body has reached it | | |
 | Crawler enemy (two bumps with a gap, shimmering) | | |
 | Spike enemy (saw teeth) — from week 4 | | |
 | Absorber (a hole in the arcs) — from week 5 | | |

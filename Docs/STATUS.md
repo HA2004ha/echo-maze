@@ -108,9 +108,9 @@ chapter.
 - The route has a spawn in the bottom-left, an exit in the top-right, one door in the middle band, one
   sanctuary before the door, a six-metre glass run on the spawn row, a round pillar signature and a bright
   box corner.
-- The door is **two echo fragments with a slit** (the wave signature) plus a body blocker on the Default
-  layer. The echo mask is `World | EchoTarget | Enemy | Absorber`, so the wave reads the slit while the body
-  cannot walk through a closed door. Opening it switches all three colliders off.
+- The door is **one hinged leaf in the mouth of a straight corridor**, not a gate standing in the middle of a cell. The leaf's collider spans the full corridor width on the boundary between the corridor and the cell beyond it, flush with the two wall faces that flank the opening: closed, it is a wall across the corridor and the body cannot walk through it; open, the collider is switched off and the whole opening is clear. There are no jamb stubs, no `0.8 m` panels and no body-sized blocker — a stub beside a door is a little wall in a corridor, and that is exactly what it looked like in play.
+- Since 2026-11-10 the door is also **drawn**: one amber leaf, hinged at one end, shown only when the player has earned it — a ping whose fan reached the leaf, or a body within `revealDistance` (`3.5 m`). Opening swings it 90° into the new cell over `0.4 s`; closing swings it back.
+- **The level places only the interaction probe.** `Door` owns its leaf; `MazeLevel.BuildDoors` only reads the map for which way the corridor runs, which mouth the player reaches it from (the side reachable from spawn with the doors shut) and therefore which way the leaf swings. A door cell that is not a straight 1-cell passage with walls on both flanks stops the build with an error rather than producing a door on a bend — that is how Level 1's door ended up on the corner at `(11,7)`, and it now sits at `(10,7)`.
 - The exit is a probe volume with `LevelExit`: stand beside it and press `E`. It is not drawn; the way out
   is found by sound, as the GDD asks.
 - The wave is still the week-2 system: cone fan, returning arc train, curvature brightness, fracture mask,
@@ -137,7 +137,7 @@ chapter.
 | EditMode suite | **111 / 111** green (`Logs/editmode.xml`, 2026-10-29) |
 | PlayMode suite | **44 / 44** green (`Logs/playmode.xml`, 2026-10-29); the maze flow is covered by the scene builder and the EditMode grid tests |
 | Maze is solvable | `MazeGridTests`: the exit is unreachable while the door is closed and reachable when it opens; every walkable cell is reachable |
-| Door is a barrier | the two echo panels leave a 0.4 m slit, narrower than the 0.5 m body; the Default-layer blocker closes the cell physically |
+| Door is a barrier | closed, the leaf collider (`cellSize` long, `0.1 · cellSize` deep) spans the corridor mouth end to end between the two flanking wall faces, so nothing fits through; open, the collider is switched off and the whole mouth is passable |
 | Player build | `Builds/StandaloneLinux64/echo-maze.x86_64`, Development build, Linux64; menu, level and victory captures in `Screenshots/` (local, git-ignored) |
 | Microphone | player opened a real capture device (log above) |
 | Readability by a human | **not run yet** — this is the open go/no-go from week 2 and needs people, headphones and the build |

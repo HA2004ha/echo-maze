@@ -117,7 +117,7 @@ Ages 15 to 35, no gender restriction. People who like horror, stealth and experi
 
 This is the most important part of the game and everything is built on it.
 
-1. **The player is silent, nothing is visible.** The screen is black. The player emits no light. Walls, pillars and enemies are all there but invisible. Only a faint line of text: "Make a sound to listen".
+1. **The player is silent, nothing is visible.** The screen is black. The player emits no light. Walls, pillars and enemies are all there but invisible. Only a faint line of text: "Make a sound to listen". *(One exception, added 2026-11-10: a door is drawn as a single hinged leaf, but only after a ping has reached it or the player is close enough to touch it. Nothing is visible without earning it with one of the two senses; see `Docs/DESIGN_DECISIONS.md`.)*
 2. **The player makes a sound, the outgoing wave travels.** The microphone captures the sound and a cone-shaped wave (not a full circle) spreads in the direction the player is looking. This outgoing wave is visible.
 3. **The wave hits something and returns.** The returning wave comes back as a set of nested arcs (from large and new to small and old) toward the player. The shape of each arc is built from the shape of the surface it hit:
    - Round surface (pillar): a soft, smooth arc
@@ -281,7 +281,9 @@ Enemies are introduced in three steps: you **hear** it first (footsteps in the d
 
 ### Obstacles and objects
 
-Pillar: soft round arc — Box: straight line with a bright point at the corners — Wall: straight, long line, but broken — Door: two line fragments with a gap between them (closed: a wall).
+Pillar: soft round arc — Box: straight line with a bright point at the corners — Wall: straight, long line, but broken — Door: the end of a corridor (closed: a wall; open: a clear opening with the leaf turned aside).
+
+*(Amended 2026-11-10: the door is also the one object the game **draws**. Seen from above it is a single amber leaf hinged at one end, standing in the mouth of a straight corridor — the corridor ends at the door — and swinging into the new cell when opened. It is only drawn once a ping has reached the leaf or the player has come close enough to use it, so the black-screen premise above still holds: the leaf is a thing the player has earned, not a prop that is always on screen. The wave reads it the way the line above says: one continuous line while it is shut, flush end to end with the wall faces that flank the opening, and a clear opening once it swings. There are no extra fragments: a door between two corridors is one line or one gap, and a stub standing beside it reads as a little wall in a corridor.)*
 
 ### Tools
 

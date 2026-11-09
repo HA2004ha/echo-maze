@@ -40,6 +40,8 @@ Before opening Unity, the clone can be checked from the shell: `cat ProjectSetti
 - [ ] Pause: sound stops, microphone closes, the menu works with both keyboard and mouse (EventSystem on `InputSystemUIInputModule`)
 - [ ] Death: one touch kills, "YOU WERE HEARD" appears, retry returns in under 2 s to the last sanctuary with **that section's state reset** (doors, enemies, marble count)
 - [ ] A closed door blocks a ray, blocks enemy hearing and stops a Crawler; the Spike breaks it in ≈3 s and it stays broken until the section resets
+- [ ] A door stands in the **mouth of a straight corridor**: its leaf spans the corridor flush with the two wall faces beside it, there is no stub or panel standing in the passage before it, and `E` swings it visibly (≈0.4 s) into the new cell instead of teleporting the opening
+- [ ] A door is **drawn** only once it has been earned: it appears after a ping reaches it or the player comes within ≈3.5 m, it is amber rather than wall-cyan, and walking away fades it out
 - [ ] A hollow hides you from a patrolling enemy but not from one already in Chase; pinging inside breaks cover
 - [ ] A noise zone halves your reach, statics the arcs, masks Listen mode and the memory trace, and makes you much harder to hear
 - [ ] The alert telegraph fires before every chase (≈0.5 s freeze + a distinct sound) and the give-up cue fires when an enemy loses you
