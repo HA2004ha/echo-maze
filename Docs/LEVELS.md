@@ -27,6 +27,21 @@ written by hand, what is generated, and the two commands that rebuild everything
 Difficulty climbs in one direction only; `ChapterLevelTests.TheLadder_OnlyEverGetsHarder` fails the suite if a
 new chapter is inserted out of order.
 
+## Lanterns
+
+The room places no light for you. Each chapter puts **two lamps in the player's pack, three in the hard and
+brutal rooms** (`LevelSceneKit.LampsFor`, written into the scene by `LevelSceneKit.BuildChrome`), and the
+player decides where they go: `Q` sets one down where the body is standing.
+
+A placed lamp is fixed. There is no carrying, no picking it up and no moving it afterwards — that is the
+trade the mechanic is built on, because light makes no noise: it is the only way to read part of a room for
+free, and the price is that it cannot follow you. It draws every wall within `lanternRevealRadius` (5.5 m) in
+warm light, fades what it draws towards the edge of that circle, and keeps it for the rest of the run. The
+walls past its reach stay dark, so a lamp is a place you chose, not a map.
+
+The budget is `LanternStock`, pure and EditMode-tested; the spending is `LanternKit`; the drawing is
+`Lantern`. A death does not refill the pack: the room is meant to be solved with what it gave you.
+
 ## Adding a chapter — three edits
 
 1. **Make the map.** Either copy a `.txt` beside the others and draw it, or ask the forge for a first draft:

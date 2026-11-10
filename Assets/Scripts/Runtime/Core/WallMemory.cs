@@ -68,6 +68,12 @@ namespace EchoMaze.Core
             {
                 if (TryMerge(starts[i], ends[i], a, b, mergeDistance, out Vector2 ma, out Vector2 mb))
                 {
+                    // This touch is the newest thing the player knows about that line, so the line takes
+                    // the new birth time: leaning on a wall again relights the seconds it had left. The
+                    // version is bumped only when the span actually grew, because a redraw that draws the
+                    // same line is a redraw nobody needed.
+                    born[i] = time;
+
                     if (ma != starts[i] || mb != ends[i])
                     {
                         starts[i] = ma;

@@ -21,7 +21,8 @@ namespace EchoMaze.EditorTools
         /// extent and only the level knows it.
         /// </summary>
         public static LevelSession BuildChrome(EchoDirector director, Player player,
-                                               Vector2 cameraBoundsHalf, float cameraSize, string chapterTitle)
+                                               Vector2 cameraBoundsHalf, float cameraSize, string chapterTitle,
+                                               int lamps = 2)
         {
             UiKit.EnsureEventSystem();
             EnsureDeathSnarl(player, director);
@@ -36,10 +37,28 @@ namespace EchoMaze.EditorTools
             SceneKit.SetReference(opening, "session", session);
 
             PlayerCameraRig rig = SceneKit.EnsureCameraRig(player, cameraBoundsHalf, cameraSize);
-            UiKit.EnsureHud(director, player, session);
+            LanternKit kit = SceneKit.EnsureLanternKit(director, player, session, lamps);
+            UiKit.EnsureHud(director, player, session, kit);
             UiKit.EnsurePausePanel(session);
             UiKit.EnsureVictoryPanel();
             return session;
+        }
+
+        /// <summary>
+        /// Lamps a chapter gives, graded with its difficulty. Two is the floor and it is deliberate: one lamp
+        /// is a corridor with a dead end, two make where you spend the light a decision. The hard rooms get a
+        /// third so that "both of mine are already down" is never the reason a room is lost.
+        /// </summary>
+        public static int LampsFor(ChapterDifficulty difficulty)
+        {
+            switch (difficulty)
+            {
+                case ChapterDifficulty.Hard:
+                case ChapterDifficulty.Brutal:
+                    return 3;
+                default:
+                    return 2;
+            }
         }
 
         /// <summary>

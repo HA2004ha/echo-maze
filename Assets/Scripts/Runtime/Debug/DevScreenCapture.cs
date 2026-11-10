@@ -33,6 +33,7 @@ namespace EchoMaze.DebugTools
             public bool pause;
             public bool calibrate;
             public bool chapters;
+            public bool toLantern;
             public int guidePage = -1;
             public float completeLeadSeconds = 0.4f;
             public float pingLeadSeconds = 0.45f;
@@ -52,6 +53,24 @@ namespace EchoMaze.DebugTools
                          SceneManager.GetActiveScene().name != scene)
                 {
                     SceneManager.LoadScene(scene, LoadSceneMode.Single);
+
+                    // A single load is applied at the end of the frame, so the room's player and its lamp kit
+                    // do not exist yet on this line: everything below that reaches for them waits one frame.
+                    yield return null;
+                }
+
+                // The lamps are the player's to place, so a capture of one takes the same two calls a Q
+                // press makes: spend one from the pack beside the body, then step back into the light.
+                if (toLantern)
+                {
+                    Player body = FindFirstObjectByType<Player>();
+                    LanternKit kit = FindFirstObjectByType<LanternKit>();
+                    if (body != null && kit != null)
+                    {
+                        Vector2 at = body.Position;
+                        kit.PlaceAt(at + Vector2.right * 1.2f);
+                        body.PlaceAt(at + Vector2.left * 1.4f);
+                    }
                 }
 
                 // Realtime waits throughout: the victory panel pauses the game with Time.timeScale = 0,
@@ -210,6 +229,7 @@ namespace EchoMaze.DebugTools
             runner.pause = System.Array.IndexOf(args, "-echo-pause") >= 0;
             runner.calibrate = System.Array.IndexOf(args, "-echo-calibrate") >= 0;
             runner.chapters = System.Array.IndexOf(args, "-echo-chapters") >= 0;
+            runner.toLantern = System.Array.IndexOf(args, "-echo-to-lantern") >= 0;
             string guide = Value("-echo-guide-page");
             if (guide != null)
             {

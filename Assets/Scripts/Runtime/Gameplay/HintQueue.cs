@@ -9,7 +9,8 @@ namespace EchoMaze.Gameplay
         AfterWave,
         FirstTouch,
         WalkNoise,
-        Door
+        Door,
+        Lantern
     }
 
     /// <summary>

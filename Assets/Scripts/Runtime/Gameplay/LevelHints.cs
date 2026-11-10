@@ -24,6 +24,10 @@ namespace EchoMaze.Gameplay
         /// <summary>The fade the HUD adds after <see cref="ShowSeconds"/> (HudView.titleFadeSeconds).</summary>
         const float FadeSeconds = 1f;
 
+        /// <summary>Seconds after the chapter opens before the lamp is mentioned. Long enough that the first
+        /// sentence has been read, short enough that the player has not already walked into a wall wondering.</summary>
+        const float LanternHintDelay = 6f;
+
         [SerializeField] EchoDirector director;
         [SerializeField] Player player;
         [SerializeField] TouchMarks marks;
@@ -35,6 +39,7 @@ namespace EchoMaze.Gameplay
 
         readonly HintQueue queue = new HintQueue(ShowSeconds + FadeSeconds);
         float noisyWalked;
+        float lanternHintAt = float.PositiveInfinity;
 
         public bool HintsEnabled => hintsEnabled;
 
@@ -59,6 +64,7 @@ namespace EchoMaze.Gameplay
             if (hintsEnabled)
             {
                 queue.Request(Hint.Start);
+                lanternHintAt = Time.unscaledTime + LanternHintDelay;
             }
         }
 
@@ -99,6 +105,13 @@ namespace EchoMaze.Gameplay
             if (player.Nearby is Door)
             {
                 queue.Request(Hint.Door);
+            }
+
+            // The lamp is the one new verb in chapter one that nothing on screen would otherwise announce:
+            // no prompt, no door to stand next to. It waits out the first sentence and then says its piece.
+            if (!queue.WasRequested(Hint.Lantern) && Time.unscaledTime >= lanternHintAt)
+            {
+                queue.Request(Hint.Lantern);
             }
 
             if (queue.TryNext(Time.unscaledTime, out Hint next))

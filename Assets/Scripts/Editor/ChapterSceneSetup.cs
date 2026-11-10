@@ -98,7 +98,8 @@ namespace EchoMaze.EditorTools
 
             var half = new Vector2(grid.Width * chapter.CellSize * 0.5f, grid.Height * chapter.CellSize * 0.5f);
             LevelSession session = LevelSceneKit.BuildChrome(director, player, half, chapter.CameraSize,
-                                                             chapter.HudTitle);
+                                                             chapter.HudTitle,
+                                                             LevelSceneKit.LampsFor(chapter.Difficulty));
 
             // Only the room that teaches the controls teaches them on screen.
             if (chapter.Tutorial)

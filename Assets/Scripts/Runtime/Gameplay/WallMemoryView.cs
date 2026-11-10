@@ -6,7 +6,12 @@ namespace EchoMaze.Gameplay
 {
     /// <summary>
     /// Owns the player's <see cref="WallMemory"/> and draws it: thin, dim neon lines that fade in over a
-    /// quarter of a second and then stay for the rest of the level.
+    /// quarter of a second, hold for six, and then go out.
+    ///
+    /// The lines used to stay for the rest of the level, which made a walked room a map the player owned
+    /// outright and turned the last third of every chapter into reading it. They are a trace now: what the
+    /// hand felt is bright while it is fresh and gone by the time the next corner needs thinking about, so
+    /// the room has to be re-read rather than remembered twice.
     ///
     /// Lives on a scene object (not DontDestroyOnLoad), so a scene load is what clears it: loading a
     /// chapter builds a fresh store in Awake, while dying and retrying inside the scene keeps it, because
@@ -22,7 +27,7 @@ namespace EchoMaze.Gameplay
         WallMemory memory;
         QuadMeshBuffer quads;
         int drawnVersion = -1;
-        float fadingUntil;
+        float aliveUntil;
         float drawnAt;
 
         public WallMemory Memory
@@ -92,7 +97,9 @@ namespace EchoMaze.Gameplay
             memory.Add(a, b, Time.time);
             if (memory.Version != before)
             {
-                fadingUntil = Time.time + profile.wallMemoryFadeInSeconds;
+                // As long as the newest line can still be seen, the mesh has to be rebuilt: the fade-out is
+                // a change the store does not know about.
+                aliveUntil = Time.time + profile.wallMemoryHoldSeconds + profile.wallMemoryFadeOutSeconds;
             }
         }
 
@@ -101,23 +108,36 @@ namespace EchoMaze.Gameplay
 
         void LateUpdate()
         {
-            if (memory == null || (memory.Version == drawnVersion && drawnAt >= fadingUntil))
+            if (memory == null || profile == null)
             {
                 return;
             }
 
-            // One more rebuild lands at or after fadingUntil, which is what pins the final alpha.
+            // Two reasons to rebuild: the store changed, or a line is still getting brighter or going out.
+            // The second one is a change the store never sees, which is why age is read here and not there.
+            bool changed = memory.Version != drawnVersion;
+            if (!changed && Time.time > aliveUntil && drawnAt >= aliveUntil)
+            {
+                return;
+            }
+
+            // One more rebuild lands at or after aliveUntil, which is what pins the final alpha at zero.
             drawnVersion = memory.Version;
             drawnAt = Time.time;
             Color color = profile.wallMemoryColor;
             float half = profile.baseThickness * profile.wallMemoryThicknessScale * 0.5f;
-            float fade = Mathf.Max(0.01f, profile.wallMemoryFadeInSeconds);
+            float fadeIn = Mathf.Max(0.01f, profile.wallMemoryFadeInSeconds);
+            float hold = Mathf.Max(0f, profile.wallMemoryHoldSeconds);
+            float fadeOut = Mathf.Max(0.01f, profile.wallMemoryFadeOutSeconds);
 
             quads.Begin();
             for (int i = 0; i < memory.Count; i++)
             {
                 memory.Get(i, out Vector2 a, out Vector2 b, out float born);
-                color.a = profile.wallMemoryAlpha * Mathf.Clamp01((Time.time - born) / fade);
+                float age = Time.time - born;
+                float rise = Mathf.Clamp01(age / fadeIn);
+                float fall = 1f - Mathf.Clamp01((age - hold) / fadeOut);
+                color.a = profile.wallMemoryAlpha * rise * fall;
                 quads.AddSegment(a, b, half, color);
             }
 

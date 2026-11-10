@@ -154,6 +154,25 @@ chapter.
   lower-case voice the rest of the game speaks in. The controls legend's band went to α0.82.
 - Verified in `Screenshots/menu_ux_pass.png` (player build, 1920×1080) and by the EditMode suite.
 
+### The trace, and the lamp (2026-11-08)
+
+- A touched wall is a **six-second trace** now, not a permanent line. The hold and the 1.2 s fade-out are
+  `wallMemoryHoldSeconds` / `wallMemoryFadeOutSeconds`, the view rebuilds while any line is still aging, and a
+  second touch on an existing line restarts its six seconds (`WallMemory.Add` stamps the merge, locked by
+  `WallMemoryTests.ATouchAgain_RefreshesTheLineItMergesWith`).
+- **Lanterns** are the game's first light that is not a sound, and the answer to "every screen is dark". The
+  room places none of them: each chapter gives the player **two lamps, three in the hard and brutal rooms**
+  (`LevelSceneKit.LampsFor`), and `Q` sets one down where the body is standing. A placed lamp is fixed — no
+  carrying, no picking it back up — and while it stands it draws every wall within `lanternRevealRadius`
+  (5.5 m) in warm light, faded towards the edge of its circle, for free: light makes no noise. The budget is
+  `LanternStock` (pure, EditMode-tested), the spending is `LanternKit`, the drawing is `Lantern`, and the HUD
+  prints `lamps n` under the cooldown sweep.
+- The guide has a ninth card (`the lantern`), the chapter-one hints gained the lamp line, and chapter X's copy
+  no longer claims its light is the only one in the game.
+- Verified: `GameBootstrap.BuildEverything`, the EditMode suite (193 passed, 0 failed, including the new
+  `LanternStockTests`), the PlayMode `LanternRevealTests`, and captures of a lit room and the new guide
+  card from the player build.
+
 ## What is real, and what is still a promise
 
 These are deliberately listed so the next stage does not mistake a built room for a finished system:
@@ -167,7 +186,7 @@ These are deliberately listed so the next stage does not mistake a built room fo
 - **Hollows and wall memory are built.** `Hollow` is a safe spot (hearing × `hollowHearingMultiplier` =
   0.15 for quiet sounds, breaks above `hollowBreaksAbove` = 0.25 loudness, ignored by an enemy already
   chasing) with "You are hidden" / "You are exposed" HUD notices. `WallMemory` remembers every wall the
-  player touched as permanent neon lines, never re-read from colliders, so an opened door leaves a
+  player touched as a six-second neon trace, never re-read from colliders, so an opened door leaves a
   remembered wall where there is now an entrance. `Ctrl` / Listen mode and the marble are still not
   advertised on the menu.
 - **No Listen mode.** `Ctrl` does nothing yet; warm enemy ripples and cool landmark ripples are M2.

@@ -197,8 +197,8 @@ namespace EchoMaze.Gameplay
                 "Assets/Data/Levels/Level09_Floodgate.txt"),
 
             new ChapterStory(
-                "Level10_Sump", "X", "the sump", "the last room, and the only light in the game",
-                "the sump is the bottom of the facility. something down here is lit, and nothing else is",
+                "Level10_Sump", "X", "the sump", "the last room, and one light you did not bring",
+                "the sump is the bottom of the facility. something down here is lit that you did not carry in",
                 "the light is the way out. the facility was built to listen, and it has been listening to you",
                 "you were not the first voice in here. the facility kept every one of them",
                 ChapterDifficulty.Brutal, "a crawler in the sump, one sanctuary, and the longest walk in the game",

@@ -1307,6 +1307,28 @@ namespace EchoMaze.EditorTools
         }
 
         /// <summary>
+        /// The player's lamps for this chapter. The number is not in the map and not in the lamp: it is the
+        /// chapter's grade, written here by the builder, so a room cannot accidentally hand out light.
+        /// </summary>
+        public static LanternKit EnsureLanternKit(EchoDirector director, Player player, LevelSession session,
+                                                  int lampCount)
+        {
+            GameObject go = FindOrCreate("Lantern Kit");
+            var kit = EnsureComponent<LanternKit>(go);
+            // The director's profile is a runtime field, so at build time the asset has to be looked up:
+            // a lamp kit wired to nothing spends no lamps and lights no walls, silently.
+            EchoTuningProfile tuning = director != null && director.Profile != null ? director.Profile : EnsureTuning();
+            SetReference(kit, "profile", tuning);
+            SetReference(kit, "player", player);
+            SetReference(kit, "session", session);
+
+            var serialized = new SerializedObject(kit);
+            serialized.FindProperty("capacity").intValue = Mathf.Clamp(lampCount, 0, 4);
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            return kit;
+        }
+
+        /// <summary>
         /// The room drawn from <c>Assets/Data/Levels</c>. The text asset is loaded after the scene is opened,
         /// like every other asset here, or the scene load would unload it and the reference would be saved as
         /// a hole.

@@ -107,8 +107,8 @@ namespace EchoMaze.UI
                 "\n" +
                 "sounds you never chose to make:\n" +
                 "  your steps     a small noise at your feet.\n" +
-                "  a wall         touching it marks it, makes a smaller noise,\n" +
-                "                 and the mark stays in your memory of the level.\n" +
+                "  a wall         touching it lights it for six seconds, makes a\n" +
+                "                 smaller noise, then the dark takes the line back.\n" +
                 "  yourself       faint warm dots of where you have walked, gone\n" +
                 "                 again after about four seconds.\n" +
                 "\n" +
@@ -183,7 +183,25 @@ namespace EchoMaze.UI
                 "             faster walk replaces the number.\n" +
                 "\n" +
                 "ten rooms. the first has nothing in it that reacts to you. the last\n" +
-                "is the only place in the game with a light in it."),
+                "of them is lit by something that is not a lantern."),
+
+            new GuidePage("the lantern",
+                "you carry two of them, three in the rooms that mean it. no light\n" +
+                "comes from anywhere else: what you are given is not a torch but\n" +
+                "a few lamps, and where they go is your decision.\n" +
+                "\n" +
+                "  q            set one down at your feet. it stays there: you cannot\n" +
+                "               pick it up again, and it burns for the rest of the\n" +
+                "               room.\n" +
+                "  light        it draws every wall within about five metres, and\n" +
+                "               keeps drawing them while it stands there.\n" +
+                "  what it costs nothing. light makes no noise, and nothing in\n" +
+                "               the dark can hear it: it is the one thing you can\n" +
+                "               read for free.\n" +
+                "  what it is not a map. the walls past its reach stay dark, and\n" +
+                "               the light ends where the room does.\n" +
+                "\n" +
+                "so a lamp spends a room's dark on the part of it you chose to keep."),
         };
 
         public static GuidePage[] All => all;
