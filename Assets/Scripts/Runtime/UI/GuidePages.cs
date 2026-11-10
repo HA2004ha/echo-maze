@@ -107,8 +107,8 @@ namespace EchoMaze.UI
                 "\n" +
                 "sounds you never chose to make:\n" +
                 "  your steps     a small noise at your feet.\n" +
-                "  a wall         touching it marks it, makes a smaller noise,\n" +
-                "                 and the mark stays in your memory of the level.\n" +
+                "  a wall         touching it lights it for six seconds, makes a\n" +
+                "                 smaller noise, then the dark takes the line back.\n" +
                 "  yourself       faint warm dots of where you have walked, gone\n" +
                 "                 again after about four seconds.\n" +
                 "\n" +
@@ -183,7 +183,23 @@ namespace EchoMaze.UI
                 "             faster walk replaces the number.\n" +
                 "\n" +
                 "ten rooms. the first has nothing in it that reacts to you. the last\n" +
-                "is the only place in the game with a light in it."),
+                "of them is lit by something that is not a lantern."),
+
+            new GuidePage("the lantern",
+                "two or three of them stand in every room, and no light comes from\n" +
+                "anywhere else. they are fixed: you do not carry a torch here, and a\n" +
+                "lamp will not move for you.\n" +
+                "\n" +
+                "  what it does   a lit lamp draws every wall within about five metres,\n" +
+                "                 and keeps drawing them while it stands there.\n" +
+                "  what it costs  nothing. light makes no noise, and nothing in the\n" +
+                "                 dark can hear it: it is the one thing in a room you\n" +
+                "                 can read for free.\n" +
+                "  what it is not a map. the walls past its reach stay dark, and the\n" +
+                "                 light ends where the room does.\n" +
+                "\n" +
+                "a room's lamps are its landmarks: stand in one, read what it shows,\n" +
+                "and hold the rest in your own six seconds."),
         };
 
         public static GuidePage[] All => all;

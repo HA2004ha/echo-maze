@@ -112,6 +112,17 @@ namespace EchoMaze.Tests
         }
 
         [Test]
+        public void ATouchAgain_RefreshesTheLineItMergesWith()
+        {
+            var memory = new WallMemory(4, Merge);
+            memory.Add(new Vector2(0, 0), new Vector2(1, 0), 10f);
+            memory.Add(new Vector2(0.5f, 0), new Vector2(1.5f, 0), 20f);
+
+            memory.Get(0, out _, out _, out float born);
+            Assert.AreEqual(20f, born, 1e-4f, "the newest touch is what the six seconds count from");
+        }
+
+        [Test]
         public void AChange_BumpsTheVersion_AndANoOpDoesNot()
         {
             var memory = new WallMemory(4, Merge);

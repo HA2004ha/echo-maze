@@ -39,7 +39,8 @@ namespace EchoMaze.UI
                 case 3: caption.text = "crawler / spike / absorber\nsignatures - not all in the run"; break;
                 case 4: caption.text = Phase < 0.5f ? "e : open the door" : "sanctuary : new checkpoint"; break;
                 case 5: caption.text = "illustration / not live input\nnoise floor < gate < your voice"; break;
-                default: caption.text = Phase < 0.5f ? "one rail / ten rooms" : "the pulse walks the thread to your room"; break;
+                case 6: caption.text = Phase < 0.5f ? "one rail / ten rooms" : "the pulse walks the thread to your room"; break;
+                default: caption.text = Phase < 0.5f ? "a lamp stands where it is" : "the walls inside its light are drawn"; break;
             }
         }
 
@@ -60,7 +61,8 @@ namespace EchoMaze.UI
                 case 3: Creatures(); break;
                 case 4: Door(); break;
                 case 5: Microphone(); break;
-                default: Descent(); break;
+                case 6: Descent(); break;
+                default: Lamp(); break;
             }
             mesh = null;
         }
@@ -205,6 +207,34 @@ namespace EchoMaze.UI
             float walk = Mathf.Clamp01((t - 0.4f) / 0.4f);
             Dot(Vector2.Lerp(new Vector2(-140, 0), goal, walk), Ink);
             if (walk >= 1) Arc(goal, 45 + Mathf.Repeat(elapsed * 0.8f, 1) * 20, 0, 360, Warm);
+        }
+
+        /// <summary>
+        /// The lamp in miniature: a warm core, the circle it reaches, and the wall stubs inside that circle
+        /// drawn while the one outside it stays a dark line. The halo breathes because light in this game is
+        /// never quite steady — every other surface shimmers.
+        /// </summary>
+        void Lamp()
+        {
+            var centre = new Vector2(-40f, 0f);
+            const float radius = 108f;
+
+            Color halo = Warm;
+            halo.a = 0.14f + 0.05f * Mathf.Sin(elapsed * 2.4f);
+            Arc(centre, radius, 0, 360, halo);
+
+            Color lit = Warm;
+            lit.a = 0.8f;
+            Line(centre + Polar(radius - 20f, 18f), centre + Polar(radius - 20f, 96f), lit, 4);
+            Line(centre + Polar(radius - 30f, 150f), centre + Polar(radius - 30f, 208f), lit, 4);
+            Line(centre + Polar(radius - 14f, 250f), centre + Polar(radius - 14f, 288f), lit, 4);
+
+            // Outside the radius: the same wall, unlit. This is the whole rule in one line.
+            Line(centre + new Vector2(radius + 22f, -40f), centre + new Vector2(radius + 22f, 60f),
+                 new Color(Ink.r, Ink.g, Ink.b, 0.28f), 4);
+
+            Dot(centre, Warm, 10f);
+            Dot(centre, Ink, 3.5f);
         }
 
         void Microphone()

@@ -388,7 +388,7 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
---- !u!1 &75092327
+--- !u!1 &108600645
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -396,8 +396,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 75092329}
-  - component: {fileID: 75092328}
+  - component: {fileID: 108600647}
+  - component: {fileID: 108600646}
   m_Layer: 0
   m_Name: Hollow 1
   m_TagString: Untagged
@@ -405,13 +405,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &75092328
+--- !u!114 &108600646
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 75092327}
+  m_GameObject: {fileID: 108600645}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0d205d13534c62cf585ef46072c4a3f5, type: 3}
@@ -421,13 +421,13 @@ MonoBehaviour:
   session: {fileID: 358594032}
   centre: {x: -2, y: -4}
   size: {x: 1.8, y: 1.8}
---- !u!4 &75092329
+--- !u!4 &108600647
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 75092327}
+  m_GameObject: {fileID: 108600645}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -1107,6 +1107,7 @@ MonoBehaviour:
   player: {fileID: 2027184638}
   session: {fileID: 358594032}
   cameraRig: {fileID: 626300486}
+  lanternCount: 2
 --- !u!4 &435757842
 Transform:
   m_ObjectHideFlags: 0
@@ -4953,4 +4954,4 @@ SceneRoots:
   - {fileID: 21121439}
   - {fileID: 2115386135}
   - {fileID: 435757842}
-  - {fileID: 75092329}
+  - {fileID: 108600647}

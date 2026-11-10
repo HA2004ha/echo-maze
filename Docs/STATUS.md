@@ -158,6 +158,25 @@ chapter.
   lower-case voice the rest of the game speaks in. The controls legend's band went to α0.82.
 - Verified in `Screenshots/menu_ux_pass.png` (player build, 1920×1080) and by the EditMode suite.
 
+### The trace, and the lamp (2026-11-08)
+
+- A touched wall is a **six-second trace** now, not a permanent line. The hold and the 1.2 s fade-out are
+  `wallMemoryHoldSeconds` / `wallMemoryFadeOutSeconds`, the view rebuilds while any line is still aging, and a
+  second touch on an existing line restarts its six seconds (`WallMemory.Add` stamps the merge, locked by
+  `WallMemoryTests.ATouchAgain_RefreshesTheLineItMergesWith`).
+- **Lanterns** are the game's first light that is not a sound, and the answer to "every screen is dark". Every
+  grid room leaves two of them, three in the hard and brutal ones (`ChapterSceneSetup.LanternsFor`), placed by
+  `LanternPlacement.Choose` — furthest from the spawn, then furthest from each other, never on the spawn, the
+  exit or a doorway, deterministic per map. A lamp is **fixed and lit**: it stands where the room put it and
+  has no key, no carry and no state the player can change. While it stands it draws every wall within
+  `lanternRevealRadius` (5.5 m) in warm light and makes no noise, so it is a landmark to walk to rather than a
+  torch to take with you.
+- The guide has a ninth card (`the lantern`), the chapter-one hints gained the lamp line, and chapter X's copy
+  no longer claims its light is the only one in the game.
+- Verified: `GameBootstrap.BuildEverything`, the EditMode suite (193 passed, 0 failed, including the new
+  `LanternPlacementTests`), the PlayMode `LanternRevealTests`, and captures of a lit room and the new guide
+  card from the player build.
+
 ## What is real, and what is still a promise
 
 These are deliberately listed so the next stage does not mistake a built room for a finished system:

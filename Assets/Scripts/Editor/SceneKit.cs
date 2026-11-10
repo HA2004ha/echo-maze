@@ -1312,7 +1312,8 @@ namespace EchoMaze.EditorTools
         /// a hole.
         /// </summary>
         public static MazeLevel EnsureMazeLevel(string levelPath, float cellSize, EchoDirector director,
-                                                Player player, LevelSession session, PlayerCameraRig rig)
+                                                Player player, LevelSession session, PlayerCameraRig rig,
+                                                int lanterns = 2)
         {
             var file = AssetDatabase.LoadAssetAtPath<TextAsset>(levelPath);
             if (file == null)
@@ -1328,6 +1329,13 @@ namespace EchoMaze.EditorTools
             SetReference(level, "player", player);
             SetReference(level, "session", session);
             SetReference(level, "cameraRig", rig);
+
+            // How many lamps the room leaves behind. Set through SerializedObject rather than a public
+            // field: the number is authored by the chapter builder from the difficulty grade, and no
+            // runtime system has any business changing it mid-run.
+            var serialized = new SerializedObject(level);
+            serialized.FindProperty("lanternCount").intValue = Mathf.Clamp(lanterns, 0, 4);
+            serialized.ApplyModifiedPropertiesWithoutUndo();
             return level;
         }
 

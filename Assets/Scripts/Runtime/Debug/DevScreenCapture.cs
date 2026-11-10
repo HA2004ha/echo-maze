@@ -33,6 +33,7 @@ namespace EchoMaze.DebugTools
             public bool pause;
             public bool calibrate;
             public bool chapters;
+            public bool toLantern;
             public int guidePage = -1;
             public float completeLeadSeconds = 0.4f;
             public float pingLeadSeconds = 0.45f;
@@ -52,6 +53,19 @@ namespace EchoMaze.DebugTools
                          SceneManager.GetActiveScene().name != scene)
                 {
                     SceneManager.LoadScene(scene, LoadSceneMode.Single);
+                }
+
+                // A lamp is a fixed place, so a capture of one needs the body next to it rather than a key:
+                // the nearest lamp is found and the player is put beside it, through the same public call
+                // the checkpoint restart uses.
+                if (toLantern)
+                {
+                    Player body = FindFirstObjectByType<Player>();
+                    Lantern lamp = FindFirstObjectByType<Lantern>();
+                    if (body != null && lamp != null)
+                    {
+                        body.PlaceAt((Vector2)lamp.transform.position + Vector2.left * 1.4f);
+                    }
                 }
 
                 // Realtime waits throughout: the victory panel pauses the game with Time.timeScale = 0,
@@ -210,6 +224,7 @@ namespace EchoMaze.DebugTools
             runner.pause = System.Array.IndexOf(args, "-echo-pause") >= 0;
             runner.calibrate = System.Array.IndexOf(args, "-echo-calibrate") >= 0;
             runner.chapters = System.Array.IndexOf(args, "-echo-chapters") >= 0;
+            runner.toLantern = System.Array.IndexOf(args, "-echo-to-lantern") >= 0;
             string guide = Value("-echo-guide-page");
             if (guide != null)
             {

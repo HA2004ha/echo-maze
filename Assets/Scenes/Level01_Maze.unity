@@ -3530,6 +3530,7 @@ MonoBehaviour:
   player: {fileID: 1599837540}
   session: {fileID: 1049558699}
   cameraRig: {fileID: 785996423}
+  lanternCount: 2
 --- !u!4 &1301217494
 Transform:
   m_ObjectHideFlags: 0

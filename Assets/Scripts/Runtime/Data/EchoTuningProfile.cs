@@ -230,12 +230,26 @@ namespace EchoMaze.Data
         [Range(0.2f, 3f)] public float wallMemorySegmentLength = 1f;
         [Tooltip("Colour of a remembered wall. A slightly bluer cyan than arcColor on purpose: memory must never read as a live echo.")]
         public Color wallMemoryColor = new Color(0.38f, 0.78f, 1f, 1f);
-        [Tooltip("Brightness of a remembered wall. Dimmer than a live arc, and constant: the line never fades out.")]
+        [Tooltip("Brightness of a remembered wall, while it is lit. Dimmer than a live arc: memory is a sketch, not a wave.")]
         [Range(0.05f, 1f)] public float wallMemoryAlpha = 0.45f;
         [Tooltip("Line width as a fraction of baseThickness. Thin: it is a hand on the wall, not a wave.")]
         [Range(0.2f, 1.5f)] public float wallMemoryThicknessScale = 0.6f;
         [Tooltip("Seconds a new remembered line takes to fade in.")]
         [Range(0.05f, 1f)] public float wallMemoryFadeInSeconds = 0.25f;
+        [Tooltip("Seconds a touched wall stays lit before the dark takes it back. Six is the number that makes memory a trace rather than a map: long enough to walk a corner and look up, short enough that the room is a sketch of where you have just been.")]
+        [Range(1f, 20f)] public float wallMemoryHoldSeconds = 6f;
+        [Tooltip("Seconds the line takes to go out after the hold. The fade is what stops a room from going dark in one frame.")]
+        [Range(0.1f, 5f)] public float wallMemoryFadeOutSeconds = 1.2f;
+
+        [Header("Lantern")]
+        [Tooltip("How far a placed lantern lights the room, in metres. About two and a half cells: enough to read the walls of a junction, not enough to read the level.")]
+        [Range(2f, 14f)] public float lanternRevealRadius = 5.5f;
+        [Tooltip("Colour of the lantern's light and of the walls it draws. Warm on purpose: every other cyan in the game is a wall, an echo or you, and the one thing that is not a sound should not look like one.")]
+        public Color lanternColor = new Color(1f, 0.78f, 0.45f, 1f);
+        [Tooltip("Brightness of the halo around the lamp itself. Low: it tells the player where the lamp is, it does not light the screen.")]
+        [Range(0.02f, 0.5f)] public float lanternGlowAlpha = 0.16f;
+        [Tooltip("Brightness of the walls the lamp draws. Above wall memory and below an arc: this is light, not memory and not a wave.")]
+        [Range(0.05f, 1f)] public float lanternRevealAlpha = 0.6f;
 
         [Header("Footprint trail")]
         [Tooltip("Seconds a footprint stays before it is gone. Also sizes the ring buffer.")]
@@ -275,6 +289,11 @@ namespace EchoMaze.Data
             wallMemoryMergeDistance = Mathf.Max(0.02f, wallMemoryMergeDistance);
             wallMemorySegmentLength = Mathf.Max(0.2f, wallMemorySegmentLength);
             wallMemoryFadeInSeconds = Mathf.Max(0.05f, wallMemoryFadeInSeconds);
+            wallMemoryHoldSeconds = Mathf.Clamp(wallMemoryHoldSeconds, 1f, 20f);
+            wallMemoryFadeOutSeconds = Mathf.Clamp(wallMemoryFadeOutSeconds, 0.1f, 5f);
+            lanternRevealRadius = Mathf.Clamp(lanternRevealRadius, 2f, 14f);
+            lanternGlowAlpha = Mathf.Clamp(lanternGlowAlpha, 0.02f, 0.5f);
+            lanternRevealAlpha = Mathf.Clamp(lanternRevealAlpha, 0.05f, 1f);
             trailSeconds = Mathf.Max(1f, trailSeconds);
             trailStepDistance = Mathf.Max(0.1f, trailStepDistance);
             walkSpeed = Mathf.Max(0.5f, walkSpeed);

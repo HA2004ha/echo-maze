@@ -60,6 +60,8 @@ namespace EchoMaze.Tests
             Assert.That(everything, Does.Contain("hollow"));
             Assert.That(everything, Does.Contain("door"));
             Assert.That(everything, Does.Contain("microphone"));
+            Assert.That(everything, Does.Contain("lantern"));
+            Assert.That(everything, Does.Contain("light"));
         }
 
         [Test]
@@ -86,6 +88,8 @@ namespace EchoMaze.Tests
         [TestCase(3)]
         [TestCase(4)]
         [TestCase(5)]
+        [TestCase(6)]
+        [TestCase(7)]
         public void Diagram_HasBoundedGeometryThroughoutItsLoop(int page)
         {
             var go = new GameObject("diagram", typeof(RectTransform));
