@@ -1,3 +1,4 @@
+using EchoMaze.Audio;
 using EchoMaze.Data;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -90,6 +91,9 @@ namespace EchoMaze.Gameplay
 
             var lamp = go.AddComponent<Lantern>();
             lamp.Build(profile);
+
+            // Light makes no noise the director hears; the hand that sets it down does make a sound.
+            SoundBoard.PlayAt(SoundId.LampPlace, at, 0.8f);
 
             if (session != null)
             {

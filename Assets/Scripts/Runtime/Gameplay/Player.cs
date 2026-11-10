@@ -1,4 +1,5 @@
 using System;
+using EchoMaze.Audio;
 using EchoMaze.Core;
 using EchoMaze.Data;
 using UnityEngine;
@@ -273,6 +274,9 @@ namespace EchoMaze.Gameplay
 
             nextStepTime = Time.time + profile.footstepInterval;
             director.ReportNoise(Position, profile.footstepLoudness);
+
+            // Quiet steps return before this line, so Shift is silent to the ear as well as to the director.
+            SoundBoard.Play(SoundId.Footstep, 0.32f);
         }
 
         void FixedUpdate()

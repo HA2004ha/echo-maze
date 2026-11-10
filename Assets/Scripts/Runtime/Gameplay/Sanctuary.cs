@@ -1,3 +1,4 @@
+using EchoMaze.Audio;
 using UnityEngine;
 
 namespace EchoMaze.Gameplay
@@ -39,6 +40,10 @@ namespace EchoMaze.Gameplay
             if (nowInside && !inside)
             {
                 session.SetCheckpoint(player.Position);
+
+                // Crossing the threshold is the one safe sound in the game, and it has to be its own sound:
+                // the HUD line says it, but a player reading the room with their ears cannot see the HUD.
+                SoundBoard.PlayAt(SoundId.Sanctuary, player.Position, 0.7f);
             }
 
             inside = nowInside;

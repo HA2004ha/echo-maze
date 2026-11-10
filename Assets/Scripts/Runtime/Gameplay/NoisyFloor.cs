@@ -1,4 +1,5 @@
 using System;
+using EchoMaze.Audio;
 using EchoMaze.Core;
 using EchoMaze.Data;
 using UnityEngine;
@@ -63,6 +64,7 @@ namespace EchoMaze.Gameplay
 
             nextNoiseAt = Time.time + interval;
             director.ReportNoise(position, profile.noisyFloorLoudness);
+            SoundBoard.PlayAt(SoundId.GlassStep, position, 0.55f);
             Noised?.Invoke();
         }
 

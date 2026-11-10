@@ -106,6 +106,11 @@ namespace EchoMaze.Levels
         /// The two objects the GDD asks a tutorial to contain: a round signature and a cornered one. They are
         /// placed as cells rather than as free transforms so that the map and the wave cannot disagree about
         /// where the pillar is.
+        ///
+        /// Both are deliberately smaller than their cell. They are **blockers**: the navigation grid counts
+        /// their cells as impassable, the corridor beside them is too narrow to squeeze past, and the map is
+        /// built so the way on goes around. The air around them is what makes them read as objects rather
+        /// than wall, so it is drawn even though it cannot be walked.
         /// </summary>
         void BuildObstacles()
         {

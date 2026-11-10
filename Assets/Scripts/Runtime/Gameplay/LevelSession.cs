@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using EchoMaze.Audio;
 using EchoMaze.Core;
 using EchoMaze.UI;
 using UnityEngine;
@@ -128,6 +129,7 @@ namespace EchoMaze.Gameplay
             }
 
             PauseToggled?.Invoke(value);
+            SoundBoard.Play(SoundId.UiClick, 0.45f);
         }
 
         public void SetCheckpoint(Vector2 position)
@@ -146,6 +148,7 @@ namespace EchoMaze.Gameplay
         /// <summary>A line for the HUD that stays up for <paramref name="seconds"/> instead of the default.</summary>
         public void Hint(string text, float seconds)
         {
+            SoundBoard.Play(SoundId.Hint, 0.3f);
             Hinted?.Invoke(text, seconds);
         }
 
@@ -203,10 +206,21 @@ namespace EchoMaze.Gameplay
 
             IsComplete = true;
             SetPaused(true);
+            SoundBoard.Instance?.Victory();
             Completed?.Invoke();
             gameObject.AddComponent<VictoryMapView>().Show(this, player);
         }
 
-        void OnPing(PingRecord ping) => PingCount++;
+        /// <summary>
+        /// The wave coming back, in the player's ears. Played from the session rather than the renderer
+        /// because a ping the microphone made and one the player pressed for are the same sound, and both
+        /// have to return: the echo is the game's voice, not an effect on a key.
+        /// </summary>
+        void OnPing(PingRecord ping)
+        {
+            PingCount++;
+            SoundBoard.Play(SoundId.PingEcho, SoundSynth.PingEchoVolume(ping.loudness),
+                            SoundSynth.PingEchoPitch(ping.loudness));
+        }
     }
 }

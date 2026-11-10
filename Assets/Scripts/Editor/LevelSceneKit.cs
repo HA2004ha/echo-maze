@@ -25,6 +25,7 @@ namespace EchoMaze.EditorTools
                                                int lamps = 2)
         {
             UiKit.EnsureEventSystem();
+            SceneKit.EnsureSoundBoard();
             EnsureDeathSnarl(player, director);
             GameObject notice = SceneKit.EnsureDeathNotice();
             RunController runner = SceneKit.EnsureRunController(player, notice);

@@ -269,3 +269,40 @@ Two own-mesh renderers (`WallMemoryView`, `FootprintTrailView`, built on `QuadMe
 **Is erasing every trail in about 4 s heavy?** No, by construction: at most `33` points, expiry is a pop from the tail, nothing allocates, and the draw is `<= 33` quads in one mesh. **Measured cost:** **0.0033 ms per frame** for 20 dots, measured 2026-10-30 by `TrailBufferTests.RebuildingAFullTrail_CostMeasured` (1000 rebuilds, EditMode) — about 0.02 % of a 16.7 ms frame. Estimate from the work done, not a measurement: 132 vertices written and one 33-quad mesh upload per frame.
 
 **Decision recorded:** Shift-walking leaves footprints too (the owner did not ask for silent steps to be untraceable). The trail is the player's only; the Crawler leaves none. Prints within `0.4` m of the player are not drawn (the Echo layer sorts over the body).
+
+
+## Sound and music (2026-11-11)
+
+Every event in the game makes a sound, and the sound is generated from code (`SoundSynth`, `MusicScore`) rather than shipped as a clip. `SoundBoard` plays it by `SoundId`. The sound designer still owns the palette: a file dropped at `Assets/Audio/<SoundId>.wav` is wired by `SceneKit.EnsureSoundBoard` and **replaces that one sound**, and anything not yet replaced stays synthesised — so a half-collected palette is a game with sound, not a game with holes.
+
+The mix is four numbers on the `Sound Board` object in every generated scene (one board survives scene loads; copies destroy themselves):
+
+| Field | Value | What it does | Range | Too high | Too low |
+| --- | --- | --- | --- | --- | --- |
+| `sfxVolume` | `0.9` | The bus for every event clip, 2D and 3D | `0..1` | The interface ticks compete with the wave the game is read by | A door closing under a roar is indistinguishable from a door not closing |
+| `musicVolume` | `0.5` | The menu theme and a room's bed, after the fade-in | `0..1` | The music is the loudest thing in a game about listening | The theme is inaudible under the room's own air |
+| `heartbeatVolume` | `0.45` | Ceiling of the chase heartbeat, scaled by `Threat` | `0..1` | It reads as an enemy rather than as the player's body | A hunt has no pulse and the chase is only visual |
+| `musicFadeSeconds` | `1.6` | How long a theme takes to arrive or leave | `0.2..6` | A room loads with music already at full volume | A silence between chapters long enough to read as a hang |
+
+**What plays, and where the call lives.** The rule is that the object that *causes* the event makes the sound, so a new event is one line at its source and nothing central has to learn about it.
+
+| Sound | Cause | Call site |
+| --- | --- | --- |
+| `UiHover` / `UiClick` | A button under the pointer or pressed | `UIButtonFeedback` (every generated button has one; hover is rate-limited to 80 ms because a selected button fires enter and select together) |
+| `Footstep` | The body's own step clock | `Player.UpdateFootsteps` — Shift returns before it, so the silent step is silent to the ear too |
+| `GlassStep` | Standing on a noise zone | `NoisyFloor.Update` |
+| `Hint` | A line arriving on the HUD | `LevelSession.Hint` |
+| `PingEcho` | Any wave, from the key or the microphone | `LevelSession.OnPing`, volume and pitch from the ping's `loudness` (`SoundSynth.PingEchoVolume/Pitch`) |
+| `DoorOpen` / `DoorClose` | `E` at a door | `Door.Interact`, played **at the door** so which side of the room it is on is audible |
+| `LampPlace` | `Q` with a lamp | `LanternKit.PlaceAt` |
+| `Sanctuary` | Crossing a safe room's threshold | `Sanctuary.Update` |
+| `Alert` / `GiveUp` | A hunt starting or its deadline expiring | *Reserved*: the Crawler's week-2 stub has no transition hook yet, so these two are in the palette and not yet called (`SoundBoard.AnyoneHunting` reads `Crawler.IsHunting` for the heartbeat) |
+| `Heartbeat` | Any Crawler hunting | `SoundBoard.Update`, driven by `Threat`; it fades in over ~0.7 s rather than switching on |
+| `MenuTheme` / `ChapterBed` | The scene that just loaded (`Boot` vs any scene with a `LevelSession`) | `SoundBoard.ChooseCueForScene`, on `SceneManager.sceneLoaded` |
+| `VictorySting` | The exit reached | `LevelSession.Complete` → `SoundBoard.Victory`, which also ducks the bed to 30 % so the two do not fight |
+
+The ears are one object, and it is not the camera. A level puts the `AudioListener` on the player, because the camera sits at z = −10 and would hear the whole room from ten metres. `Boot` has no player in it, so `SoundBoard.EnsureEars` keeps a listener of its own and switches it off the moment a scene brings one — exactly one enabled listener, always. (The menu shipped once without any: the theme and every button press were inaudible while the levels were fine. `SoundBoardEarsTests` holds both halves of the rule.)
+
+The three pieces are written as note data in `MusicScore`. The menu theme is eight bars in D minor at 60 BPM (Dm–Bb–F–Gm–A), a four-bar phrase that climbs to the fifth answered by one that lands on the tonic over the dominant, so the loop point is a cadence: pad, bass, and the tune on a bell, with the tune played twice more behind it — a beat and a half late and an octave down, then three beats late and a whisper. That canon is the game's own subject in the music, and the room answering is the first thing the menu says. A room's bed is two drones and two swells of air at 52 BPM with no motif, because a chase adds the heartbeat and the bed must not already be tense. Loops are rendered with their tails wrapped and the seam crossfaded (`SoundSynth.CloseSeam`), so a loop that plays for ten minutes does not click.
+
+**Measured cost:** **~1.9 s of arithmetic for the whole palette** (17 sounds) in a cold process, ~1.3 s once the runtime is warm — measured 2026-11-11 by `SoundSynthTests.TheWholePalette_IsCheapEnoughToBuildWhileTheMenuOpens` in EditMode. The split is what matters: **43 ms is the fourteen events**, which are generated lazily on the main thread the first time each is played; **the remaining ~1.9 s is the three pieces of music**, which are computed on a worker thread and only turned into an `AudioClip` on the main thread when they land (`SoundBoard.CollectFinishedMusic`). The theme is the largest of the three: it is 32 s of audio with fifteen bells, two canons behind them and a pad, and the canon notes' ring is capped at 3.6 s so a long note does not cost four times the arithmetic. The menu therefore opens on its first frame and the theme fades in a moment later, rather than the first frame arriving a second late. In batch mode nothing is generated and nothing plays — `SoundBoard.AudioEnabled` — but the calls are still counted, which is what lets a PlayMode test assert that a door opening asked for the door sound.

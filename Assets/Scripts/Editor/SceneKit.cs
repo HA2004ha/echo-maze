@@ -4,6 +4,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
+using EchoMaze.Audio;
 using EchoMaze.Core;
 using EchoMaze.Data;
 using EchoMaze.Gameplay;
@@ -1304,6 +1305,45 @@ namespace EchoMaze.EditorTools
             SetReference(session, "director", director);
             SetString(session, "chapterTitle", chapterTitle);
             return session;
+        }
+
+        /// <summary>
+        /// The board every scene plays through. A clip the sound designer dropped in
+        /// <c>Assets/Audio</c> under the sound's own name (<c>Footstep.wav</c>, <c>DoorOpen.wav</c>,
+        /// <c>MenuTheme.wav</c> …) is wired here and wins over the synthesised palette; anything missing
+        /// stays synthesised, so the game has a sound for every event while the palette is being collected.
+        ///
+        /// The board persists across scenes, so every scene gets one and all but the first remove
+        /// themselves at runtime — that is what lets a chapter opened directly from the editor still have
+        /// music and sound effects.
+        /// </summary>
+        public static SoundBoard EnsureSoundBoard()
+        {
+            GameObject go = FindOrCreate("Sound Board");
+            var board = EnsureComponent<SoundBoard>(go);
+
+            var slots = new System.Collections.Generic.List<SoundBoard.ClipSlot>();
+            foreach (SoundId id in SoundCatalog.All)
+            {
+                AudioClip clip = AssetDatabase.LoadAssetAtPath<AudioClip>(SoundCatalog.AssetPath(id));
+                if (clip != null)
+                {
+                    slots.Add(new SoundBoard.ClipSlot { id = id, clip = clip });
+                }
+            }
+
+            var serialized = new SerializedObject(board);
+            SerializedProperty array = serialized.FindProperty("clips");
+            array.arraySize = slots.Count;
+            for (int i = 0; i < slots.Count; i++)
+            {
+                SerializedProperty slot = array.GetArrayElementAtIndex(i);
+                slot.FindPropertyRelative("id").enumValueIndex = (int)slots[i].id;
+                slot.FindPropertyRelative("clip").objectReferenceValue = slots[i].clip;
+            }
+
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            return board;
         }
 
         /// <summary>

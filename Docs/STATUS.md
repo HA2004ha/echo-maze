@@ -173,6 +173,37 @@ chapter.
   `LanternStockTests`), the PlayMode `LanternRevealTests`, and captures of a lit room and the new guide
   card from the player build.
 
+### The palette, and the theme (2026-11-11)
+
+- **Every event in the game now makes a sound, and the menu has a theme.** Fourteen events (interface,
+  footsteps, glass, hints, the wave returning, doors, lamps, sanctuaries, the chase heartbeat) and three
+  pieces of music (menu, a room's bed, the victory sting) are generated from code by `SoundSynth` and
+  `MusicScore`, and played by `SoundBoard` — one board that survives scene loads and picks the cue from the
+  scene that just loaded.
+- The sound designer's palette replaces it file by file: `SceneKit.EnsureSoundBoard` wires any
+  `Assets/Audio/<SoundId>.wav` into the board, so dropping a file in is the whole of the work. The three
+  CC0 clips already in the project are unchanged.
+- **The menu theme is a piece, not a pad** (rewritten 2026-11-11): eight bars in D minor at 60 BPM, a
+  four-bar phrase answered by a four-bar phrase, the second landing on the tonic over the dominant so the
+  loop point is a cadence. Pad and bass hold the harmony, a bell carries the tune, and the tune is played
+  twice more behind it — a beat and a half late and an octave down, then three beats late and a whisper.
+  The room answers the menu, which is what the game is about.
+- **The menu was silent, and is not now.** `Boot` had no `AudioListener` in it — every level puts one on the
+  player — so the theme and every button press in the menu were inaudible while the levels were fine.
+  `SoundBoard.EnsureEars` keeps the board's own listener and gives it up to a player that has one; the two
+  halves are pinned by `SoundBoardEarsTests`.
+- **Measured:** the whole palette is **~1.9 s** of arithmetic in a cold process (~1.3 s warm), of which
+  **43 ms** is the fourteen events (generated lazily on the main thread) and the rest is the three pieces of
+  music (generated on a worker thread, clipped on the main thread when they land). The menu opens on its
+  first frame; the theme fades in.
+- Verified: the EditMode suite is **199 / 199** green and the new PlayMode ears tests are **2 / 2**
+  (`TestResults.xml`, 2026-11-11), including seven palette tests — every event audible, no NaN or
+  out-of-range sample, every loop joins without a step, the theme is long enough to be music, and the echo
+  grows louder and falls in pitch with the shout.
+- **Not verified:** batch mode has no audio device, so whether the palette *sounds* right is still a person
+  with headphones. `Alert` and `GiveUp` are written and in the enum but not yet called: the Crawler's
+  week-2 investigate stub has no transition to hang them on.
+
 ## What is real, and what is still a promise
 
 These are deliberately listed so the next stage does not mistake a built room for a finished system:

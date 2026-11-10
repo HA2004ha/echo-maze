@@ -1,3 +1,4 @@
+using EchoMaze.Audio;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -17,7 +18,8 @@ namespace EchoMaze.UI
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class UIButtonFeedback : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler,
-                                                    ISelectHandler, IDeselectHandler
+                                                    ISelectHandler, IDeselectHandler,
+                                                    IPointerDownHandler, ISubmitHandler
     {
         [Tooltip("The frame to light. Left empty, Awake takes the first Image on this object, which is " +
                  "what every generated button has.")]
@@ -37,6 +39,7 @@ namespace EchoMaze.UI
         bool hovered;
         bool selected;
         bool tracking;
+        float lastHoverSound;
 
         void Awake()
         {
@@ -96,6 +99,7 @@ namespace EchoMaze.UI
 
         public void OnPointerEnter(PointerEventData eventData)
         {
+            HoverSound();
             hovered = true;
             BeginTracking();
         }
@@ -108,8 +112,28 @@ namespace EchoMaze.UI
 
         public void OnSelect(BaseEventData eventData)
         {
+            HoverSound();
             selected = true;
             BeginTracking();
+        }
+
+        public void OnPointerDown(PointerEventData eventData) => SoundBoard.Play(SoundId.UiClick, 0.7f);
+
+        public void OnSubmit(BaseEventData eventData) => SoundBoard.Play(SoundId.UiClick, 0.7f);
+
+        /// <summary>
+        /// A pointer entering a selected button fires both handlers for one arrival, so the sound is rate
+        /// limited rather than left to double up. 80 ms is under the ear's ability to hear two ticks.
+        /// </summary>
+        void HoverSound()
+        {
+            if (Time.unscaledTime - lastHoverSound < 0.08f)
+            {
+                return;
+            }
+
+            lastHoverSound = Time.unscaledTime;
+            SoundBoard.Play(SoundId.UiHover, 0.45f);
         }
 
         public void OnDeselect(BaseEventData eventData)

@@ -1,3 +1,4 @@
+using EchoMaze.Audio;
 using EchoMaze.Core;
 using EchoMaze.Data;
 using UnityEngine;
@@ -147,6 +148,10 @@ namespace EchoMaze.Gameplay
                 Vector2 here = transform.position;
                 director.ReportNoise(here, IsClosed ? profile.doorCloseLoudness : profile.doorOpenLoudness);
             }
+
+            // Heard from the doorway rather than from the player's head: which side of the room a door is
+            // on is information, and a flat sound would throw it away.
+            SoundBoard.PlayAt(IsClosed ? SoundId.DoorClose : SoundId.DoorOpen, transform.position);
         }
 
         /// <summary>

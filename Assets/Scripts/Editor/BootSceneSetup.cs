@@ -75,6 +75,10 @@ namespace EchoMaze.EditorTools
             VoiceCalibration calibration = SceneKit.EnsureVoiceCalibration(director);
             GameFlow flow = SceneKit.EnsureGameFlow(Chapters, MenuScene);
 
+            // The menu is where the theme is first heard: the board opens on it because Boot has no level
+            // session in it, and keeps playing through every chapter after that.
+            SceneKit.EnsureSoundBoard();
+
             // The rejected phase-1 backdrop: collider-only 2D walls that were invisible between waves.
             // Gone on rebuild rather than left dormant, so nobody can mistake its objects for the stage.
             SceneKit.RemoveLegacyMenuStage();
