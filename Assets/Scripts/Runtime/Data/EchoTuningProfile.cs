@@ -246,8 +246,14 @@ namespace EchoMaze.Data
         [Range(2f, 14f)] public float lanternRevealRadius = 5.5f;
         [Tooltip("Colour of the lantern's light and of the walls it draws. Warm on purpose: every other cyan in the game is a wall, an echo or you, and the one thing that is not a sound should not look like one.")]
         public Color lanternColor = new Color(1f, 0.78f, 0.45f, 1f);
+        [Tooltip("Colour of the lamp's inner disc: deeper and redder than the halo, so the light has a body instead of one flat wash.")]
+        public Color lanternInnerColor = new Color(1f, 0.52f, 0.18f, 1f);
         [Tooltip("Brightness of the halo around the lamp itself. Low: it tells the player where the lamp is, it does not light the screen.")]
-        [Range(0.02f, 0.5f)] public float lanternGlowAlpha = 0.16f;
+        [Range(0.02f, 0.5f)] public float lanternGlowAlpha = 0.22f;
+        [Tooltip("How much the light breathes, as a fraction of its brightness. A flame moves; a lamp post does not. Zero is a steady light for a room that should feel dead.")]
+        [Range(0f, 0.3f)] public float lanternFlickerDepth = 0.16f;
+        [Tooltip("Fraction of the radius over which a drawn wall fades to nothing. The light must not end on a cut edge, or the lamp reads as a hard-edged circle pasted on the room.")]
+        [Range(0.05f, 0.6f)] public float lanternEdgeFadeFraction = 0.35f;
         [Tooltip("Brightness of the walls the lamp draws. Above wall memory and below an arc: this is light, not memory and not a wave.")]
         [Range(0.05f, 1f)] public float lanternRevealAlpha = 0.6f;
 
@@ -293,6 +299,8 @@ namespace EchoMaze.Data
             wallMemoryFadeOutSeconds = Mathf.Clamp(wallMemoryFadeOutSeconds, 0.1f, 5f);
             lanternRevealRadius = Mathf.Clamp(lanternRevealRadius, 2f, 14f);
             lanternGlowAlpha = Mathf.Clamp(lanternGlowAlpha, 0.02f, 0.5f);
+            lanternFlickerDepth = Mathf.Clamp(lanternFlickerDepth, 0f, 0.3f);
+            lanternEdgeFadeFraction = Mathf.Clamp(lanternEdgeFadeFraction, 0.05f, 0.6f);
             lanternRevealAlpha = Mathf.Clamp(lanternRevealAlpha, 0.05f, 1f);
             trailSeconds = Mathf.Max(1f, trailSeconds);
             trailStepDistance = Mathf.Max(0.1f, trailStepDistance);

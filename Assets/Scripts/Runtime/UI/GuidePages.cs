@@ -186,20 +186,22 @@ namespace EchoMaze.UI
                 "of them is lit by something that is not a lantern."),
 
             new GuidePage("the lantern",
-                "two or three of them stand in every room, and no light comes from\n" +
-                "anywhere else. they are fixed: you do not carry a torch here, and a\n" +
-                "lamp will not move for you.\n" +
+                "you carry two of them, three in the rooms that mean it. no light\n" +
+                "comes from anywhere else: what you are given is not a torch but\n" +
+                "a few lamps, and where they go is your decision.\n" +
                 "\n" +
-                "  what it does   a lit lamp draws every wall within about five metres,\n" +
-                "                 and keeps drawing them while it stands there.\n" +
-                "  what it costs  nothing. light makes no noise, and nothing in the\n" +
-                "                 dark can hear it: it is the one thing in a room you\n" +
-                "                 can read for free.\n" +
-                "  what it is not a map. the walls past its reach stay dark, and the\n" +
-                "                 light ends where the room does.\n" +
+                "  q            set one down at your feet. it stays there: you cannot\n" +
+                "               pick it up again, and it burns for the rest of the\n" +
+                "               room.\n" +
+                "  light        it draws every wall within about five metres, and\n" +
+                "               keeps drawing them while it stands there.\n" +
+                "  what it costs nothing. light makes no noise, and nothing in\n" +
+                "               the dark can hear it: it is the one thing you can\n" +
+                "               read for free.\n" +
+                "  what it is not a map. the walls past its reach stay dark, and\n" +
+                "               the light ends where the room does.\n" +
                 "\n" +
-                "a room's lamps are its landmarks: stand in one, read what it shows,\n" +
-                "and hold the rest in your own six seconds."),
+                "so a lamp spends a room's dark on the part of it you chose to keep."),
         };
 
         public static GuidePage[] All => all;

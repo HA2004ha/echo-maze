@@ -70,6 +70,23 @@ namespace EchoMaze.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator TheKit_GivesTwoLamps_AndRefusesTheThird()
+        {
+            GameObject go = New("rig kit");
+            var kit = go.AddComponent<LanternKit>();
+            kit.Build(profile, player, null, 2);
+
+            yield return null;
+
+            Assert.AreEqual(2, kit.Remaining);
+            Assert.IsNotNull(kit.PlaceHere(), "the first lamp is the player's to place");
+            Assert.AreEqual(1, kit.Remaining);
+            Assert.IsNotNull(kit.PlaceHere());
+            Assert.AreEqual(0, kit.Remaining);
+            Assert.IsNull(kit.PlaceAt(Vector2.zero), "a third lamp is a room lit for free");
+        }
+
+        [UnityTest]
         public IEnumerator ALamp_StaysWhereTheRoomPutIt()
         {
             Vector2 where = new Vector2(2.5f, -1.5f);

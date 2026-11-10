@@ -33,9 +33,6 @@ namespace EchoMaze.Levels
         [SerializeField] LevelSession session;
         [Tooltip("Optional: the rig whose clamp this level sets from its own extent.")]
         [SerializeField] PlayerCameraRig cameraRig;
-        [Tooltip("Lanterns left in this room. The chapter builder sets two or three from the chapter's " +
-                 "difficulty; zero is the corridor, which is a hand-built scene and has none.")]
-        [SerializeField, Range(0, 4)] int lanternCount = 2;
 
         readonly List<Door> doors = new List<Door>();
 
@@ -72,7 +69,6 @@ namespace EchoMaze.Levels
             BuildNoiseZones();
             BuildSanctuaries();
             BuildExit();
-            BuildLanterns();
 
             player.PlaceAt(grid.WorldOfCell(spawn.x, spawn.y));
 
@@ -310,40 +306,6 @@ namespace EchoMaze.Levels
             probe.isTrigger = true;
 
             go.AddComponent<LevelExit>().Build(session);
-        }
-
-        /// <summary>
-        /// The room's lanterns: the light the player carries, built from the map rather than authored into
-        /// it, so a level is still one .txt and no scene work. Where they go is
-        /// <see cref="LanternPlacement"/>'s decision — furthest from the spawn, then furthest from each other,
-        /// which puts two lamps in two corners instead of two in one.
-        /// </summary>
-        void BuildLanterns()
-        {
-            Transform root = Child("Lanterns");
-            if (lanternCount <= 0 || director == null || player == null || grid == null)
-            {
-                return;
-            }
-
-            if (!grid.FindFirst(MazeGrid.Spawn, out Vector2Int spawn))
-            {
-                return;
-            }
-
-            List<Vector2Int> cells = LanternPlacement.Choose(grid, spawn, lanternCount);
-            for (int i = 0; i < cells.Count; i++)
-            {
-                GameObject go = new GameObject("Lantern " + i);
-                go.transform.SetParent(root, false);
-                go.transform.position = grid.WorldOfCell(cells[i].x, cells[i].y);
-
-                // No collider and no layer: a lamp is scenery, not something E can reach. It stands where
-                // the room put it for the whole run.
-
-                var lantern = go.AddComponent<Lantern>();
-                lantern.Build(director.Profile);
-            }
         }
 
         List<Vector2Int> FloodFill(Vector2Int from, char marker)

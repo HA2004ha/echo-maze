@@ -32,6 +32,9 @@ namespace EchoMaze.UI
         [SerializeField] Text promptLabel;
         [SerializeField] Text titleLabel;
         [SerializeField] Text noticeLabel;
+        [Tooltip("How many lamps are still in the pack. The one HUD line the player can spend.")]
+        [SerializeField] LanternKit lanterns;
+        [SerializeField] Text lampsLabel;
 
         [Tooltip("Seconds the chapter title stays up before it fades out. Long enough to read a name, short " +
                  "enough that it is gone before the first ping.")]
@@ -95,6 +98,13 @@ namespace EchoMaze.UI
             if (noticeLabel != null)
             {
                 noticeLabel.color = Fade(noticeUntil, noticeLabel.color);
+            }
+
+            if (lampsLabel != null)
+            {
+                // Written every frame rather than on an event: a lamp is spent on Q, which the HUD never sees,
+                // and a counter that lags one action behind is worse than no counter.
+                lampsLabel.text = lanterns != null ? "lamps " + lanterns.Remaining : "";
             }
         }
 

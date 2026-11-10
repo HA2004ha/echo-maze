@@ -40,7 +40,7 @@ Tick items here as they land; the reasoning stays in PLAN.md.
 - [ ] Sanctuary: enemies stop and give up at the threshold
 - [ ] Memory trace: wall hits stay faint for 10–15 s, walls only
 - [x] Wall memory: touched walls stay as thin neon lines from the player's memory, never re-read from colliders (echo hits do not feed it yet) (2026-10-30); the lines are a 6 s trace since 2026-11-08, not a permanent map
-- [x] Lanterns: 2-3 fixed, always-lit lamps per room, placed from the map; each draws the walls inside 5.5 m in warm light, with no noise and no key (2026-11-08)
+- [x] Lanterns: 2-3 in the player's pack per room, set down with `Q` wherever they choose; a placed lamp is fixed, draws the walls inside 5.5 m in warm light, and makes no noise (2026-11-08)
 - [x] Footprint trail that vanishes after 4 s (ring buffer, own mesh) (2026-10-30)
 - [ ] Full section reset on death (doors, enemies, marbles)
 - [ ] Calibration silence (≈5 s) at the start of level 1

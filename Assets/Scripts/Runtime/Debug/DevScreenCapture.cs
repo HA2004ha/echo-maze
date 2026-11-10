@@ -53,18 +53,23 @@ namespace EchoMaze.DebugTools
                          SceneManager.GetActiveScene().name != scene)
                 {
                     SceneManager.LoadScene(scene, LoadSceneMode.Single);
+
+                    // A single load is applied at the end of the frame, so the room's player and its lamp kit
+                    // do not exist yet on this line: everything below that reaches for them waits one frame.
+                    yield return null;
                 }
 
-                // A lamp is a fixed place, so a capture of one needs the body next to it rather than a key:
-                // the nearest lamp is found and the player is put beside it, through the same public call
-                // the checkpoint restart uses.
+                // The lamps are the player's to place, so a capture of one takes the same two calls a Q
+                // press makes: spend one from the pack beside the body, then step back into the light.
                 if (toLantern)
                 {
                     Player body = FindFirstObjectByType<Player>();
-                    Lantern lamp = FindFirstObjectByType<Lantern>();
-                    if (body != null && lamp != null)
+                    LanternKit kit = FindFirstObjectByType<LanternKit>();
+                    if (body != null && kit != null)
                     {
-                        body.PlaceAt((Vector2)lamp.transform.position + Vector2.left * 1.4f);
+                        Vector2 at = body.Position;
+                        kit.PlaceAt(at + Vector2.right * 1.2f);
+                        body.PlaceAt(at + Vector2.left * 1.4f);
                     }
                 }
 

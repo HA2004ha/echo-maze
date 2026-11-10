@@ -24,6 +24,8 @@ namespace EchoMaze.Gameplay
                     return "shift walks silently — steps make noise";
                 case Hint.Door:
                     return "e: open or close a door";
+                case Hint.Lantern:
+                    return "q: put a lamp down — it stays and draws the walls";
                 default:
                     return "";
             }

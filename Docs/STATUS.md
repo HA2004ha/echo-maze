@@ -164,13 +164,13 @@ chapter.
   `wallMemoryHoldSeconds` / `wallMemoryFadeOutSeconds`, the view rebuilds while any line is still aging, and a
   second touch on an existing line restarts its six seconds (`WallMemory.Add` stamps the merge, locked by
   `WallMemoryTests.ATouchAgain_RefreshesTheLineItMergesWith`).
-- **Lanterns** are the game's first light that is not a sound, and the answer to "every screen is dark". Every
-  grid room leaves two of them, three in the hard and brutal ones (`ChapterSceneSetup.LanternsFor`), placed by
-  `LanternPlacement.Choose` — furthest from the spawn, then furthest from each other, never on the spawn, the
-  exit or a doorway, deterministic per map. A lamp is **fixed and lit**: it stands where the room put it and
-  has no key, no carry and no state the player can change. While it stands it draws every wall within
-  `lanternRevealRadius` (5.5 m) in warm light and makes no noise, so it is a landmark to walk to rather than a
-  torch to take with you.
+- **Lanterns** are the game's first light that is not a sound, and the answer to "every screen is dark". The
+  room places none of them: each chapter gives the player **two lamps, three in the hard and brutal rooms**
+  (`LevelSceneKit.LampsFor`), and `Q` sets one down where the body is standing. A placed lamp is fixed — no
+  carrying, no picking it back up — and while it stands it draws every wall within `lanternRevealRadius`
+  (5.5 m) in warm light, faded towards the edge of its circle, for free: light makes no noise. The budget is
+  `LanternStock` (pure, EditMode-tested), the spending is `LanternKit`, the drawing is `Lantern`, and the HUD
+  prints `lamps n` under the cooldown sweep.
 - The guide has a ninth card (`the lantern`), the chapter-one hints gained the lamp line, and chapter X's copy
   no longer claims its light is the only one in the game.
 - Verified: `GameBootstrap.BuildEverything`, the EditMode suite (193 passed, 0 failed, including the new

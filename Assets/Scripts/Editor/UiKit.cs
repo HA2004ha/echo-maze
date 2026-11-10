@@ -780,7 +780,8 @@ namespace EchoMaze.EditorTools
         /// Re-running keeps one canvas and re-wires the same four elements, so a bootstrap cannot leave a
         /// second bar on screen.
         /// </summary>
-        public static HudView EnsureHud(EchoDirector director, Player player, LevelSession session)
+        public static HudView EnsureHud(EchoDirector director, Player player, LevelSession session,
+                                        LanternKit lanternKit = null)
         {
             Canvas canvas = EnsureCanvas("HUD", HudSortingOrder);
             Transform root = canvas.transform;
@@ -795,6 +796,11 @@ namespace EchoMaze.EditorTools
             Text notice = EnsureLabel(root, "Notice", "", 26, CyanMild, new Vector2(0f, 340f),
                                       new Vector2(1100f, 60f));
 
+            // The lamp count sits under the cooldown sweep, at the edge the player already looks to when
+            // they want to know what the next press costs: one column, two debts, cooldown and light.
+            Text lamps = EnsureLabel(root, "Lamps", "", 22, CyanMild, new Vector2(-860f, 296f),
+                                     new Vector2(280f, 40f));
+
             var view = canvas.GetComponent<HudView>() ?? canvas.gameObject.AddComponent<HudView>();
             SceneKit.SetReference(view, "director", director);
             SceneKit.SetReference(view, "player", player);
@@ -803,6 +809,8 @@ namespace EchoMaze.EditorTools
             SceneKit.SetReference(view, "titleLabel", title);
             SceneKit.SetReference(view, "promptLabel", prompt);
             SceneKit.SetReference(view, "noticeLabel", notice);
+            SceneKit.SetReference(view, "lampsLabel", lamps);
+            SceneKit.SetReference(view, "lanterns", lanternKit);
             return view;
         }
 

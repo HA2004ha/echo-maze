@@ -5,17 +5,17 @@ using UnityEngine;
 namespace EchoMaze.Gameplay
 {
     /// <summary>
-    /// A lamp standing where the room put it: the game's only light that is not a sound.
+    /// A lamp the player sets down: the game's only light that is not a sound.
     ///
     /// The room is drawn by echoes, and an echo is gone as soon as it has arrived — which is the point of the
     /// game and also the reason a player can spend a whole chapter lost. A lantern is the answer that does not
     /// break the rule: it draws nothing the room has not already shown, it only draws the walls within its
-    /// reach and keeps drawing them for as long as it stands there. Light makes no noise, so walking into a
-    /// lamp's circle is the one way to read part of a room without paying for it.
+    /// reach and keeps drawing them for as long as it stands there. Light makes no noise, so a lamp is the one
+    /// way to read part of a room without paying for it.
     ///
-    /// It is fixed on purpose. It is not carried, not picked up and not moved by any key: a lamp is a place,
-    /// and the thing a place is good for is knowing where you are in the dark. What it lights, it lights
-    /// because you walked there.
+    /// It is fixed the moment it is placed. There is no carrying, no picking up and no moving it afterwards:
+    /// <see cref="LanternKit"/> decides where the chapter's lamps go, and this decides what one of them shows.
+    /// A lamp is a place, and the thing a place is good for is knowing where you are in the dark.
     ///
     /// Drawn with sprites from a fixed pool, like <see cref="TouchMarks"/> and for the same reason: the echo
     /// field's mesh buffer belongs to the live waves, and a reveal that shared it would blink out whenever the
@@ -36,18 +36,23 @@ namespace EchoMaze.Gameplay
         [SerializeField] EchoTuningProfile profile;
 
         SpriteRenderer glow;
+        SpriteRenderer halo;
         SpriteRenderer core;
         SpriteRenderer[] lines;
         WallMemory reveal;
         int drawn;
         float retryUntil;
+        Vector3 glowScale;
+        Vector3 haloScale;
+        Color glowColor;
+        Color haloColor;
 
         public bool IsLit { get; private set; }
 
         /// <summary>Segments the reveal is drawing. Read by the debug window and by the tests.</summary>
         public int RevealedSegments => reveal != null ? reveal.Count : 0;
 
-        /// <summary>Wired by <see cref="EchoMaze.Levels.MazeLevel"/>, which builds the lamps from the map.</summary>
+        /// <summary>Wired by <see cref="LanternKit"/> at the moment the player sets it down.</summary>
         public void Build(EchoTuningProfile tuning)
         {
             profile = tuning;
@@ -70,6 +75,8 @@ namespace EchoMaze.Gameplay
 
         void Update()
         {
+            Breathe();
+
             // The first reveal can land before the physics world has the walls that were made in the same
             // Awake (the level builds geometry, then lamps). Retrying for a second costs nothing and turns a
             // silently unlit lamp into one that lights on the next frame.
@@ -171,23 +178,28 @@ namespace EchoMaze.Gameplay
                 }
             }
 
-            Draw();
+            Draw(origin);
         }
 
         static Vector2 Clamp(Vector2 v, Bounds box) => new Vector2(
             Mathf.Clamp(v.x, box.min.x, box.max.x), Mathf.Clamp(v.y, box.min.y, box.max.y));
 
-        void Draw()
+        /// <summary>
+        /// Draws the remembered faces, fading each one by how far it is from the lamp. Without the second
+        /// half of that the lit walls stop on a perfect circle, which is the one thing light never does.
+        /// </summary>
+        void Draw(Vector2 origin)
         {
             drawn = 0;
-            if (reveal == null || profile == null)
+            if (reveal == null || profile == null || lines == null)
             {
                 return;
             }
 
-            float thickness = profile.baseThickness * profile.wallMemoryThicknessScale * 0.9f;
+            float thickness = profile.baseThickness * profile.wallMemoryThicknessScale * 0.95f;
+            float radius = profile.lanternRevealRadius;
+            float fade = Mathf.Max(0.05f, profile.lanternEdgeFadeFraction) * radius;
             Color color = profile.lanternColor;
-            color.a = profile.lanternRevealAlpha;
 
             for (int i = 0; i < reveal.Count && drawn < lines.Length; i++)
             {
@@ -195,6 +207,14 @@ namespace EchoMaze.Gameplay
                 Vector2 delta = b - a;
                 float length = delta.magnitude;
                 if (length < 0.01f)
+                {
+                    continue;
+                }
+
+                float distance = Vector2.Distance(origin, (a + b) * 0.5f);
+                float edge = Mathf.Clamp01((radius - distance) / fade);
+                color.a = profile.lanternRevealAlpha * Mathf.SmoothStep(0f, 1f, edge);
+                if (color.a <= 0.01f)
                 {
                     continue;
                 }
@@ -214,10 +234,10 @@ namespace EchoMaze.Gameplay
         }
 
         /// <summary>
-        /// The lamp's own light: a soft warm halo whose visible fall-off ends at the radius it draws, so the
-        /// circle the player sees is the circle the walls are drawn in, and a brighter core that makes the
-        /// lamp findable from across a dark room. Warm on purpose — every other cyan in the game is a wall,
-        /// an echo or the player.
+        /// The lamp's own light in three layers: a wide gold wash whose fall-off ends at the radius it draws,
+        /// a smaller and deeper amber disc that gives the light a centre, and a white-hot core that can be
+        /// spotted from across a dark room. Warm on purpose — every other cyan in the game is a wall, an echo
+        /// or the player, and the one thing that is neither should not look like them.
         /// </summary>
         void Dress()
         {
@@ -228,17 +248,67 @@ namespace EchoMaze.Gameplay
 
             float radius = profile.lanternRevealRadius;
 
-            // The halo sprite is 2.2 world units across at scale 1, so this makes its edge the radius.
-            glow.transform.localPosition = Vector3.zero;
-            glow.transform.localScale = Vector3.one * (radius * 1.1f / 2.2f);
+            // The sprites are 2.2 world units across at scale 1, so these scales put the outer edge of each
+            // layer at the radius it covers and at about two fifths of it.
+            glowScale = Vector3.one * (radius * 1.15f / 2.2f);
+            haloScale = Vector3.one * (radius * 0.4f / 2.2f);
 
-            Color halo = profile.lanternColor;
-            halo.a = profile.lanternGlowAlpha;
-            glow.color = halo;
+            glowColor = profile.lanternColor;
+            glowColor.a = profile.lanternGlowAlpha;
+
+            haloColor = profile.lanternInnerColor;
+            haloColor.a = profile.lanternGlowAlpha * 0.85f;
+
+            glow.transform.localPosition = Vector3.zero;
+            glow.transform.localScale = glowScale;
+            glow.color = glowColor;
+
+            if (halo != null)
+            {
+                halo.transform.localPosition = Vector3.zero;
+                halo.transform.localScale = haloScale;
+                halo.color = haloColor;
+            }
 
             if (core != null)
             {
-                core.color = profile.lanternColor;
+                core.transform.localPosition = Vector3.zero;
+                core.color = new Color(1f, 0.95f, 0.84f, 1f);
+            }
+        }
+
+        /// <summary>
+        /// The light breathes. Three incommensurate sines rather than one: a single frequency reads as a
+        /// pulsing UI element, and three that never line up read as a flame. Scaled time, so a pause freezes
+        /// the light along with everything else.
+        /// </summary>
+        void Breathe()
+        {
+            if (glow == null || profile == null)
+            {
+                return;
+            }
+
+            float t = Time.time;
+            float wave = 0.5f * Mathf.Sin(t * 11.3f) + 0.32f * Mathf.Sin(t * 23.9f + 1.7f) +
+                         0.18f * Mathf.Sin(t * 4.1f + 0.6f);
+            float k = 1f + wave * Mathf.Clamp01(profile.lanternFlickerDepth);
+
+            Color outer = glowColor;
+            outer.a = Mathf.Clamp01(glowColor.a * k);
+            glow.color = outer;
+            glow.transform.localScale = glowScale * (0.985f + 0.015f * k);
+
+            if (halo != null)
+            {
+                Color inner = haloColor;
+                inner.a = Mathf.Clamp01(haloColor.a * Mathf.Lerp(0.82f, 1.12f, Mathf.InverseLerp(0.72f, 1.28f, k)));
+                halo.color = inner;
+            }
+
+            if (core != null)
+            {
+                core.transform.localScale = Vector3.one * (0.42f + 0.04f * wave);
             }
         }
 
@@ -260,12 +330,18 @@ namespace EchoMaze.Gameplay
 
             reveal = new WallMemory(LinePool, profile.wallMemoryMergeDistance);
 
-            glow = EnsureSprite("Glow", SortingOrder - 1);
-            glow.sprite = BuildRadialSprite(64, 2.2f);
+            // Below the drawn walls, and above the remembered ones: light is under what it reveals and over
+            // what the hand felt.
+            glow = EnsureSprite("Glow", SortingOrder - 3);
+            glow.sprite = BuildRadialSprite(64, 2.6f);
             glow.color = profile.lanternColor;
 
+            halo = EnsureSprite("Halo", SortingOrder - 1);
+            halo.sprite = BuildRadialSprite(48, 1.6f);
+            halo.color = profile.lanternInnerColor;
+
             core = EnsureSprite("Core", SortingOrder + 1);
-            core.sprite = BuildRadialSprite(16, 14f);
+            core.sprite = BuildRadialSprite(16, 8f);
             core.color = profile.lanternColor;
 
             lines = new SpriteRenderer[LinePool];

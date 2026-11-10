@@ -98,7 +98,8 @@ namespace EchoMaze.EditorTools
 
             var half = new Vector2(grid.Width * chapter.CellSize * 0.5f, grid.Height * chapter.CellSize * 0.5f);
             LevelSession session = LevelSceneKit.BuildChrome(director, player, half, chapter.CameraSize,
-                                                             chapter.HudTitle);
+                                                             chapter.HudTitle,
+                                                             LevelSceneKit.LampsFor(chapter.Difficulty));
 
             // Only the room that teaches the controls teaches them on screen.
             if (chapter.Tutorial)
@@ -109,8 +110,7 @@ namespace EchoMaze.EditorTools
             // The rig's clamp is overwritten by the level from the grid it actually read; what is wired here
             // is the object, so the camera follows from the first frame rather than after the first ping.
             var rig = UnityEngine.Object.FindAnyObjectByType<PlayerCameraRig>();
-            SceneKit.EnsureMazeLevel(chapter.GridPath, chapter.CellSize, director, player, session, rig,
-                                     LanternsFor(chapter.Difficulty));
+            SceneKit.EnsureMazeLevel(chapter.GridPath, chapter.CellSize, director, player, session, rig);
 
             PlaceCrawlers(grid, director, player);
             PlaceHollows(grid, player, session);
@@ -125,23 +125,6 @@ namespace EchoMaze.EditorTools
         /// creature on purpose: a level with two of them needs a second patrol syntax, and no level in the
         /// story has two — the difficulty comes from the room, not from the count.
         /// </summary>
-        /// <summary>
-        /// Lamps per room, graded with the chapter. Two is the floor and it is deliberate: one lamp is a
-        /// corridor with a dead end, two make where you leave the light a decision. The hard rooms get a
-        /// third so that "both of mine are already down" is never the reason a room is lost.
-        /// </summary>
-        public static int LanternsFor(ChapterDifficulty difficulty)
-        {
-            switch (difficulty)
-            {
-                case ChapterDifficulty.Hard:
-                case ChapterDifficulty.Brutal:
-                    return 3;
-                default:
-                    return 2;
-            }
-        }
-
         static void PlaceCrawlers(MazeGrid grid, EchoDirector director, Player player)
         {
             RemoveStale<Crawler>("Crawler");
