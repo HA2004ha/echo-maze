@@ -62,7 +62,8 @@ chapter.
   own card explains the seal. `GuidePageTests` fails if a card outgrows the generated page;
   `BootSceneWiringTests` fails if the bootstrap stacks a second copy or leaves a label unwired.
   `-echo-guide-page <n>` photographs any card from a terminal.
-- The victory panel prints the run's numbers: rooms, waves, times heard, and time.
+- The victory panel prints the run's numbers: rooms, waves, times heard, and time, and plays the
+  **victory emote** beside them when the escape lands (see below).
 
 ### The story page (2026-11-08)
 
@@ -203,6 +204,33 @@ chapter.
 - **Not verified:** batch mode has no audio device, so whether the palette *sounds* right is still a person
   with headphones. `Alert` and `GiveUp` are written and in the enum but not yet called: the Crawler's
   week-2 investigate stub has no transition to hang them on.
+
+### The victory emote (2026-11-12)
+
+- **Escaping the maze now plays an emote.** The reference art in `Victory-emote/` (seven separated layers
+  plus `Final-Shot.jpeg`) is cut into six registered 1024 × 1024 sprites at editor-build time and
+  composited in the victory panel: a white flash pops, the swirls open, the confetti falls, **VICTORY!**
+  springs up over the crown with `EaseOutBack`, the pedestal rises into place, and the ghost drops onto it
+  and squashes before settling into a two-second breathing loop. The entrance is **1.25 s**, then it idles
+  for as long as the panel is up and stops when the panel closes.
+- The run ends with `Time.timeScale = 0`, so `VictoryEmote` is driven from `Update` on unscaled time and
+  is started by `VictoryPanel.Show()` off the `GameFlow.RunCompleted` event, not by a timeline asset.
+- The panel is two columns so the square art is never covered: the emote is an **860 px** stack at
+  `x = −455` and the run card is **880 × 720** at `x = +475`.
+- **Composited by paint, not by alpha.** The glow sheets (flash, swirls, confetti, title) are painted on
+  black and drawn with `EchoMaze/UI Additive` (`Blend One One`, `color.rgb *= color.a`) so the black adds
+  nothing and the glow survives on the panel's ground; the white-painted sheets (ghost, pedestal) are
+  keyed off the paper, un-multiplied for white spill and stripped of the neutral-grey drop shadow. The
+  ghost is cut at picture row 711 and the pedestal keeps from row 680 — `Asset6` and `Asset7` are identical
+  below row 709 — so the ghost lands on a pedestal that is already standing and its rim hides the cut.
+- **A clean composite on black matches `Final-Shot.jpeg`**, checked by recombining the exported sprites
+  outside Unity; the ghost's opaque box is 402 × 396 px, the pedestal's 738 × 322 px, and the two share
+  their registration to the source frame.
+- Verified: the PlayMode `VictoryEmoteTests` are **4 / 4** green, `Tools/Echo Maze/Build Everything`
+  generated all ten scene files containing exactly one `Emote` root with its six image references
+  resolved, and the additive material reports `isSupported = true` with one pass and no console errors.
+- **Not verified:** nobody has watched the emote inside a finished run in the player build yet; the motion
+  is pinned by the timeline tests and the art by the recomposite, not by an eye.
 
 ## What is real, and what is still a promise
 
