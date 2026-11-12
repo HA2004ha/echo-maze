@@ -936,21 +936,37 @@ namespace EchoMaze.EditorTools
             return panel;
         }
 
+        // The victory page is two columns. The emote is square, so the run's numbers get a column beside it
+        // rather than being printed over the ghost: 860 of art centred at -455 and an 880 card centred at
+        // +475, which lands both columns inside the 1920 x 1080 frame with a margin at each edge.
+        const float VictoryArtCentre = -455f;
+        const float VictoryArtSize = 860f;
+        const float VictoryColumn = 475f;
+        const float VictoryCardWidth = 880f;
+        const float VictoryCardHeight = 720f;
+
         public static VictoryPanel EnsureVictoryPanel()
         {
             Canvas canvas = EnsurePanel("Victory Panel", out Transform content, out Text heading);
             heading.text = Track("YOU WERE NOT HEARD");
+            // The heading is one line of tracked capitals: 840 of column leaves it the same 56 px of air on
+            // either side it had on the centred card.
+            heading.rectTransform.anchoredPosition = new Vector2(VictoryColumn, 265f);
+            heading.rectTransform.sizeDelta = new Vector2(VictoryCardWidth - 40f, 90f);
 
-            EnsureCard(content, new Vector2(0f, 0f), new Vector2(980f, 620f));
-            EnsureDivider(content, "Divider", new Vector2(0f, 150f), new Vector2(820f, 2f));
+            EnsureCard(content, new Vector2(VictoryColumn, 0f),
+                       new Vector2(VictoryCardWidth, VictoryCardHeight));
+            EnsureDivider(content, "Divider", new Vector2(VictoryColumn, 175f), new Vector2(740f, 2f));
 
-            Button menu = EnsureButton(content, "Menu", "back to the menu", new Vector2(0f, -190f),
+            Button menu = EnsureButton(content, "Menu", "back to the menu", new Vector2(VictoryColumn, -205f),
                                        new Vector2(520f, 74f));
-            Text summary = EnsureLabel(content, "Summary", "", 28, Cyan, new Vector2(0f, 10f),
-                                       new Vector2(820f, 260f));
+            Text summary = EnsureLabel(content, "Summary", "", 28, Cyan, new Vector2(VictoryColumn, 15f),
+                                       new Vector2(760f, 240f));
             summary.lineSpacing = 1.35f;
             EnsureLabel(content, "Footer", "the maze never learned your name", 20, CyanFaint,
-                        new Vector2(0f, -270f), new Vector2(900f, 40f));
+                        new Vector2(VictoryColumn, -300f), new Vector2(800f, 40f));
+
+            VictoryEmote emote = EnsureVictoryEmote(content);
 
             var panel = SceneKit.EnsureComponent<VictoryPanel>(canvas.gameObject);
             var fade = SceneKit.EnsureComponent<UIPanelFade>(canvas.gameObject);
@@ -962,6 +978,7 @@ namespace EchoMaze.EditorTools
             SceneKit.SetReference(panel, "typewriter", typewriter);
             SceneKit.SetReference(panel, "summaryLabel", summary);
             SceneKit.SetReference(panel, "menuButton", menu);
+            SceneKit.SetReference(panel, "emote", emote);
 
             // Hidden until the run ends by alpha rather than by deactivation: the fade and the typing
             // both run on this canvas, and the summary is the thing the player came to read.
@@ -970,6 +987,63 @@ namespace EchoMaze.EditorTools
             group.interactable = false;
             group.blocksRaycasts = false;
             return panel;
+        }
+
+        /// <summary>
+        /// The emote's own root: one rect and six layers, every layer the same size and registered to the
+        /// same 1024 frame as the delivery sheets, so the animation's offsets are the only thing that moves
+        /// them and the composition can never drift apart between rebuilds.
+        ///
+        /// The driver sits on this root rather than on the canvas because the art is what it animates; the
+        /// root is a child of the panel's content, which this panel hides by canvas alpha and never by
+        /// deactivation, so <c>Update</c> keeps running while the page is on screen.
+        /// </summary>
+        static VictoryEmote EnsureVictoryEmote(Transform content)
+        {
+            VictoryEmoteArt.LayerSet art = VictoryEmoteArt.EnsureAll();
+
+            GameObject root = FindOrCreateChild(content, "Emote");
+            var rect = (RectTransform)root.transform;
+            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = new Vector2(VictoryArtCentre, 0f);
+            rect.sizeDelta = new Vector2(VictoryArtSize, VictoryArtSize);
+            rect.localScale = Vector3.one;
+            rect.localRotation = Quaternion.identity;
+
+            // Back to front: the pop, the light, the confetti in it, the word, then the two pieces the
+            // ghost is actually standing on.
+            Image flash = EnsureEmoteLayer(root.transform, "Flash", art.Flash, art.Glow, 0);
+            Image swirls = EnsureEmoteLayer(root.transform, "Swirls", art.Swirls, art.Glow, 1);
+            Image confetti = EnsureEmoteLayer(root.transform, "Confetti", art.Confetti, art.Glow, 2);
+            Image title = EnsureEmoteLayer(root.transform, "Title", art.Title, art.Glow, 3);
+            Image pedestal = EnsureEmoteLayer(root.transform, "Pedestal", art.Pedestal, null, 4);
+            Image ghost = EnsureEmoteLayer(root.transform, "Ghost", art.Ghost, null, 5);
+
+            var emote = SceneKit.EnsureComponent<VictoryEmote>(root);
+            SceneKit.SetReference(emote, "flash", flash);
+            SceneKit.SetReference(emote, "swirls", swirls);
+            SceneKit.SetReference(emote, "confetti", confetti);
+            SceneKit.SetReference(emote, "title", title);
+            SceneKit.SetReference(emote, "pedestal", pedestal);
+            SceneKit.SetReference(emote, "ghost", ghost);
+            return emote;
+        }
+
+        /// <summary>
+        /// One emote layer, stretched over the emote's square. The material is the whole reason these are
+        /// split into two kinds: the light sheets add (their black becomes nothing, their glow survives),
+        /// and the two matted pieces stay on the canvas's own alpha-blended material.
+        /// </summary>
+        static Image EnsureEmoteLayer(Transform parent, string name, Sprite sprite, Material material, int sibling)
+        {
+            Image image = EnsureImage(parent, name, sprite, Image.Type.Simple, Vector2.zero, Vector2.zero,
+                                      Color.white, true, sibling);
+            image.material = material;
+            image.preserveAspect = false;
+            image.rectTransform.localPosition = Vector3.zero;
+            image.rectTransform.localRotation = Quaternion.identity;
+            image.rectTransform.localScale = Vector3.one;
+            return image;
         }
 
         /// <summary>

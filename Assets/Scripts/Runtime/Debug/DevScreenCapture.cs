@@ -17,8 +17,10 @@ namespace EchoMaze.DebugTools
     /// looks at: <c>-echo-shot file.png</c> grabs the screen, <c>-echo-scene Level01_Maze</c> skips the menu
     /// clicks nobody is making, <c>-echo-ping</c> emits one echo so the frame being captured has something
     /// in it, and <c>-echo-pause</c>, <c>-echo-calibrate</c> and <c>-echo-guide-page 4</c> open the panels
-    /// that only a click would otherwise ever show. Without the first argument it does nothing at all, so it
-    /// is inert in normal play.
+    /// that only a click would otherwise ever show. <c>-echo-complete</c> finishes the current room and stops
+    /// at its atlas; <c>-echo-victory</c> walks every remaining room so the capture lands on the victory
+    /// panel at the end of the run. Without the first argument it does nothing at all, so it is inert in
+    /// normal play.
     /// </summary>
     public static class DevScreenCapture
     {
@@ -30,6 +32,7 @@ namespace EchoMaze.DebugTools
             public bool ping;
             public bool startRun;
             public bool complete;
+            public bool victory;
             public bool pause;
             public bool calibrate;
             public bool chapters;
@@ -140,6 +143,48 @@ namespace EchoMaze.DebugTools
                     yield return new WaitForSecondsRealtime(completeLeadSeconds);
                 }
 
+                // The victory panel is the end of the *run*, not of a room: it is raised when the last
+                // chapter's atlas is dismissed, so one completion photograph would always be a photograph
+                // of the atlas. This walks the whole list instead — complete, dismiss, repeat — and then
+                // lets the capture fall on the panel itself, completeLead after it goes up.
+                if (victory)
+                {
+                    for (int guard = 0; guard < 32 && GameFlow.Active != null && GameFlow.Active.IsRunning;
+                         guard++)
+                    {
+                        LevelSession session = FindAnyObjectByType<LevelSession>();
+                        if (session == null)
+                        {
+                            break;
+                        }
+
+                        session.Complete();
+
+                        // Through the atlas's own button: it hides the page and then moves the flow on, and
+                        // the terminal has to do both halves or the panel opens underneath the atlas.
+                        VictoryMapView atlas = FindAnyObjectByType<VictoryMapView>();
+                        for (float waited = 0f; atlas != null && !atlas.IsReady && waited < 5f; waited += Time.unscaledDeltaTime)
+                        {
+                            yield return null;
+                            atlas = FindAnyObjectByType<VictoryMapView>();
+                        }
+
+                        if (atlas == null)
+                        {
+                            break;
+                        }
+
+                        atlas.Continue();
+
+                        // A single load is applied at the end of the frame, so the session the next turn
+                        // completes is the room that was loaded here, not the one being left.
+                        yield return null;
+                        yield return new WaitForSecondsRealtime(0.35f);
+                    }
+
+                    yield return new WaitForSecondsRealtime(completeLeadSeconds);
+                }
+
                 if (ping)
                 {
                     EchoDirector director = FindFirstObjectByType<EchoDirector>();
@@ -226,6 +271,7 @@ namespace EchoMaze.DebugTools
             runner.ping = System.Array.IndexOf(args, "-echo-ping") >= 0;
             runner.quitAfter = System.Array.IndexOf(args, "-echo-quit") >= 0;
             runner.complete = System.Array.IndexOf(args, "-echo-complete") >= 0;
+            runner.victory = System.Array.IndexOf(args, "-echo-victory") >= 0;
             runner.pause = System.Array.IndexOf(args, "-echo-pause") >= 0;
             runner.calibrate = System.Array.IndexOf(args, "-echo-calibrate") >= 0;
             runner.chapters = System.Array.IndexOf(args, "-echo-chapters") >= 0;
@@ -237,7 +283,7 @@ namespace EchoMaze.DebugTools
                                                  out int page) ? page : 0;
             }
             runner.startRun = System.Array.IndexOf(args, "-echo-start-run") >= 0 ||
-                              (runner.complete && string.IsNullOrEmpty(runner.scene));
+                              ((runner.complete || runner.victory) && string.IsNullOrEmpty(runner.scene));
         }
     }
 }

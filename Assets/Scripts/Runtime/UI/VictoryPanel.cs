@@ -21,6 +21,7 @@ namespace EchoMaze.UI
         [SerializeField] UITypewriter typewriter;
         [SerializeField] Text summaryLabel;
         [SerializeField] Button menuButton;
+        [SerializeField] VictoryEmote emote;
 
         void Awake()
         {
@@ -42,6 +43,10 @@ namespace EchoMaze.UI
             {
                 content.SetActive(false);
             }
+
+            // Nothing has been won yet: the emote is cleared rather than left at whatever pose the scene
+            // was saved in, so the first frame of the celebration is the first frame of the celebration.
+            emote?.Stop();
         }
 
         void OnDestroy()
@@ -75,6 +80,10 @@ namespace EchoMaze.UI
             {
                 content.SetActive(true);
             }
+
+            // The emote starts with the page, not before it: the ghost climbing out of the dark behind a
+            // closed panel would spend its best second where nobody can see it.
+            emote?.Play();
 
             // The page goes up first and the numbers arrive under it: a panel that fades in already
             // full of text says nothing happened, while one that types says the machine is still
