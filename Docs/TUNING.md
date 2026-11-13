@@ -2,7 +2,7 @@
 
 Every number in this table is live in `Assets/Data/Echo/EchoTuning.asset`, i.e. `Assets/Scripts/Runtime/Data/EchoTuningProfile.cs`. None of them are hard-coded in C#, so changing the balance needs no compile and can be tested in the editor with Play. The character's motion is the one deliberate exception: those numbers are `[SerializeField]` on `PlayerVisual` in the scene and are listed under "The player's art and motion" at the end of this file. The profile is the balance brain — `OnValidate` enforces its invariants and `MovementAndHearingTests` asserts them — and a breathing rate is not balance.
 
-The target these numbers have to hit is [GDD.md](../GDD.md) v3.0, whose tuning knob is **`ρ = enemy hearing radius / visible echo reach` at the same loudness**, starting at `0.8`. If `ρ` is too high, pinging is never worth it; if too low, there is no tension.
+The target these numbers have to hit is [GDD.md](../GDD.md) v3.1, whose tuning knob is **`ρ = enemy hearing radius / visible echo reach` at the same loudness**, starting at `0.8`. If `ρ` is too high, pinging is never worth it; if too low, there is no tension.
 
 ## What is missing from this table (and lands when)
 
@@ -21,7 +21,7 @@ GDD 3.0 is a stealth game with one hit and a suspicion meter, and this profile o
 | Doors, glass and reach | `interactionRange`, `doorOpenLoudness`, `doorCloseLoudness`, `noisyFloorLoudness`, `noisyFloorStepInterval` | 3 — **landed**, rows below. Tuned against the `2 m` maze cell, not measured in a room yet: the only Crawler in the build still patrols the corridor |
 | Voice calibration | `calibrationSeconds`, `calibrationOpenFraction`, `calibrationTargetLoudness`, `calibrationMin/MaxOpenRms`, `calibrationCloseRatio`, `calibrationFloorRms` | 3 — **landed**, rows below. Arithmetic is EditMode-locked (`VoiceCalibrationMathTests`); where the thresholds actually land on this machine is a microphone question, not a tuning one |
 | Safety | listen radius `4 m`, weak pulse reach `1.5 m`, touch-mark fade `0.5 s`, memory trace `10–15 s`, hollow `×0.15`, noise zone `reach ×0.5 / hearing ×0.3` | 3 |
-| Doors and tools | Spike break time `3 s`, marbles per level `3` | 4 |
+| Doors and tools | Spike break time `3 s` (the Spike and door-breaking are not built) | 4 |
 | Level pacing | the 20–30 s hiding-option distance the level validator measures | 4 |
 
 ## Non-negotiable rules

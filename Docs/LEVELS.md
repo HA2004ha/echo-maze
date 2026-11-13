@@ -2,7 +2,7 @@
 
 The run is **ten chapters**, from a room with nothing in it to the sump. Every room is a text file; the scene
 that plays it is generated. This document is the part that has to survive a half-finished branch: what is
-written by hand, what is generated, and the two commands that rebuild everything.
+written by hand, what is generated, and the commands that rebuild everything.
 
 - The story, the order, the difficulty and the map of each chapter: `Assets/Scripts/Runtime/Gameplay/ChapterStory.cs`
 - The maps: `Assets/Data/Levels/LevelNN_*.txt`
@@ -15,7 +15,7 @@ written by hand, what is generated, and the two commands that rebuild everything
 |---|-------|------|------|------|--------|-----------|-------|
 | I | `Level01_Maze` | the maze | `Level01_Maze.txt` | — | 6 | nothing | tutorial |
 | II | `Level02_Corridor` | the corridor | hand-built (`Level02SceneSetup`) | — | — | one crawler | easy |
-| III | `Level03_FloodedWing` | the flooded wing | `Level03_FloodedWing.txt` | 21×13 | 6 | glass | easy |
+| III | `Level03_FloodedWing` | the flooded wing | `Level03_FloodedWing.txt` | 21×13 | 6 | glass, hollow, sanctuary | easy |
 | IV | `Level04_ListeningRoom` | the listening room | `Level04_ListeningRoom.txt` | 21×15 | 6 | crawler, hollow, glass | medium |
 | V | `Level05_SumpStairs` | the sump stairs | `Level05_SumpStairs.txt` | 23×15 | 6 | crawler, 2 doors | medium |
 | VI | `Level06_BoilerRun` | the boiler run | `Level06_BoilerRun.txt` | 25×17 | 6 | crawler, 2 sanctuaries, glass | medium |
@@ -138,5 +138,5 @@ logs the file name and leaves the scene empty rather than shipping a room with n
 "-runTests" "-testPlatform" EditMode "-testResults" Logs/editmode.xml
 
 # the real thing, with the story page captured
-./Builds/echo-maze.x86_64 -echo-shot out.png -echo-chapters -echo-quit
+./Builds/StandaloneLinux64/echo-maze.x86_64 -echo-shot out.png -echo-chapters -echo-quit
 ```

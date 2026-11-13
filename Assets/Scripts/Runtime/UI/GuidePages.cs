@@ -42,7 +42,7 @@ namespace EchoMaze.UI
     ///
     /// What is written here is what the code actually does today, plus the creatures the GDD names that are
     /// on their way — each of those marked as not being in the run yet. A guide that advertised Listen mode
-    /// or the marble as if they were playable would be the menu's own version of the promise problem
+    /// or the Spike as if they were playable would be the menu's own version of the promise problem
     /// <c>Docs/STATUS.md</c> keeps a list of.
     ///
     /// The style is the HUD's: lower-case, no full stops where a line can end, ASCII only, because the
@@ -112,8 +112,8 @@ namespace EchoMaze.UI
                 "  yourself       faint warm dots of where you have walked, gone\n" +
                 "                 again after about four seconds.\n" +
                 "\n" +
-                "listen mode and the decoy marble are the next milestone: not in\n" +
-                "this build, and not on any menu."),
+                "listen mode is the next milestone: not in this build, and not on\n" +
+                "any menu."),
 
             new GuidePage("what lives in the dark",
                 "you have no attack and one touch ends the run. nothing here is\n" +
@@ -130,8 +130,8 @@ namespace EchoMaze.UI
                 "a roar is a warm ring rather than a wave: where the creature is,\n" +
                 "and nothing about the walls.\n" +
                 "\n" +
-                "the maze you start in has nothing in it. the crawler is chapter two,\n" +
-                "and the rooms after it keep going down. all of it is in the build."),
+                "the maze you start in has nothing in it. the crawler is chapter two;\n" +
+                "the spike and the absorber are the next milestone, not in this build."),
 
             new GuidePage("the rest of the room",
                 "  door         two line fragments with a slit between them.\n" +

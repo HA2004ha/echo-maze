@@ -1,5 +1,7 @@
 # Microphone test matrix
 
+> **Build paths in this file are the ones used on the date of each run.** The current `PlayerBuild` writes `Builds/StandaloneLinux64/echo-maze.x86_64`; older rows name the artifact that existed when they were measured.
+
 Each row is a device/environment combination. Fill in **date** and **result** after every test; an empty row means untested. The goal: the game is never judged with an uncalibrated microphone.
 
 **The team is on Linux, so Linux is the platform being tested** — the editor on the lead's machine is the reference rig and the Linux player build is the delivery target. Nothing here has ever been measured on Windows. *(Amended 2026-10-30: Windows is a delivery target too, so rows 3–9, 11 and 13 must be repeated on a Windows machine with the Windows build; add them as new rows when that run happens.)*
