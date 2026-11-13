@@ -49,6 +49,41 @@ namespace EchoMaze.Tests
 
         static string[] WiredPoses() => Poses;
 
+        // The walk cycle is a different delivery: a 1024 canvas with the figure drawn almost edge to edge,
+        // against the stills' 4096 canvas with a lot of air around the body. 1024 at PPU 984 is 1.041 world
+        // units of canvas, and the drawn figure inside it is about 1003 px tall — 1.019 units, which is the
+        // height Player_side.png actually draws. So the character does not grow when it starts walking.
+        const float WalkCanvasWorldSize = 1.041f;
+
+        static readonly string[] WalkFrames =
+        {
+            "Assets/Art/Sprites/Player/Walk/Frame_0.png",
+            "Assets/Art/Sprites/Player/Walk/Frame_1.png",
+            "Assets/Art/Sprites/Player/Walk/Frame_2.png",
+            "Assets/Art/Sprites/Player/Walk/Frame_3.png",
+            "Assets/Art/Sprites/Player/Walk/Frame_4.png",
+            "Assets/Art/Sprites/Player/Walk/Frame_5.png",
+            "Assets/Art/Sprites/Player/Walk/Frame_6.png",
+            "Assets/Art/Sprites/Player/Walk/Frame_7.png",
+            "Assets/Art/Sprites/Player/Walk/Frame_8.png"
+        };
+
+        [TestCaseSource(nameof(WiredWalkFrames))]
+        public void AWalkFrame_LandsAtTheSizeOfTheBodyItAnimates(string path)
+        {
+            var frame = AssetDatabase.LoadAssetAtPath<Sprite>(path);
+            Assert.AreNotEqual(null, frame,
+                path + " is not imported as a Single sprite, so the PlayerVisual array would hold a texture");
+
+            Assert.AreEqual(WalkCanvasWorldSize, frame.bounds.size.x, 0.02f,
+                            path + " draws " + frame.bounds.size.x + " units wide on a " + frame.rect.width +
+                            " pixel canvas at PPU " + frame.pixelsPerUnit + ": re-derive WalkPixelsPerUnit " +
+                            "in SceneKit when the walk art is redelivered at another canvas size");
+            Assert.AreEqual(WalkCanvasWorldSize, frame.bounds.size.y, 0.02f, path + " is not square");
+        }
+
+        static string[] WiredWalkFrames() => WalkFrames;
+
         [Test]
         public void PlaceholderDot_StillFitsTheSameFootprint()
         {

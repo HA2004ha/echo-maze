@@ -68,6 +68,28 @@ namespace EchoMaze.EditorTools
         /// </summary>
         const float PosePixelsPerUnit = 2560f;
 
+        /// <summary>
+        /// The side walk cycle, in the order <c>EnsurePlayer</c> wires it. These are a 1024 canvas, not the
+        /// 4096 of the stills, and they are drawn much larger inside that canvas: the figure is about 1003
+        /// source pixels tall, so 984 PPU lands the body at the same 1.02 world units the profile still
+        /// draws and the cycle does not change size when it starts. Deriving this from the stills' canvas
+        /// (640 PPU) would make the walking character half again as tall as the one standing still.
+        /// </summary>
+        const float WalkPixelsPerUnit = 984f;
+
+        static readonly string[] WalkFramePaths =
+        {
+            PoseFolder + "/Walk/Frame_0.png",
+            PoseFolder + "/Walk/Frame_1.png",
+            PoseFolder + "/Walk/Frame_2.png",
+            PoseFolder + "/Walk/Frame_3.png",
+            PoseFolder + "/Walk/Frame_4.png",
+            PoseFolder + "/Walk/Frame_5.png",
+            PoseFolder + "/Walk/Frame_6.png",
+            PoseFolder + "/Walk/Frame_7.png",
+            PoseFolder + "/Walk/Frame_8.png"
+        };
+
         const string CursorRingPath = "Assets/Art/Sprites/Cursor_ring.png";
         const string CursorDotPath = "Assets/Art/Sprites/Cursor_dot.png";
         const string CursorHeadPath = "Assets/Art/Sprites/Cursor_head.png";
@@ -254,13 +276,27 @@ namespace EchoMaze.EditorTools
         /// </summary>
         public static Sprite EnsurePoseSprite(string path)
         {
+            return EnsureCharacterSprite(path, PosePixelsPerUnit);
+        }
+
+        /// <summary>
+        /// One frame of the side walk cycle. Same import contract as a still, different PPU: the frames
+        /// are a different canvas with a different amount of air around the figure (see WalkPixelsPerUnit).
+        /// </summary>
+        public static Sprite EnsureWalkSprite(string path)
+        {
+            return EnsureCharacterSprite(path, WalkPixelsPerUnit);
+        }
+
+        static Sprite EnsureCharacterSprite(string path, float pixelsPerUnit)
+        {
             if (AssetDatabase.LoadAssetAtPath<Texture2D>(path) == null)
             {
                 return null;
             }
 
             var importer = (TextureImporter)AssetImporter.GetAtPath(path);
-            if (importer != null && ConfigurePoseImporter(importer))
+            if (importer != null && ConfigureCharacterImporter(importer, pixelsPerUnit))
             {
                 importer.SaveAndReimport();
             }
@@ -278,7 +314,7 @@ namespace EchoMaze.EditorTools
         /// squeezed into 89 on screen, and a downscale that deep without a mip chain shimmers as the
         /// character walks and breaks the rim light into noise.
         /// </summary>
-        static bool ConfigurePoseImporter(TextureImporter importer)
+        static bool ConfigureCharacterImporter(TextureImporter importer, float pixelsPerUnit)
         {
             bool changed = false;
 
@@ -301,14 +337,15 @@ namespace EchoMaze.EditorTools
             Set(importer.alphaIsTransparency, true, () => importer.alphaIsTransparency = true);
             Set(importer.mipmapEnabled, true, () => importer.mipmapEnabled = true);
 
-            if (!Mathf.Approximately(importer.spritePixelsPerUnit, PosePixelsPerUnit))
+            if (!Mathf.Approximately(importer.spritePixelsPerUnit, pixelsPerUnit))
             {
-                importer.spritePixelsPerUnit = PosePixelsPerUnit;
+                importer.spritePixelsPerUnit = pixelsPerUnit;
                 changed = true;
             }
 
-            // The drawn figure sits within 36 canvas pixels of (2048, 2048) in every file, which at this PPU
-            // is 1.3 screen pixels: a centre pivot is the character standing where the transform is.
+            // The drawn figure is centred on the canvas in every file (the stills within 36 of their
+            // 4096 centre, the walk frames within a few pixels of theirs), so a centre pivot is the
+            // character standing where the transform is.
             if (importer.spritePivot != new Vector2(0.5f, 0.5f))
             {
                 importer.spritePivot = new Vector2(0.5f, 0.5f);
@@ -327,8 +364,9 @@ namespace EchoMaze.EditorTools
                 changed = true;
             }
 
-            // A 4x downscale of a 4096 canvas. The world size is unaffected (see PosePixelsPerUnit), so
-            // this buys texture memory against art that is drawn 89 pixels tall and will never be zoomed.
+            // A 4x downscale of the stills' 4096 canvas and a no-op on the walk frames' 1024 one. The world
+            // size is unaffected (see PosePixelsPerUnit), so this buys texture memory against art that is
+            // drawn about 89 pixels tall and will never be zoomed.
             if (importer.maxTextureSize != 1024)
             {
                 importer.maxTextureSize = 1024;
@@ -501,7 +539,7 @@ namespace EchoMaze.EditorTools
         }
 
         /// <summary>
-        /// Returns whether anything changed, for the same reason <see cref="ConfigurePoseImporter"/> does.
+        /// Returns whether anything changed, for the same reason <see cref="ConfigureCharacterImporter"/> does.
         ///
         /// Mipmaps off and bilinear is the deliberate split from the poses, and it is the same split the
         /// placeholder dot already makes: this art is authored at the size it is drawn, one texel to one
@@ -940,6 +978,18 @@ namespace EchoMaze.EditorTools
                 complete &= poses[i] != null;
             }
 
+            // The cycle is additive: a missing frame costs the walk animation, not the character. Every
+            // scene built before the frames landed therefore still gets its five-pose visual, and a
+            // half-delivered cycle leaves the still profile in place with one warning instead of a
+            // character that flickers between the new art and the old.
+            Sprite[] walkFrames = new Sprite[WalkFramePaths.Length];
+            bool walkComplete = true;
+            for (int i = 0; i < WalkFramePaths.Length; i++)
+            {
+                walkFrames[i] = EnsureWalkSprite(WalkFramePaths[i]);
+                walkComplete &= walkFrames[i] != null;
+            }
+
             Transform visuals = EnsureVisualsChild(player);
             var sprite = EnsureComponent<SpriteRenderer>(visuals.gameObject);
             sprite.sortingLayerName = "Default";
@@ -960,6 +1010,11 @@ namespace EchoMaze.EditorTools
                 SetReference(visual, "diagonalDownSprite", poses[3]);
                 SetReference(visual, "diagonalUpSprite", poses[4]);
 
+                if (walkComplete)
+                {
+                    SetReferenceArray(visual, "walkRightSprites", walkFrames);
+                }
+
                 // The hysteresis band is a fraction of a sector, so it is a function of the pose count and
                 // not a taste: a scene generated while the fan had four poses still has the old 10 degrees
                 // serialised in it, and running the bootstrap is the thing that has to correct that rather
@@ -979,6 +1034,13 @@ namespace EchoMaze.EditorTools
                 }
 
                 sprite.color = new Color(0.25f, 0.45f, 0.47f, 0.35f);
+            }
+
+            if (complete && !walkComplete)
+            {
+                Debug.LogWarning("Player walk cycle missing under " + PoseFolder + "/Walk (need all of " +
+                                 string.Join(", ", WalkFramePaths) + "); the still profile stays in place.",
+                                 player);
             }
 
             EnsureSoleListener(player);

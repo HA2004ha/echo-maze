@@ -36,6 +36,7 @@ namespace EchoMaze.Tests.PlayMode
         Sprite sidePose;
         Sprite diagonalDownPose;
         Sprite diagonalUpPose;
+        Sprite[] walkPoses;
         readonly List<Object> assets = new List<Object>();
 
         float Stride => profile.footstepInterval;
@@ -49,6 +50,12 @@ namespace EchoMaze.Tests.PlayMode
             sidePose = MakePose("test side");
             diagonalDownPose = MakePose("test 34 front");
             diagonalUpPose = MakePose("test 34 back");
+
+            walkPoses = new Sprite[9];
+            for (int i = 0; i < walkPoses.Length; i++)
+            {
+                walkPoses[i] = MakePose("test walk " + i);
+            }
 
             GameObject go = New("rig visual player", false);
             go.transform.position = new Vector2(Far, Far);
@@ -69,6 +76,7 @@ namespace EchoMaze.Tests.PlayMode
             Wire(visual, "sideSprite", sidePose);
             Wire(visual, "diagonalDownSprite", diagonalDownPose);
             Wire(visual, "diagonalUpSprite", diagonalUpPose);
+            Wire(visual, "walkRightSprites", walkPoses);
 
             // Built before the activation, because PlayerVisual resolves the Visuals child in Awake and a
             // component that misses it there never gets a second chance.
@@ -123,14 +131,85 @@ namespace EchoMaze.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator WalkingRight_ShowsTheSidePoseUnflipped()
+        public IEnumerator WalkingRight_PlaysTheWalkCycleUnflipped()
         {
             WalkIn(Vector2.right);
             yield return null;
 
             Assert.AreEqual(PlayerPose.ProfileRight, visual.CurrentPose);
-            Assert.AreEqual(sidePose, sprite.sprite, "the canonical profile faces screen right");
+            CollectionAssert.Contains(walkPoses, sprite.sprite,
+                "the cycle is authored facing screen right, so the rightward profile is its first half");
             Assert.IsFalse(sprite.flipX);
+        }
+
+        [UnityTest]
+        public IEnumerator AStepMidway_ShowsTheFrameTheFootstepClockAsksFor()
+        {
+            WalkIn(Vector2.right);
+            Wire(subject, "nextStepTime", Time.time + Stride * 0.5f);
+            yield return null;
+
+            int expected = PlayerFacing.WalkFrameIndex(visual.Phase, walkPoses.Length);
+            Assert.Greater(expected, 0, "half a stride in is not the first frame");
+            Assert.Less(expected, walkPoses.Length - 1);
+            Assert.AreEqual(walkPoses[expected], sprite.sprite,
+                "the cycle has to follow the same clock as the hop, or the two motions disagree about the " +
+                "footstep the player can hear");
+        }
+
+        [UnityTest]
+        public IEnumerator StandingStill_AfterAWalk_ReturnsToTheStillProfile()
+        {
+            WalkIn(Vector2.right);
+            yield return null;
+            CollectionAssert.Contains(walkPoses, sprite.sprite);
+
+            subjectBody.linearVelocity = Vector2.zero;
+            LookAt(0f);
+            yield return null;
+
+            Assert.AreEqual(sidePose, sprite.sprite,
+                "the cycle is what walking looks like; a character that has stopped to listen is the still " +
+                "profile, not a frozen frame from the middle of a stride");
+        }
+
+        /// <summary>
+        /// The optional half of the contract: a scene built before the cycle landed has five stills and no
+        /// list, and keeps the walk it always had rather than losing the profile to an empty array.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator WithoutAWalkCycle_TheProfileStillUsesTheSidePose()
+        {
+            GameObject go = New("rig still walk visual", false);
+            var body = go.AddComponent<Rigidbody2D>();
+            body.gravityScale = 0f;
+            body.freezeRotation = true;
+
+            var stillPlayer = go.AddComponent<Player>();
+            Wire(stillPlayer, "director", director);
+            Wire(stillPlayer, "marks", marks);
+
+            var still = go.AddComponent<PlayerVisual>();
+            Wire(still, "frontSprite", frontPose);
+            Wire(still, "backSprite", backPose);
+            Wire(still, "sideSprite", sidePose);
+            Wire(still, "diagonalDownSprite", diagonalDownPose);
+            Wire(still, "diagonalUpSprite", diagonalUpPose);
+
+            GameObject child = new GameObject("Visuals");
+            child.transform.SetParent(go.transform, false);
+            var stillSprite = child.AddComponent<SpriteRenderer>();
+
+            go.SetActive(true);
+            stillPlayer.enabled = false;
+
+            body.linearVelocity = Vector2.right * Walk;
+            yield return null;
+
+            Assert.AreEqual(PlayerPose.ProfileRight, still.CurrentPose);
+            Assert.AreEqual(sidePose, stillSprite.sprite,
+                "no cycle means the still profile, which is the whole behaviour before this art arrived");
+            Assert.IsFalse(stillSprite.flipX);
         }
 
         /// <summary>
@@ -147,9 +226,9 @@ namespace EchoMaze.Tests.PlayMode
             yield return null;
 
             Assert.AreEqual(PlayerPose.ProfileLeft, visual.CurrentPose);
-            Assert.AreEqual(sidePose, sprite.sprite,
-                "a second left-profile sprite file would be 2.7 MB of texture memory (1024 squared, DXT5, " +
-                "with mip levels) to redraw a picture the art is proved to be a mirror of");
+            CollectionAssert.Contains(walkPoses, sprite.sprite,
+                "a second left-facing cycle would be nine more textures to redraw pictures the art is " +
+                "proved to be mirrors of");
             Assert.IsTrue(sprite.flipX);
         }
 

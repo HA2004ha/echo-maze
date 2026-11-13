@@ -31,6 +31,12 @@ namespace EchoMaze.Gameplay
                  "DXT5, with mip levels) to redraw nothing. If the art team ever lights the two sides " +
                  "differently, this stops being free — see Docs/ISSUES.md #5.")]
         [SerializeField] Sprite sideSprite;
+
+        [Tooltip("The side walk cycle, in order, drawn facing screen right. Optional: an empty or " +
+                 "incomplete list leaves the still profile above in place, which is what every scene built " +
+                 "before the cycle landed has. The frames play once per footstep, so the footstep landing " +
+                 "is frame 0; facing left is the same list mirrored, for the same reason the stills are.")]
+        [SerializeField] Sprite[] walkRightSprites = new Sprite[0];
         [Tooltip("The down-diagonal: Player_34_front, the front view turned three-quarters. It is drawn " +
                  "facing screen LEFT (its rim and eye mass sit 121 px left of its own centre, against +197 " +
                  "in the profile), so the down-left pose is this file as-is and the down-right pose is the " +
@@ -99,6 +105,7 @@ namespace EchoMaze.Gameplay
         Rigidbody2D body;
         Transform visuals;
         SpriteRenderer sprite;
+        Sprite[] walkCycle;
         float calm = 1f;
         float lastPoseChangeTime = float.NegativeInfinity;
 
@@ -117,6 +124,7 @@ namespace EchoMaze.Gameplay
                 return;
             }
 
+            walkCycle = UsableWalkCycle(walkRightSprites);
             ApplyPose(PlayerFacing.Resolve(body.linearVelocity, player.AimRadians));
 
             // The first answer is not a change, and the dwell is only meant to space real ones out.
@@ -148,7 +156,40 @@ namespace EchoMaze.Gameplay
             }
 
             Phase = PlayerFacing.StepPhase(Time.time, player.NextStepTime, player.FootstepPeriod);
+
+            // The cycle is for the loud, ordinary walk. Shift still moves, but it deliberately removes the
+            // motion that gives a step away, and a frame from the middle of a stride held while the body
+            // slides is the worst of both: so the still profile is what a silent step shows. The phase is
+            // already 0 under Shift because Player stops advancing the footstep clock, which is the same
+            // answer without a second clock to keep in step.
+            bool walking = velocity.sqrMagnitude >= PlayerFacing.MoveDeadzoneSqr;
+            ApplySprite(pose, walking && !player.IsQuiet);
+
             ApplyMotion(velocity, Phase, Mathf.Clamp01(velocity.magnitude / 0.3f));
+        }
+
+        /// <summary>
+        /// A cycle needs at least two pictures and no holes. Anything else is treated as "no cycle" rather
+        /// than as an incomplete character: the walk art is an addition to a five-file set that already
+        /// decides whether the visual runs at all, so a missing frame should cost the animation and not
+        /// the whole character.
+        /// </summary>
+        static Sprite[] UsableWalkCycle(Sprite[] frames)
+        {
+            if (frames == null || frames.Length < 2)
+            {
+                return null;
+            }
+
+            for (int i = 0; i < frames.Length; i++)
+            {
+                if (frames[i] == null)
+                {
+                    return null;
+                }
+            }
+
+            return frames;
         }
 
         /// <summary>
@@ -200,8 +241,23 @@ namespace EchoMaze.Gameplay
         {
             CurrentPose = pose;
             lastPoseChangeTime = Time.unscaledTime;
+            ApplySprite(pose, false);
+        }
 
+        /// <summary>
+        /// The one place the renderer is written. The profile poses have two possible pictures — the step
+        /// cycle while the player is walking loudly, the still otherwise — and everything else has exactly
+        /// one. <c>flipX</c> is recomputed from the file actually chosen, because the cycle is authored
+        /// facing screen right like the still profile and so the same mirror rule applies to both.
+        /// </summary>
+        void ApplySprite(PlayerPose pose, bool playWalkCycle)
+        {
             Sprite file = SpriteFor(pose);
+            if (playWalkCycle && walkCycle != null && IsProfile(pose))
+            {
+                file = walkCycle[PlayerFacing.WalkFrameIndex(Phase, walkCycle.Length)];
+            }
+
             sprite.sprite = file;
             sprite.flipX = LooksLeft(pose) != IsAuthoredLeftward(file);
         }
@@ -221,6 +277,16 @@ namespace EchoMaze.Gameplay
                 case PlayerPose.DiagonalUpLeft: return diagonalUpSprite;
                 default: return diagonalDownSprite;
             }
+        }
+
+        /// <summary>
+        /// The two poses the walk cycle can draw. The delivered cycle is a side view, so the diagonals
+        /// keep their stills; using it on a diagonal would snap the character a quarter-turn sideways
+        /// whenever the movement crossed a sector boundary.
+        /// </summary>
+        static bool IsProfile(PlayerPose pose)
+        {
+            return pose == PlayerPose.ProfileLeft || pose == PlayerPose.ProfileRight;
         }
 
         /// <summary>

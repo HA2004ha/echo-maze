@@ -161,6 +161,27 @@ namespace EchoMaze.Gameplay
         }
 
         /// <summary>
+        /// Which frame of a walk cycle <paramref name="phase"/> asks for. Kept here rather than in
+        /// <c>PlayerVisual</c> for the same reason as the pose map: the mapping is easy to get wrong at the
+        /// seam (a phase of 1 must not index past the last frame), and a pure function is the only part of
+        /// the animation a test can pin exactly.
+        ///
+        /// The frames are played once per footstep, so a step landing is frame 0 and the last frame is the
+        /// pose just before the next step. A cycle of fewer than two frames is not an animation, so it
+        /// answers 0 rather than dividing a stride across one picture.
+        /// </summary>
+        public static int WalkFrameIndex(float phase, int frameCount)
+        {
+            if (frameCount <= 1)
+            {
+                return 0;
+            }
+
+            int index = Mathf.FloorToInt(Mathf.Clamp01(phase) * frameCount);
+            return Mathf.Clamp(index, 0, frameCount - 1);
+        }
+
+        /// <summary>
         /// Where in one footstep the player is: 0 the instant the step lands, rising to 1 as the next one
         /// comes round. Derived from <c>Player</c>'s own timer rather than a second clock, because that
         /// timer stops while the player stands still and fires immediately when they start again, and a

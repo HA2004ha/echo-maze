@@ -411,6 +411,36 @@ namespace EchoMaze.Tests
         }
 
         /// <summary>
+        /// The seam that a cycle of pictures introduces: a phase of 1 is the frame before the next step
+        /// lands, and multiplying it by the frame count must not index past the end of the list. The first
+        /// half of this is also what pins frame 0 to the footstep itself.
+        /// </summary>
+        [Test]
+        public void AStepLanded_ShowsTheFirstWalkFrame()
+        {
+            Assert.AreEqual(0, PlayerFacing.WalkFrameIndex(0f, 9));
+            Assert.AreEqual(0, PlayerFacing.WalkFrameIndex(-1f, 9), "a parked phase is the step, not the end");
+        }
+
+        [Test]
+        public void APhaseThroughTheStride_WalksTheFramesInOrderAndStopsAtTheLast()
+        {
+            Assert.AreEqual(4, PlayerFacing.WalkFrameIndex(0.5f, 9), "half a stride is the middle frame");
+            Assert.AreEqual(8, PlayerFacing.WalkFrameIndex(0.999f, 9));
+            Assert.AreEqual(8, PlayerFacing.WalkFrameIndex(1f, 9),
+                "the seam clamps to the last frame instead of asking for a tenth picture");
+            Assert.AreEqual(8, PlayerFacing.WalkFrameIndex(2f, 9));
+        }
+
+        [Test]
+        public void ACycleTooShortToAnimate_AnswersTheStillFrame()
+        {
+            Assert.AreEqual(0, PlayerFacing.WalkFrameIndex(0.5f, 0));
+            Assert.AreEqual(0, PlayerFacing.WalkFrameIndex(0.5f, 1));
+            Assert.AreEqual(0, PlayerFacing.WalkFrameIndex(0.5f, -3));
+        }
+
+        /// <summary>
         /// Both ways a stride cannot be running: the timer is in the past (the player stopped, and the
         /// stale nextStepTime is exactly what would otherwise keep the body bobbing during a stop-and-listen)
         /// and there is no rhythm to measure against at all (an untuned profile, or a Revive that zeroed it).
