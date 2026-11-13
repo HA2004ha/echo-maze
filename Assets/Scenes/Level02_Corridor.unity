@@ -3388,6 +3388,16 @@ MonoBehaviour:
   frontSprite: {fileID: 21300000, guid: 71c5edee1a59d552db627ba5a6102381, type: 3}
   backSprite: {fileID: 21300000, guid: 6b8dc5fb1f41fe3b59a83c36a2bbe17b, type: 3}
   sideSprite: {fileID: 21300000, guid: f98d0140125b92dc7b2ea4e254f8bf6a, type: 3}
+  walkRightSprites:
+  - {fileID: 21300000, guid: e13bd98435c4dbd3b94723fcaa4d1fda, type: 3}
+  - {fileID: 21300000, guid: 7bb331803fcd9129ae3bc96c3bbf966e, type: 3}
+  - {fileID: 21300000, guid: 68f1bbf09d1da18bfb80498089126fca, type: 3}
+  - {fileID: 21300000, guid: 625de1b7caa03ecd256231f96248269b, type: 3}
+  - {fileID: 21300000, guid: 994e72238f5d3a20c016d3f5f603d17e, type: 3}
+  - {fileID: 21300000, guid: 17f88f93f1aa99ba05f7b08da5649283, type: 3}
+  - {fileID: 21300000, guid: f6b2b68dd5034b96df992d5efbb1011b, type: 3}
+  - {fileID: 21300000, guid: 831ef38740535b5f10c7b493237f84c3, type: 3}
+  - {fileID: 21300000, guid: 643120fb5a706ce9bb018610bf9c19a7, type: 3}
   diagonalDownSprite: {fileID: 21300000, guid: 47cfdd1e8c42995cdac1d1833bcac61b, type: 3}
   diagonalUpSprite: {fileID: 21300000, guid: 7f90ace032cb1892f81217472dfd60fb, type: 3}
   breatheAmplitude: 0.012
