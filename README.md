@@ -4,7 +4,7 @@ A 2D top-down stealth/horror game where the screen is completely black and you s
 
 Ten chapters: an enemy-free maze that teaches the language, then the descent — the corridor, the flooded wing, the listening room, the sump stairs, the boiler run, the dry well, the cold store, the floodgate, and the sump at the bottom. English only, **Windows and Linux PC** with a microphone and headphones.
 
-- Design document: [GDD.md](GDD.md) (version 3.0, at the repo root; the exported PDF snapshot is [Docs/GDD-3.0-snapshot-2026-10-29.pdf](Docs/GDD-3.0-snapshot-2026-10-29.pdf))
+- Design document: [GDD.md](GDD.md) (version 3.1, at the repo root; the exported 3.0 PDF snapshot is [Docs/GDD-3.0-snapshot-2026-10-29.pdf](Docs/GDD-3.0-snapshot-2026-10-29.pdf))
 - **Current state: [Docs/STATUS.md](Docs/STATUS.md)** — how far we are and what the next stage is
 - **The ten levels and how to add the eleventh: [Docs/LEVELS.md](Docs/LEVELS.md)**
 - 5-week plan and current status: [Docs/PLAN.md](Docs/PLAN.md)
@@ -45,10 +45,10 @@ To produce and launch the Linux player from a terminal:
 ```
 "/home/<you>/Unity/Hub/Editor/6000.6.3f1-x86_64/Editor/Unity" -batchmode -quit -projectPath . \
     -executeMethod EchoMaze.EditorTools.PlayerBuild.Build
-./Builds/echo-maze
+./Builds/StandaloneLinux64/echo-maze.x86_64
 ```
 
-The executable is `Builds/echo-maze` (the leaf of the build path; on Linux it gets no extension). `Builds/` is
+The executable is `Builds/StandaloneLinux64/echo-maze.x86_64` (the leaf of the path `PlayerBuild` asks for). `Builds/` is
 git-ignored. The build is a Development build, so it writes a log —
 `~/.config/unity3d/DefaultCompany/echo-maze/Player.log` on this project's current settings
 (`companyName` / `productName`).
@@ -57,18 +57,16 @@ Controls that exist in this build, as the menu prints them:
 
 ```
 WASD move · mouse aim · Space shout (hold to charge) · F pulse
-Shift move silently · E open a door / take the exit · Esc pause
+Shift move silently · Q set down a lamp · E open a door / take the exit · Esc pause
 ```
 
 The **how to play** page on that menu is the same information as a guide rather than a document outside the
-game: seven cards — reading the dark, the waves you can make, moving and what it costs, what lives in the
-dark, the rest of the room, your voice, and the descent (how the chapters page works, and what the seal on a
-node means). The wording lives in `Assets/Scripts/Runtime/UI/GuidePages.cs`, and `GuidePageTests` fails the
+game: eight cards — reading the dark, the waves you can make, moving and what it costs, what lives in the
+dark, the rest of the room, your voice, the descent (how the chapters page works, and what the seal on a node
+means), and the lantern (the few lamps you may set down, and what they cost). The wording lives in `Assets/Scripts/Runtime/UI/GuidePages.cs`, and `GuidePageTests` fails the
 suite if a reworded card no longer fits the generated page.
 
-Listen mode (`Ctrl`) and the decoy marble are **M2** work and are deliberately not on the menu yet. The first
-room has no enemy in it; the Crawler walks every chapter after it. Spike and absorber exist as scenes and
-tuning but no chapter places them yet. The build is produced with the platform set to **Linux64**.
+Listen mode (`Ctrl`) is **M2** work and is deliberately not on the menu yet. The decoy marble is not in the build yet; `Q` sets a fixed lantern down so a part of the room can be read for free. The Spike and the Sound Absorber exist in the design and in the guide's copy but no chapter places them. The first room has no enemy in it, chapter III has none either, and the Crawler walks chapters II and IV–X. The build is produced with the platform set to **Linux64**.
 
 ## Sound input and platform limits
 

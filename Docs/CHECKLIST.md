@@ -1,18 +1,19 @@
-# Checklist — what is left (2026-10-30)
+# Checklist — what is left (2026-11-13)
 
 Short working list derived from [PLAN.md](PLAN.md), [STATUS.md](STATUS.md) and [../GDD.md](../GDD.md).
 Tick items here as they land; the reasoning stays in PLAN.md.
 
 ## Levels today
 
-- **Level 1 — The Maze** (`Level01_Maze`, in the run). 21 × 15 cells at 2 m, built from
-  `Assets/Data/Levels/Level01_Maze.txt`. Spawn bottom-left, exit top-right, one closed door in the middle
-  band (the only way through), a sanctuary checkpoint just before it, a 6 m glass run on the spawn row, one
-  pillar and one box corner. No enemies.
-- **Level 2 — The Corridor** (`Level02_Corridor`, editor only, not in the run). A 7 × 5 m blockout room:
-  walls, a pillar, a box corner, two alcoves (both hollows), an exit tile, and one Crawler on a vertical
-  patrol using the week-2 placeholder hearing.
-- **Level 3 — The Sump**: not built.
+The run is **ten chapters** (`ChapterCatalog`); every scene exists and every one ends on the victory panel.
+The ladder, the map legend and the three-edit loop are in [LEVELS.md](LEVELS.md).
+
+- **I — the maze** (`Level01_Maze`). 21 × 15 cells at 2 m, built from `Level01_Maze.txt`. No enemies.
+- **II — the corridor** (`Level02_Corridor`). The 7 × 5 m hand-built blockout: walls, pillar, box corner, two
+  alcoves (hollows), an exit tile, and one Crawler on the week-2 placeholder hearing.
+- **III–X** (`Level03_FloodedWing` … `Level10_Sump`). Grid maps from `Assets/Data/Levels/*.txt`, built by
+  `ChapterSceneSetup`: crawlers from chapter IV on (III has none), glass, doors, hollows and sanctuaries as
+  the ladder says.
 - `Sandbox`: echo test scene, not a level.
 
 ## 0. Platform
@@ -42,14 +43,14 @@ Tick items here as they land; the reasoning stays in PLAN.md.
 - [x] Wall memory: touched walls stay as thin neon lines from the player's memory, never re-read from colliders (echo hits do not feed it yet) (2026-10-30); the lines are a 6 s trace since 2026-11-08, not a permanent map
 - [x] Lanterns: 2-3 in the player's pack per room, set down with `Q` wherever they choose; a placed lamp is fixed, draws the walls inside 5.5 m in warm light, and makes no noise (2026-11-08)
 - [x] Footprint trail that vanishes after 4 s (ring buffer, own mesh) (2026-10-30)
-- [ ] Full section reset on death (doors, enemies, marbles)
+- [ ] Full section reset on death (doors, creatures; a placed lamp stays spent by design)
 - [ ] Calibration silence (≈5 s) at the start of level 1
-- [ ] Level 2 finished: loop, hollow, doors, wake trigger door, sanctuary; add to `GameFlow.chapterScenes`
+- [ ] Corridor polish: loop, doors, wake-trigger door and sanctuary (it is already chapter II in the run)
 
-## 2. Week 4 — Spike, marble, fear
+## 2. Week 4 — Spike, fear
 
 - [ ] Spike: sawtooth collider, faster than the player, breaks doors in ≈3 s, broken doors stay broken
-- [ ] Decoy marble (right click / Q), ≈3 per level, loud noise at the landing point
+- [x] Lanterns (`Q`) are in the build: 2–3 fixed lamps per chapter, set down with `Q` (2026-11-08). Decoy marble is planned but not yet implemented.
 - [ ] Fear feedback: arcs jitter near a suspicious enemy + "SOMETHING IS CLOSE"
 - [ ] Sound landmarks (`LandmarkEmitter`) per room + exit hum
 - [ ] `Validate Level` editor check (loop, hiding spot within 20–30 s, 2 doors if a Spike)
@@ -59,7 +60,7 @@ Tick items here as they land; the reasoning stays in PLAN.md.
 
 - [ ] Sound Absorber: rays return nothing, slow, strong hearing
 - [ ] Noise zones: reach × 0.5, hearing × 0.3, Listen mode and trace masked
-- [ ] Level 3 — The Sump: Crawler, Spike, Absorber, mandatory marble section, several sanctuaries, exit light
+- [ ] The last room (`Level10_Sump`) finished: exit light, ending; Spike and Absorber remain unplaced in every chapter
 - [ ] Full audio pass (landmarks, enemy footsteps, alert/give-up, heartbeat, doors, UI, echo sound)
 - [ ] Bot sweeps over ρ for the report
 - [ ] Credits screen, short ending

@@ -24,7 +24,7 @@ Every choice that closes one path and leaves another open is recorded here, so t
 ## 2026-10-17 — The ping origin is locked in world space, not on the player
 
 **Decision:** `PingRecord.origin` is a world-space `Vector2` captured at ping time; the echo system does not depend on the player GameObject existing.
-**Reason:** (1) arcs do not smear while the player moves, because distances were measured from that frozen origin; (2) the decoy marble can ping from the far side of the room and build the same arc train; (3) `Sandbox` works with no player at all.
+**Reason:** (1) arcs do not smear while the player moves, because distances were measured from that frozen origin; (2) a wave can start away from the player and build the same arc train (this was written for the decoy marble, which is planned but not yet implemented; the rule is unchanged); (3) `Sandbox` works with no player at all.
 **Balancing constraint:** `waveSpeed >= 1.6 * maxPlayerSpeed`, otherwise a returning arc can never pass the player and readability dies.
 
 ## 2026-10-17 — Wave signatures in u along the enemy's axis, not absolute angles
@@ -38,7 +38,7 @@ Every choice that closes one path and leaves another open is recorded here, so t
 **Decision:** each level is a `.unity` scene with geometry laid out in the editor, plus one `LevelDefinition` ScriptableObject for progression metadata.
 **Reason:** tuning this game means reading arcs with your eyes; the Scene view with Snap, Undo and Play-in-editor makes that free. A Tilemap with `CompositeCollider2D` destroys the "one collider = one material" mapping, and a text format is overkill for four hand-tuned rooms.
 **Cost:** the `.unity` files are large and merge-prone → so the Smart Merge driver gets registered, one scene per branch, and batched `ProjectSettings` edits.
-*(Amended 2026-10-27: "four hand-tuned rooms" is now three levels — the enemy-free maze, The Corridor and The Sump — and the mapping the sentence defends is one collider = one **shape**, not one material.)*
+*(Amended 2026-10-27: "four hand-tuned rooms" is now three levels — the enemy-free maze, The Corridor and The Sump — and the mapping the sentence defends is one collider = one **shape**, not one material.)* *(Amended 2026-11-13: the run is now ten chapters — the ladder in `LEVELS.md` is the current shape.)*
 *(Amended 2026-10-30: the "no text format" half was overturned in week 3. `Level01_Maze` is built at runtime by `MazeLevel` from `Assets/Data/Levels/Level01_Maze.txt`, so the maze stays mergeable and its solvability is checked by `MazeGridTests`; see `TUNING.md`, "Chapter one: the maze". `Level02_Corridor` and `Sandbox` are still generated scenes.)*
 
 ## 2026-10-17 — One collider = one material = one GameObject
@@ -384,11 +384,11 @@ the GDD describes. A preview room is a scene, not a chapter.
 
 ## 2026-11-06 — The tutorial is a generated page in the menu canvas, with its copy in a class that has no Unity in it
 
-**Decision:** "how to play" is six cards in one `GuidePanel` that `UiKit.EnsureGuide` generates as an inactive child of the menu canvas, exactly like the calibration page. The words live in `Assets/Scripts/Runtime/UI/GuidePages.cs` — a plain array of title/body pairs with no `UnityEngine` reference — and the panel is only a pager over it. The card is stepped by two buttons, the arrow keys, or `-echo-guide-page <n>` from a terminal.
+**Decision:** "how to play" is eight cards in one `GuidePanel` that `UiKit.EnsureGuide` generates as an inactive child of the menu canvas, exactly like the calibration page. The words live in `Assets/Scripts/Runtime/UI/GuidePages.cs` — a plain array of title/body pairs with no `UnityEngine` reference — and the panel is only a pager over it. The card is stepped by two buttons, the arrow keys, or `-echo-guide-page <n>` from a terminal.
 
 **Reason:** three doctrines, each of which was already paid for once. A hand-placed page in `Boot.unity` would not survive the next rebuild, and the scene's merge driver fails silently, so anything a human can lose is generated instead. A second scene for the guide would have to be loaded and unloaded for a screen that is read while the menu is still behind it. And copy that lives in a scene or in a `MonoBehaviour` can only be tested with a canvas: as a pure class, `GuidePageTests` asserts that no card outgrows the frame the generator builds (`MaxLineChars` is the column width divided by the font's advance, `MaxLines` is the room above the prev/next row), that every card names the things a player actually meets, and that the pager wraps — none of which needs a Play mode run, which this machine cannot do headless.
 
-**Cost:** the copy is hand-broken into lines, because an auto-wrapped monospace paragraph re-flows on any machine missing a glyph, and a card that is one line too long is a build failure rather than a visual bug someone notices later. The page is English-only and ASCII-only — the same constraint the rest of the interface carries, and the reason the card says "shift" and not a keycap glyph. And the guide states what this build does, which means it has to be edited whenever a feature lands: it currently marks Listen mode, the decoy marble, the Spike and the Absorber as not in the run, so the sentence that is true today is the one that goes stale first.
+**Cost:** the copy is hand-broken into lines, because an auto-wrapped monospace paragraph re-flows on any machine missing a glyph, and a card that is one line too long is a build failure rather than a visual bug someone notices later. The page is English-only and ASCII-only — the same constraint the rest of the interface carries, and the reason the card says "shift" and not a keycap glyph. And the guide states what this build does, which means it has to be edited whenever a feature lands: it currently marks Listen mode, the Spike and the Absorber as not in the run, and has a card for the lantern that is, so the sentence that is true today is the one that goes stale first.
 
 ## Under decision
 

@@ -4,6 +4,8 @@ This file exists so nothing gets lost: every idea left out of this term's delive
 
 **Revised 2026-10-27 against GDD v3.0.** The previous version of this file cut things from a game that no longer exists: it promised three surface materials, four levels, a BREATH bar and a health bar. All four of those are gone from the design, so they moved from "polish we skipped" to "features that were removed", below.
 
+**Amended 2026-11-13 against the build.** Two things in this file were overtaken: the delivery is **ten chapters**, not three (the fourth-room plan was replaced by the ten-room descent in `ChapterStory.cs`). The **lantern** is in the build as a player tool (`Q` sets a fixed lamp down; see `LEVELS.md` and `TUNING.md`). The **decoy marble** is planned but not yet implemented.
+
 ## Removed from the design itself (not cuts — deletions)
 
 | Item | Why it is gone | What replaced it |
@@ -11,7 +13,7 @@ This file exists so nothing gets lost: every idea left out of this term's delive
 | Surface materials (concrete / metal / sponge) | Every surface sounding different meant per-surface data, a material lookup, and a readability test nobody could pass by ear. Geometry alone already carries the information | Brightness from the curvature of the hit-distance profile: `b(i) = base + k · clamp(\|d[i+1] − 2·d[i] + d[i−1]\| / dCurv)`. A corner is bright because it is a discontinuity, not because it is metal |
 | The BREATH bar | It modelled a resource the game does not have: sound is not stamina | Footstep noise (walking is audible, `Shift` is silent) plus fear feedback — the arcs jitter as the nearest suspicious enemy closes in |
 | The health bar | Three hits of slack turned one-hit death into attrition, and stealth tension needs the threat to be lethal | One hit kills, with sanctuary checkpoints, an alert telegraph before every chase, a give-up cue, and the escape rules that guarantee an answer to every chase |
-| Level 4 | Four levels in five weeks meant none of them finished | Three levels: the enemy-free maze (tutorial), The Corridor, The Sump |
+| Level 4 | Four levels in five weeks meant none of them finished | The run became a ten-chapter descent instead: the enemy-free maze (tutorial) and nine rooms down to the sump, one per grade from easy to brutal |
 
 ## Final cuts for the delivery version (Autumn 2026)
 
@@ -33,4 +35,6 @@ This file exists so nothing gets lost: every idea left out of this term's delive
 
 ## What was **not** cut and is a commitment
 
-The GDD v3.0 "now" column is the contract: microphone input behind `IEchoSource` with calibration inside the dark and a manual page; the charged `Space` echo as a real alternative; the cone wave, the returning arc train, brightness from geometry, fracture, touch marks, the 360° weak pulse, the shimmer of living things; Listen mode, `Shift` silent movement, footstep noise; hollows, sanctuary checkpoints, doors that hold; sound landmarks, the memory trace, the exit hum; the Crawler, the Spike and the Sound Absorber with the suspicion meter and the alert/give-up cues; the decoy marble; noisy floors and noise zones; three levels with the enemy-free maze as the tutorial; a conventional main menu, pause, instant retry; the bot simulation; the full sound palette; and two builds, Linux x86_64 and Windows x86_64 Mono (amended 2026-10-30: both platforms are delivery targets).
+The GDD v3.1 "now" column is the contract: microphone input behind `IEchoSource` with calibration inside the dark and a manual page; the charged `Space` echo as a real alternative; the cone wave, the returning arc train, brightness from geometry, fracture, touch marks, the 360° weak pulse, the shimmer of living things; Listen mode, `Shift` silent movement, footstep noise; hollows, sanctuary checkpoints, doors that hold; sound landmarks, the memory trace, the exit hum; the Crawler, the Spike and the Sound Absorber with the suspicion meter and the alert/give-up cues; **the lantern**; noisy floors and noise zones; **ten chapters** with the enemy-free maze as the tutorial; a conventional main menu, pause, instant retry; the bot simulation; the full sound palette; and two builds, Linux x86_64 and Windows x86_64 Mono (amended 2026-10-30: both platforms are delivery targets).
+
+The build side of one line above is not yet true: `PlayerBuild` still builds `StandaloneLinux64` only, so the Windows player is a delivery target with no target in the script, not a shipped artifact (`CHECKLIST.md` §0 tracks it).

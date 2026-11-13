@@ -2,8 +2,10 @@
 
 **Start:** 19 October 2026 — **delivery:** 20 November 2026 — **buffer:** until 27 November
 **Plan version:** 2.0 — rewritten against [GDD.md](../GDD.md) v3.0 (root). This file replaces the plan written against GDD 1.1.
-**Scope being delivered:** echo core (mic, cone wave, returning arc train, brightness-from-geometry, touch marks, weak pulse) + silence (Listen mode, Shift) + hiding (hollows, sanctuary checkpoints, doors that hold) + orientation (landmarks, memory trace, exit hum) + 3 enemies (Crawler, Spike, Absorber) with the suspicion meter + decoy marble + noise floors and noise zones + 3 levels, level 1 being the enemy-free maze + calibration inside the dark + minimal HUD and menus + full audio + Linux build + the bot simulation that feeds the report.
+**Scope being delivered:** echo core (mic, cone wave, returning arc train, brightness-from-geometry, touch marks, weak pulse) + silence (Listen mode, Shift) + hiding (hollows, sanctuary checkpoints, doors that hold) + orientation (landmarks, memory trace, exit hum) + 3 enemies (Crawler, Spike, Absorber) with the suspicion meter + noise floors and noise zones + 3 levels, level 1 being the enemy-free maze + calibration inside the dark + minimal HUD and menus + full audio + Linux build + the bot simulation that feeds the report. *(Superseded: the build is ten chapters and the tool is the lantern — see the note below.)*
 **Out of scope:** [SCOPE_CUTS.md](SCOPE_CUTS.md) — read it before adding any feature. It was reconciled against v3.0 on 2026-10-27 (week 2 day 1).
+
+**Status note (2026-11-13):** the plan below is the dated history and two of its outlines were overtaken by the build. The run is **ten chapters** (`ChapterCatalog`), not three, and **the lantern is in the build** (`Q` sets a fixed lamp down). The decoy marble is planned but not yet implemented. Read [STATUS.md](STATUS.md) for the state; the week-by-week sections keep their original wording and their dates.
 
 This file is the **living project history**: at the end of each day the ticked items and the week's status are recorded and committed here, and at the end of each week that same commit is tagged `v0.x`. Technical decisions: [DESIGN_DECISIONS.md](DESIGN_DECISIONS.md). Balancing parameters: [TUNING.md](TUNING.md).
 
